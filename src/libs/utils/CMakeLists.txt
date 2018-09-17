@@ -8,12 +8,13 @@ set ( LIB_CVX_UTIL_SOURCES
     misc/arg_parser.cpp
     misc/dir_iterator.cpp
     misc/path.cpp
-    misc/xml_sax_parser.cpp
+
     misc/strings.cpp
     misc/zstream.cpp
     misc/cv_helpers.cpp
     misc/sequence.cpp
     misc/filesystem.cpp
+    misc/xml_pull_parser.cpp
 
     geometry/trimesh_topology.cpp
     3rdparty/triangle.c
@@ -51,7 +52,7 @@ set ( LIB_CVX_UTIL_HEADERS
     ${CVX_UTIL_INCLUDE_DIR}/misc/arg_parser.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/dir_iterator.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/path.hpp
-    ${CVX_UTIL_INCLUDE_DIR}/misc/xml_sax_parser.hpp
+
     ${CVX_UTIL_INCLUDE_DIR}/misc/strings.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/zstream.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/cv_helpers.hpp
@@ -59,6 +60,7 @@ set ( LIB_CVX_UTIL_HEADERS
     ${CVX_UTIL_INCLUDE_DIR}/misc/sequence.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/filesystem.hpp
     ${CVX_UTIL_INCLUDE_DIR}/misc/optional.hpp
+    ${CVX_UTIL_INCLUDE_DIR}/misc/xml_pull_parser.hpp
 
     ${CVX_UTIL_INCLUDE_DIR}/geometry/point.hpp
     ${CVX_UTIL_INCLUDE_DIR}/geometry/point_list.hpp

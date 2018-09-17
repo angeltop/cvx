@@ -5,7 +5,6 @@
 #include <cvx/util/misc/regex.hpp>
 
 namespace cvx {
-namespace util {
 
 // A class of key/value pairs of strings.
 
@@ -132,6 +131,6 @@ class DictionaryIterator
 } ;
 
 }
-}
+
 
 #endif

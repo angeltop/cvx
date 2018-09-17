@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std ;
-using namespace cvx::util ;
+using namespace cvx ;
 
 struct GVector {
     vector<int> vals_ ;
@@ -39,7 +39,6 @@ int main(int argc, const char *argv[]) {
     settings.set("image.threshold", (int)4) ;
     settings.set("image.matching.confidence", GVector{1, 2, 3, 4}) ;
     settings.setArray("image.testing.keys", vector<string>{string("heelo"), string("goodbye")}) ;
-
 
     settings.save("/tmp/oo.xml") ;
     ApplicationSettings rs ;

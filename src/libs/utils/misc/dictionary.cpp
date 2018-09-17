@@ -5,7 +5,7 @@
 using namespace std ;
 
 namespace cvx {
-namespace util {
+
 
 Dictionary::Dictionary() {}
 
@@ -178,4 +178,4 @@ bool Dictionary::empty() const { return container_.empty() ; }
 
 ////////////////////////////////////////////////////////////////
 }
-}
+

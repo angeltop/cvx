@@ -2,10 +2,9 @@
 #define __APPLICATION_SETTINGS_HPP__
 
 #include <cvx/util/misc/strings.hpp>
+#include <cvx/util/misc/dictionary.hpp>
 
 namespace cvx {
-namespace util {
-
 
 // provides mechanism to serialize application settings in XML config file
 class ApplicationSettings
@@ -24,17 +23,11 @@ public:
     // get all sections corresponding to the given prefix
     std::vector<std::string> sections(const std::string &prefix = std::string()) const ;
 
-    template <class T>
-    T get(const std::string &key, const T &def = T{}) const {
-        Node::Ptr n = findNode(make_prefix() + key) ;
-        if ( n )  return n->deserialize<T>() ;
-        else return def;
-    }
 
     // set the value corresponding to a key with an optional attribute map (e.g. semantic information).
     // key is in the form <section1>.<section2>...<key>
 
-    typedef std::map<std::string, std::string> Attributes ;
+    typedef Dictionary Attributes ;
 
     template <class T>
     void set(const std::string &key, const T &val, const Attributes &a = Attributes())  {
@@ -58,6 +51,14 @@ public:
         }
     }
 
+    // get value of corresponding key or default value if not found
+    template <class T>
+    T get(const std::string &key, const T &def = T{}) const {
+        Node::Ptr n = findNode(make_prefix() + key) ;
+        if ( n )  return n->deserialize<T>() ;
+        else return def;
+    }
+
     // helper for reading an array of values
     template <class T>
     std::vector<T> getArray(const std::string &key) {
@@ -79,7 +80,7 @@ public:
     }
 
     // get attributes of a key
-    Attributes attributes(const std::string &key) ;
+    Dictionary attributes(const std::string &key) ;
 
     // starts a new section. All subsequent queries will be prefixed with the section(s) key(s).
 
@@ -92,7 +93,7 @@ public:
         typedef std::shared_ptr<Node> Ptr ;
         std::map<std::string, Node::Ptr> children_ ;
         std::string value_ ;
-        Attributes attributes_ ;
+        Dictionary attributes_ ;
 
         // you may provide specialization for custom types
 
@@ -112,8 +113,6 @@ public:
 
 private:
 
-    friend class AppSettingsXmlParser ;
-
     std::string make_prefix() const;
 
     Node::Ptr findNode(const std::string &key) const;
@@ -123,8 +122,6 @@ private:
     Node::Ptr root_ ;
 
     std::deque<std::string> section_stack_ ;
-
-
 };
 
 // template specialization for boolean types
@@ -139,7 +136,7 @@ bool ApplicationSettings::Node::deserialize<bool>() const {
     return false ;
 }
 
-}
+
 }
 
 #endif

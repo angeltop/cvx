@@ -32,7 +32,6 @@ public:
 
     ArgumentParser() {}
 
-
     // returns true if the command group has been succesfully matched
     bool isMatched() const { return is_matched_ ; }
 
@@ -97,7 +96,7 @@ public:
         return positional_.back();
     }
 
-    // Parse the command line. In case of failure an exception is thrown.
+    // Parse the command line. In case of failure an exception is thrown. Last argument is the first command line argument to consider
     void parse(int argc, const char *argv[], uint c = 1) ;
 
     void printUsage(std::ostream &strm, uint line_length = 80, uint min_description_width = 40) ;
@@ -175,6 +174,9 @@ public:
 
 
         // set a functor to be called after the option has been succefully parsed. Return true to continue with the rest of the args, false to stop.
+        // This is usefull to parse subcommands. Declare a positional argument and then on setAction callback call the appropriate ArgumentParser for the subcommand
+        // based on the positional variable value
+
         Option &setAction(std::function<bool()> cb) {
             action_ = cb ;
             return *this ;

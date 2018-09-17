@@ -11,6 +11,7 @@
 
 // Very simple SAX like XML parser
 
+
 class XMLStreamWrapper ;
 
 class XMLSAXParser {
@@ -23,7 +24,7 @@ public:
 
     bool parse() ;
 
-    typedef cvx::util::Dictionary AttributeList ;
+    typedef Dictionary AttributeList ;
 
     virtual void startElement(const std::string &qname, const AttributeList &attr_list) {
         std::cout << "start element: " << qname << std::endl ;

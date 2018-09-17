@@ -1,6 +1,6 @@
 #include <cvx/util/misc/application_settings.hpp>
 #include <cvx/util/misc/strings.hpp>
-#include <cvx/util/misc/xml_sax_parser.hpp>
+#include <cvx/util/misc/xml_pull_parser.hpp>
 
 #include <cassert>
 #include <fstream>
@@ -8,7 +8,6 @@
 using namespace std ;
 
 namespace cvx {
-namespace util {
 
 ApplicationSettings::ApplicationSettings(): root_(new Node)
 {
@@ -23,12 +22,12 @@ static void writeIndent(ostream &strm, int a) {
 static void writeEscapedXml(ostream &strm, const std::string &src) {
     for( char c: src ) {
         switch(c) {
-            case '&':  strm << "&amp;";      break;
-            case '\"': strm << "&quot;";     break;
-            case '\'': strm << "&apos;";     break;
-            case '<':  strm << "&lt;";       break;
-            case '>':  strm << "&gt;";       break;
-            default:   strm << c;            break;
+        case '&':  strm << "&amp;";      break;
+        case '\"': strm << "&quot;";     break;
+        case '\'': strm << "&apos;";     break;
+        case '<':  strm << "&lt;";       break;
+        case '>':  strm << "&gt;";       break;
+        default:   strm << c;            break;
         }
     }
 
@@ -68,7 +67,7 @@ bool ApplicationSettings::save(const std::string &fileName)
 
     return (bool)strm ;
 }
-
+#if 0
 class AppSettingsXmlParser: public XMLSAXParser {
 public:
     AppSettingsXmlParser(istream &strm, ApplicationSettings &sts): XMLSAXParser(strm), sts_(sts), current_(sts_.root_) {
@@ -102,13 +101,45 @@ private:
     ApplicationSettings::Node::Ptr current_ ;
     std::deque<ApplicationSettings::Node::Ptr> node_stack_ ;
 };
+#endif
 
 bool ApplicationSettings::load(const std::string &fileName) {
 
     ifstream strm(fileName) ;
 
-    AppSettingsXmlParser parser(strm, *this) ;
-    return parser.parse() ;
+    XmlPullParser parser(strm) ;
+
+    Node::Ptr current_ = root_ ;
+    std::deque<Node::Ptr> node_stack_ ;
+
+    node_stack_.emplace_back(current_) ;
+
+    try {
+        while ( parser.next() != XmlPullParser::END_DOCUMENT ) {
+            auto et = parser.getEventType() ;
+            string tagName = parser.getName() ;
+
+            if ( et == XmlPullParser::START_TAG && tagName != "config" ) {
+
+                Node::Ptr node(new ApplicationSettings::Node) ;
+
+                node->attributes_ = parser.getAttributes() ;
+
+                current_->children_[tagName] = node ;
+                node_stack_.emplace_back(node) ;
+                current_ = node ;
+
+            } else if ( et == XmlPullParser::END_TAG && tagName != "config" ) {
+                node_stack_.pop_back() ;
+                current_ = node_stack_.back() ;
+            } else if ( et == XmlPullParser::TEXT ) {
+                current_->value_ = trimCopy(parser.getText()) ;
+            }
+        }
+        return true ;
+    } catch ( XmlPullParserException & ) {
+        return false ;
+    }
 }
 
 
@@ -157,7 +188,7 @@ std::vector<std::string> ApplicationSettings::sections(const std::string &prefix
     return res ;
 }
 
-std::map<std::string, std::string> ApplicationSettings::attributes(const std::string &key)
+Dictionary ApplicationSettings::attributes(const std::string &key)
 {
     Node::Ptr n = findNode(make_prefix() + key) ;
     if (n) return n->attributes_ ;
@@ -214,7 +245,7 @@ ApplicationSettings::Node::Ptr ApplicationSettings::findNode(const string &key) 
         if ( p ) {
             auto it = p->children_.find(tok) ;
             if ( it != p->children_.end() )
-                    p = it->second ;
+                p = it->second ;
             else return nullptr ;
         }
     }
@@ -223,5 +254,4 @@ ApplicationSettings::Node::Ptr ApplicationSettings::findNode(const string &key) 
 }
 
 
-} // namespace util
 } // namespace cvx

@@ -22,8 +22,8 @@ target_link_libraries(test_argparse cvx_util)
 add_executable(test_appsettings test_appsettings.cpp)
 target_link_libraries(test_appsettings cvx_util)
 
-add_executable(test_xml test_xml.cpp)
-target_link_libraries(test_xml cvx_util ${catkin_LIBRARIES})
+#add_executable(test_xml test_xml.cpp)
+#target_link_libraries(test_xml cvx_util ${catkin_LIBRARIES})
 
 add_executable(test_lm test_lm.cpp)
 target_link_libraries(test_lm  cvx_util ${catkin_LIBRARIES})
