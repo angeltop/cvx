@@ -9,40 +9,30 @@ using namespace std ;
 
 namespace cvx {
 
-void CommandGroup::parse(uint c, int argc, const char *argv[]) {
+void ArgumentParser::parse(int argc, const char *argv[], uint c0) {
 
     Container::iterator cpos = positional_.begin() ;
 
-    while ( c < argc ) {
+    pos_ = c0 ;
 
-        if ( argv[c][0] == '-' ) { // we have a non-positional option
+    while ( pos_ < argc ) {
 
-            auto match = findMatchingArg(argv[c]) ; // find matching arg
+        if ( argv[pos_][0] == '-' ) { // we have a non-positional option
+
+            auto match = findMatchingArg(argv[pos_]) ; // find matching arg
 
             if ( match != options_.end() ) { // found
-                ++c ; // skip flag
-                consumeArg(match, argc, argv, c)  ;
+                ++pos_ ; // skip flag
+                consumeArg(match, argc, argv, pos_)  ;
+                if ( match->action_ && !match->action_() ) break ;
             }
-            else throw InvalidOption(*this, argv[c]) ; // unknown option
+            else throw InvalidOption(*this, argv[pos_]) ; // unknown option
         } else if ( cpos != positional_.end() ) {  // try positional arguments
-            string val = argv[c] ;
-            consumeArg(cpos, argc, argv, c) ;
-
-            if ( cpos->is_group_switch_ ) {
-                bool subgroup_matched = false ;
-                for ( auto &&gp: children_ ) {
-                    if ( gp.first == val ) {
-                        gp.second->parse(c, argc, argv) ;
-                        subgroup_matched = true ;
-                        break ;
-                    }
-                }
-                if ( !subgroup_matched ) throw InvalidCommandGroup(*this, val) ;
-                else break ;
-            }
-            else
-                ++cpos ;
-        } else throw InvalidOption(*this, argv[c]) ;
+            string val = argv[pos_] ;
+            consumeArg(cpos, argc, argv, pos_) ;
+            if ( cpos->action_ && !cpos->action_() ) break ;
+            ++cpos ;
+        } else throw InvalidOption(*this, argv[pos_]) ;
     }
 
     setDefaults() ;
@@ -191,7 +181,7 @@ static void format_text(std::ostream& strm,  const std::string& str, unsigned li
     }
 
 }
-void CommandGroup::printUsage(ostream &strm, uint line_length, uint min_description_width)
+void ArgumentParser::printUsage(ostream &strm, uint line_length, uint min_description_width)
 {
     if ( !description_.empty() ) {
         format_text(strm, description_, line_length) ;
@@ -206,7 +196,7 @@ void CommandGroup::printUsage(ostream &strm, uint line_length, uint min_descript
     }
 }
 
-uint CommandGroup::getOptimalColumnWidth(uint line_length, uint min_description_length)
+uint ArgumentParser::getOptimalColumnWidth(uint line_length, uint min_description_length)
 {
     /* Find the maximum width of the option column */
 
@@ -225,7 +215,7 @@ uint CommandGroup::getOptimalColumnWidth(uint line_length, uint min_description_
     return width;
 }
 
-void CommandGroup::printOptions(ostream &strm, uint line_length, uint min_description_length)
+void ArgumentParser::printOptions(ostream &strm, uint line_length, uint min_description_length)
 {
     uint col_width = getOptimalColumnWidth(line_length, min_description_length) ;
 
@@ -237,7 +227,7 @@ void CommandGroup::printOptions(ostream &strm, uint line_length, uint min_descri
     }
 }
 
-void CommandGroup::consumeArg(const Container::iterator &match, int argc, const char *argv[], uint &c) {
+void ArgumentParser::consumeArg(const Container::iterator &match, int argc, const char *argv[], uint &c) {
     Option &a = *match ;
     a.matched_ = true ;
 
@@ -271,13 +261,13 @@ void CommandGroup::consumeArg(const Container::iterator &match, int argc, const 
     }
 }
 
-CommandGroup::Container::iterator CommandGroup::findMatchingArg(const string &arg)
+ArgumentParser::Container::iterator ArgumentParser::findMatchingArg(const string &arg)
 {
     return std::find_if(options_.begin(), options_.end(), [&arg] ( const Container::value_type &t) { return t.matches(arg) ;} ) ;
 }
 
 
-void CommandGroup::setDefaults()
+void ArgumentParser::setDefaults()
 {
     for( auto &&o: options_ ) {
         if ( !o.matched_ && !o.default_value_.empty() ) {
@@ -287,7 +277,7 @@ void CommandGroup::setDefaults()
     }
 }
 
-void CommandGroup::checkRequired()
+void ArgumentParser::checkRequired()
 {
     for( auto &&o: options_ ) {
         if ( o.is_required_ && !o.matched_ ) throw MissingRequiredOption(*this, o.short_flag_) ;
@@ -295,7 +285,7 @@ void CommandGroup::checkRequired()
 
 }
 
-string CommandGroup::Option::formatOptionFlags() const
+string ArgumentParser::Option::formatOptionFlags() const
 {
 
     stringstream ss ;
@@ -307,7 +297,7 @@ string CommandGroup::Option::formatOptionFlags() const
     return first_column ;
 }
 
-void CommandGroup::Option::printDescription(ostream &strm, uint first_column_width, uint line_length) const
+void ArgumentParser::Option::printDescription(ostream &strm, uint first_column_width, uint line_length) const
 {
     string first_column = formatOptionFlags() ;
     strm << first_column ;
@@ -324,7 +314,7 @@ void CommandGroup::Option::printDescription(ostream &strm, uint first_column_wid
     }
 }
 
-CommandGroup::Option::Option(const string &flags, std::shared_ptr<Value> val): value_(val), min_args_(1), max_args_(1),
+ArgumentParser::Option::Option(const string &flags, std::shared_ptr<Value> val): value_(val), min_args_(1), max_args_(1),
     is_required_(false), matched_(false), is_positional_(false)
 {
     name_ = "<arg>" ;
@@ -336,21 +326,17 @@ CommandGroup::Option::Option(const string &flags, std::shared_ptr<Value> val): v
     }
 }
 
-CommandGroup::Option::Option(std::shared_ptr<Value> val): value_(val), min_args_(1), max_args_(1),
+ArgumentParser::Option::Option(std::shared_ptr<Value> val): value_(val), min_args_(1), max_args_(1),
     is_required_(false), matched_(false), is_positional_(true)
 {
     name_ = "<arg>" ;
 }
 
 
-bool CommandGroup::Option::matches(const string &arg) const
+bool ArgumentParser::Option::matches(const string &arg) const
 {
     return std::find(flags_.begin(), flags_.end(), arg) != flags_.end() ;
 }
 
-void ArgumentParser::parse(CommandGroup &group, int argc, const char *argv[])
-{
-    group.parse(1, argc, argv) ;
-}
 
 }

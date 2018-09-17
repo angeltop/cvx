@@ -23,32 +23,21 @@ typedef std::function<bool(std::istream &)> ValueParser ;
 // can be used.
 
 class ArgumentParserException ;
-class CommandGroup ;
+class ArgumentParser ;
 
 class ArgumentParser {
+    class Value ;
 
 public:
 
     ArgumentParser() {}
 
-    void parse(CommandGroup &group, int argc, const char *argv[]) ;
-
-} ;
-
-class CommandGroup {
-    class Value ;
-
-public:
-
-    CommandGroup() {}
-
-    CommandGroup(CommandGroup &parent, const std::string &group_name): parent_(&parent), group_name_(group_name) {
-        assert(!group_name.empty()) ;
-        parent.children_[group_name_] = this ;
-    }
 
     // returns true if the command group has been succesfully matched
     bool isMatched() const { return is_matched_ ; }
+
+    // current argument index
+    uint pos() const { return pos_ ; }
 
     class Option ;
 
@@ -109,7 +98,7 @@ public:
     }
 
     // Parse the command line. In case of failure an exception is thrown.
-    void parse(uint c, int argc, const char *argv[]) ;
+    void parse(int argc, const char *argv[], uint c = 1) ;
 
     void printUsage(std::ostream &strm, uint line_length = 80, uint min_description_width = 40) ;
 
@@ -184,9 +173,10 @@ public:
             return *this ;
         }
 
-        // use for positional arguments to indicate that this is a group switch and in this case a subgroup of commands matching the value should be called
-        Option &setGroupSwitch(bool gs = true) {
-            is_group_switch_ = gs  ;
+
+        // set a functor to be called after the option has been succefully parsed. Return true to continue with the rest of the args, false to stop.
+        Option &setAction(std::function<bool()> cb) {
+            action_ = cb ;
             return *this ;
         }
 
@@ -196,7 +186,7 @@ public:
 
     protected:
 
-        friend class CommandGroup ;
+        friend class ArgumentParser ;
         bool matches(const std::string &arg) const ;
 
         std::string formatOptionFlags() const ;
@@ -211,6 +201,7 @@ public:
         std::string name_ ;               // the arg name that will appear after the flag in the help printout
         bool is_required_, is_positional_ ;
         std::shared_ptr<Value> value_ ;
+        std::function<bool()> action_ = nullptr ;
 
         bool matched_ = false, is_group_switch_ = false ;
         int min_args_, max_args_ ;        // minimum and maximum args acceptable
@@ -297,14 +288,13 @@ private:
     std::string options_caption_, description_, epilog_ ;
     std::string prog_ ;
     std::string usage_ ;
-    std::string group_name_ ;
-    std::map<std::string, CommandGroup *> children_ ;
-    CommandGroup *parent_ = nullptr ;
+
     bool is_matched_ = false ;
+    uint pos_ = 0 ;
 };
 
 template<>
-bool CommandGroup::ValueHolder<bool>::read(std::istream &strm) {
+bool ArgumentParser::ValueHolder<bool>::read(std::istream &strm) {
     std::string s ;
     strm >> s ;
     if ( s == "true" || s == "1" || s == "yes" ) {
@@ -321,22 +311,22 @@ bool CommandGroup::ValueHolder<bool>::read(std::istream &strm) {
 class ArgumentParserException: public std::exception {
 public:
 public:
-    ArgumentParserException(CommandGroup &group, const std::string& msg): msg_(msg), group_(group) {}
+    ArgumentParserException(ArgumentParser &group, const std::string& msg): msg_(msg), group_(group) {}
 
     virtual const char*  what() const noexcept {
         return msg_.c_str();
     }
 
-    CommandGroup &group() { return group_ ; }
+    ArgumentParser &group() { return group_ ; }
 
 private:
     std::string msg_ ;
-    CommandGroup &group_ ;
+    ArgumentParser &group_ ;
 };
 
 class InvalidOption: public ArgumentParserException {
 public:
-    InvalidOption(CommandGroup &group, const std::string& option)
+    InvalidOption(ArgumentParser &group, const std::string& option)
         : ArgumentParserException(group, "Option \'" + option + "\' does not exist")
     {
     }
@@ -344,7 +334,7 @@ public:
 
 class IncorrectArguments: public ArgumentParserException {
 public:
-    IncorrectArguments(CommandGroup &group, const std::string& option)
+    IncorrectArguments(ArgumentParser &group, const std::string& option)
         : ArgumentParserException(group, "Option \'" + option + "\' has inccorect arguments")
     {
     }
@@ -352,7 +342,7 @@ public:
 
 class MissingRequiredOption: public ArgumentParserException {
 public:
-    MissingRequiredOption(CommandGroup &group, const std::string& option)
+    MissingRequiredOption(ArgumentParser &group, const std::string& option)
         : ArgumentParserException(group, "Required option \'" + option + "\' is missing")
     {
     }
@@ -360,7 +350,7 @@ public:
 
 class InvalidCommandGroup: public ArgumentParserException {
 public:
-    InvalidCommandGroup(CommandGroup &parent_group, const std::string& group)
+    InvalidCommandGroup(ArgumentParser &parent_group, const std::string& group)
         : ArgumentParserException(parent_group, "Invalid command group \'" + group + "\'")
     {
     }
