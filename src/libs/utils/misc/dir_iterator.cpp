@@ -1,9 +1,14 @@
 #include <cvx/util/misc/dir_iterator.hpp>
 #include <cvx/util/misc/strings.hpp>
+#include <cvx/util/misc/path.hpp>
 
 using namespace std ;
 
-namespace cvx { namespace util {
+namespace cvx {
+
+const DirectoryFilter DirectoryFilters::MatchAll = [](const DirectoryEntry &) {return true ; } ;
+const DirectoryFilter DirectoryFilters::MatchDirectories = [](const DirectoryEntry &e) {return e.isDirectory() ; } ;
+
 
 static string glob_to_regex(const char *pat)
 {
@@ -108,7 +113,7 @@ static string glob_to_regex(const char *pat)
     return rx ;
 }
 
-DirectoryFilter matchFilesWithGlobPattern(const string &glob_pattern)
+const DirectoryFilter DirectoryFilters::MatchFilesWithGlobPattern(const string &glob_pattern)
 {
     std::vector<string> el = split(glob_pattern, ";") ;
 
@@ -141,5 +146,9 @@ DirectoryFilter matchFilesWithGlobPattern(const string &glob_pattern)
     return filter ;
 }
 
+DirectoryListing::DirectoryListing(const Path &dir, DirectoryFilter filter): dir_(dir.toString()), filter_(filter) {
 
-}}
+}
+
+
+}

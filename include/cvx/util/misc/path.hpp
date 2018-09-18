@@ -7,7 +7,7 @@
 
 #include <cvx/util/misc/dir_iterator.hpp>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 // Filesystem path
 
@@ -64,7 +64,13 @@ class Path {
     std::string parent() const ;
     Path parentPath() const ;
 
-    DirectoryListing subDirs() const ;
+    DirectoryListing subDirs() const {
+        return DirectoryListing(toString()) ;
+    }
+
+    DirectoryListing subDirs(DirectoryFilter filter) const {
+        return DirectoryListing(toString(), filter) ;
+    }
 
     // append child path
 
@@ -131,7 +137,7 @@ class Path {
     static std::vector<std::string> entries(const std::string &dir, DirectoryFilter filter, bool relative = true) ;
     // all files in dir matching glob pattern
     static std::vector<std::string> glob(const std::string &dir, const std::string &pattern, bool relative = true) {
-        return entries(dir, matchFilesWithGlobPattern(pattern), relative) ;
+        return entries(dir, DirectoryFilters::MatchFilesWithGlobPattern(pattern), relative) ;
     }
 
 private:
@@ -155,7 +161,7 @@ public:
         std::runtime_error("Invalid filesystem path: " + path_name) {}
 };
 
-} // util
+
 } // cvx
 
 #endif

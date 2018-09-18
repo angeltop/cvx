@@ -25,7 +25,6 @@
 using namespace std;
 
 namespace cvx {
-namespace util {
 
 const std::string LogPatternFormatter::DefaultFormat = "%d{%c}-%r-(%t) %f %l %c:";
 
@@ -289,11 +288,14 @@ LogPatternFormatter::LogPatternFormatter(const string &pattern): LogFormatter(),
 
 }
 
-string LogPatternFormatter::format(LogLevel level, const LogContext &ctx, const string &message)
+string LogPatternFormatter::format(LogLevel level, const LogContext *ctx, const string &message)
 {
     stringstream strm ;
 
-    formatMessage(strm, pattern_, level, message, ctx.thread_id_, ctx.file_, ctx.line_, ctx.context_) ;
+    if ( ctx )
+        formatMessage(strm, pattern_, level, message, ctx->thread_id_, ctx->file_, ctx->line_, ctx->context_) ;
+    else
+        formatMessage(strm, pattern_, level, message, 0, "", 0, "") ;
 
     return strm.str() ;
 }
@@ -304,23 +306,14 @@ string LogPatternFormatter::format(LogLevel level, const LogContext &ctx, const 
 
 Logger::Logger() {}
 
-void Logger::write(LogLevel level, const LogContext &ctx, const char *format, ...)
-{
-    va_list vl;
-    va_start(vl, format);
-    int nc = vsnprintf(0, 0, format, vl) ;
-    va_end(vl) ;
-
-    char *buffer = new char [nc+1] ;
-
-    va_start(vl, format);
-    vsnprintf(buffer, nc+1, format, vl) ;
-    va_end(vl) ;
-
-    writex(level, ctx, buffer) ;
-
-    delete [] buffer ;
+void Logger::write(LogLevel level, const LogContext &ctx, const std::string &msg) {
+    writex(level, &ctx, msg) ;
 }
+
+void Logger::write(LogLevel level, const std::string &msg) {
+    writex(level, nullptr, msg) ;
+}
+
 
 void Logger::addAppender(LogAppenderPtr appender)
 {
@@ -329,7 +322,9 @@ void Logger::addAppender(LogAppenderPtr appender)
     appenders_.push_back(appender) ;
 }
 
-void Logger::writex(LogLevel level, const LogContext &ctx, const string &message)
+
+
+void Logger::writex(LogLevel level, const LogContext *ctx, const string &message)
 {
 //    boost::mutex::scoped_lock lock(lock_) ;
 
@@ -344,10 +339,10 @@ LogStreamAppender::LogStreamAppender(LogLevel levelThreshold, LogFormatterPtr fo
 
 }
 
-void LogStreamAppender::append(LogLevel level, const LogContext &ctx, const string &message)
+void LogStreamAppender::append(LogLevel level, const LogContext *ctx, const string &message)
 {
     if ( canAppend(level) )
-        strm_ << formattedMessage(level, ctx, message) << endl ;
+         strm_ << formattedMessage(level, ctx, message) << endl ;
 }
 
 #define MAX_BACKUP_INDEX 20
@@ -400,7 +395,7 @@ static string makeOutFilename(const string &name, uint num) {
     return stream.str() ;
 }
 
-void LogFileAppender::append(LogLevel level, const LogContext &ctx, const string &message)
+void LogFileAppender::append(LogLevel level, const LogContext *ctx, const string &message)
 {
     if ( !canAppend(level) ) return ;
 
@@ -490,13 +485,17 @@ public:
 };
 #endif
 
-Logger &defaultLogger() {
+std::unique_ptr<Logger> Logger::user_logger_ ;
 
-    static DefaultLogger default_logger  ;
-
-    return default_logger ;
+Logger &Logger::instance() {
+    static DefaultLogger default_logger_ ;
+    if ( !user_logger_ ) return default_logger_ ;
+    else return *user_logger_ ;
 }
 
+LoggerStream::~LoggerStream()  {
+    logger_.writex(level_, ctx_, str()) ;
+}
 
 }
-}
+

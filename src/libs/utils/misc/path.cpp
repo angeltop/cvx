@@ -5,12 +5,9 @@
 #include <cassert>
 #include <memory>
 
-
-
 using namespace std ;
 
 namespace cvx {
-namespace util {
 
 Path::Path(const std::string &filepath) {
     parse(filepath) ;
@@ -205,4 +202,4 @@ Path Path::tempFilePath(const std::string &prefix, const std::string &suffix) {
 }
 
 }
-}
+

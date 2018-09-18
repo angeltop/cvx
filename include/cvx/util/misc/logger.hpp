@@ -1,5 +1,5 @@
-#ifndef __LOGGER_HPP__
-#define __LOGGER_HPP__
+#ifndef __CVX_UTIL_LOGGER_HPP__
+#define __CVX_UTIL_LOGGER_HPP__
 
 #include <iostream>
 #include <mutex>
@@ -9,7 +9,6 @@
 #include <sstream>
 
 namespace cvx {
-namespace util {
 
 // Context of application logging passed with its log message to the logger
 
@@ -32,7 +31,7 @@ public:
 
     LogFormatter() {}
 
-    virtual std::string format(LogLevel level, const LogContext &ctx, const std::string &message) = 0 ;
+    virtual std::string format(LogLevel level, const LogContext *ctx, const std::string &message) = 0 ;
 };
 
 typedef std::shared_ptr<LogFormatter> LogFormatterPtr ;
@@ -66,7 +65,7 @@ public:
 
 protected:
 
-    virtual std::string format(LogLevel level, const LogContext &ctx, const std::string &message) ;
+    virtual std::string format(LogLevel level, const LogContext *ctx, const std::string &message) ;
 
 private:
 
@@ -104,13 +103,13 @@ public:
 
 protected:
 
-    std::string formattedMessage(LogLevel level, const LogContext &ctx, const std::string &message) {
+    std::string formattedMessage(LogLevel level, const LogContext *ctx, const std::string &message) {
         return formatter_->format(level, ctx, message) ;
     }
 
 
     friend class Logger ;
-    virtual void append(LogLevel level, const LogContext &ctx, const std::string &message) = 0;
+    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) = 0;
 
 private:
 
@@ -130,7 +129,7 @@ public:
 
 protected:
 
-    virtual void append(LogLevel level, const LogContext &ctx, const std::string &message) ;
+    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) ;
 
 private:
 
@@ -149,7 +148,7 @@ public:
 
 protected:
 
-    virtual void append(LogLevel level, const LogContext &ctx, const std::string &message) ;
+    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) ;
 
 private:
 
@@ -160,67 +159,81 @@ private:
     int last_backup_file_index_, max_backup_index_;
 };
 
+
+class Logger ;
+// Helper class for encapsulated a single formatted message and implement stream like log output
+
+class LoggerStream: public std::ostringstream
+{
+public:
+
+    LoggerStream(Logger &logger, LogLevel level, const LogContext *ctx): logger_(logger),
+    ctx_(ctx), level_(level) {}
+
+    LoggerStream(const LoggerStream& ls) :
+        logger_(ls.logger_), level_(ls.level_), ctx_(ls.ctx_) {
+    }
+
+    ~LoggerStream();
+
+private:
+
+    Logger &logger_ ;
+    const LogContext *ctx_ ;
+    LogLevel level_ ;
+
+} ;
+
 // Main logger class. Forwards messages to appenders.
+
 
 class Logger
 {
-
 public:
 
     Logger();
 
     // write a log message
 
-    void write(LogLevel level, const LogContext &ctx, const char *format, ...) ;
+    void write(LogLevel level, const LogContext &ctx, const std::string &msg) ;
+    void write(LogLevel level, const std::string &msg) ;
+
+    LoggerStream operator()(LogLevel level, const LogContext &ctx) {
+        return LoggerStream(*this, level, &ctx);
+    }
+
+    LoggerStream operator()(LogLevel level) {
+        return LoggerStream(*this, level, nullptr);
+    }
 
     void addAppender(LogAppenderPtr appender);
+
+    // get global logger
+    static Logger &instance() ;
+
+    // set global logger
+    static void setInstance(Logger *logger) {
+        user_logger_.reset(logger) ;
+    }
 
 protected:
 
     friend class LoggerStream ;
 
-    void writex(LogLevel level, const LogContext &ctx, const std::string &message) ;
+    void writex(LogLevel level, const LogContext *ctx, const std::string &message) ;
 
     std::mutex lock_ ;
     std::vector<LogAppenderPtr> appenders_ ;
+
+    static std::unique_ptr<Logger> user_logger_ ;
 };
 
-// Helper class for encapsulated a single formatted message and implement stream like log output
 
-class LoggerStream
-{
-public:
 
-    LoggerStream(Logger &logger, LogLevel level, const LogContext &ctx): logger_(logger),
-    ctx_(ctx), level_(level) {}
 
-    template <typename T>
-    LoggerStream &operator << (const T& data)
-    {
-        messageBuffer << data ;
-        return *this ;
-    }
-
-    ~LoggerStream()  {
-        logger_.writex(level_, ctx_, messageBuffer.str()) ;
-    }
-
-private:
-
-    std::ostringstream messageBuffer ;
-
-    Logger &logger_ ;
-    const LogContext &ctx_ ;
-    LogLevel level_ ;
-
-} ;
-
-// get the default logger
-Logger &defaultLogger() ;
-
-#define LOG_X_STREAM(logger, level, msg) certh_core::LoggerStream(logger, level, certh_core::LogContext(__FILE__, __LINE__, __FUNCTION__)) << msg ;
+#define LOG_X_STREAM(logger, level, msg) cvx::LoggerStream(logger, level, cvx::LogContext(__FILE__, __LINE__, __FUNCTION__)) << msg ;
 #define LOG_X_STREAM_IF(logger, level, condition, msg) if ( ! (condition) ) ; else LOG_X_STREAM(logger, level, msg) ;
-#define LOG_X_FORMAT(logger, level, format, ...) logger.write(level, certh_core::LogContext(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__) ;
+#define LOG_X_FORMAT(logger, level, format, ...) logger.write(level, cvx::LogContext(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__) ;
 #define LOG_X_FORMAT_IF(logger, level, condition, format, ...) if ( !(condition)) ; else logger.write(level, LogContext(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__) ;
 
 #define LOG_X_STREAM_EVERY_N(logger, level, n, msg)\
@@ -281,39 +294,39 @@ do {\
     if ( ! ( condition ) ) ; else LOG_X_FORMAT_FIRST_N(logger, level, n, msg) ;
 
 #ifndef NO_DEBUG_LOGGING
-#define LOG_TRACE_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Trace, msg)
-#define LOG_TRACE_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Trace, condition, msg)
-#define LOG_TRACE(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Trace, format, ##__VA_ARGS__)
-#define LOG_TRACE_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Trace, condition, format, ##__VA_ARGS__)
-#define LOG_TRACE_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Trace, n, msg)
-#define LOG_TRACE_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Trace, msg)
-#define LOG_TRACE_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Trace, n, msg)
-#define LOG_TRACE_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Trace, n, msg)
-#define LOG_TRACE_ONCE(msg, ...) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Trace, msg)
-#define LOG_TRACE_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Trace, n, msg)
-#define LOG_TRACE_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Trace, n, condition, msg)
-#define LOG_TRACE_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Trace, condition, msg)
-#define LOG_TRACE_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Trace, n, condition, msg)
-#define LOG_TRACE_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Trace, n, condition, msg)
-#define LOG_TRACE_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Trace, condition, msg)
-#define LOG_TRACE_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Trace, n, condition, msg)
+#define LOG_TRACE_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Trace, msg)
+#define LOG_TRACE_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
+#define LOG_TRACE(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Trace, format, ##__VA_ARGS__)
+#define LOG_TRACE_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Trace, condition, format, ##__VA_ARGS__)
+#define LOG_TRACE_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+#define LOG_TRACE_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Trace, msg)
+#define LOG_TRACE_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+#define LOG_TRACE_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+#define LOG_TRACE_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Trace, msg)
+#define LOG_TRACE_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+#define LOG_TRACE_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+#define LOG_TRACE_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
+#define LOG_TRACE_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+#define LOG_TRACE_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+#define LOG_TRACE_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
+#define LOG_TRACE_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
 
-#define LOG_DEBUG_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Debug, msg)
-#define LOG_DEBUG_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Debug, condition, msg)
-#define LOG_DEBUG(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Debug, format, ##__VA_ARGS__)
-#define LOG_DEBUG_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Debug, condition, format, ##__VA_ARGS__)
-#define LOG_DEBUG_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Debug, n, msg)
-#define LOG_DEBUG_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Debug, msg)
-#define LOG_DEBUG_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Debug, n, msg)
-#define LOG_DEBUG_EVERY_N(n, msg) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Debug, n, msg)
-#define LOG_DEBUG_ONCE(msg) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Debug, msg)
-#define LOG_DEBUG_FIRST_N(n, msg) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Debug, n, msg)
-#define LOG_DEBUG_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Debug, n, condition, msg)
-#define LOG_DEBUG_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Debug, condition, msg)
-#define LOG_DEBUG_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Debug, n, condition, msg)
-#define LOG_DEBUG_EVERY_N_IF(n, condition, msg) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Debug, n, condition, msg)
-#define LOG_DEBUG_ONCE_IF(condition, msg) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Debug, condition, msg)
-#define LOG_DEBUG_FIRST_N_IF(n, condition, msg) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Debug, n, condition, msg)
+#define LOG_DEBUG_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Debug, msg)
+#define LOG_DEBUG_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
+#define LOG_DEBUG(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Debug, format, ##__VA_ARGS__)
+#define LOG_DEBUG_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Debug, condition, format, ##__VA_ARGS__)
+#define LOG_DEBUG_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+#define LOG_DEBUG_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Debug, msg)
+#define LOG_DEBUG_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+#define LOG_DEBUG_EVERY_N(n, msg) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+#define LOG_DEBUG_ONCE(msg) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Debug, msg)
+#define LOG_DEBUG_FIRST_N(n, msg) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+#define LOG_DEBUG_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
+#define LOG_DEBUG_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
+#define LOG_DEBUG_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
+#define LOG_DEBUG_EVERY_N_IF(n, condition, msg) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
+#define LOG_DEBUG_ONCE_IF(condition, msg) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
+#define LOG_DEBUG_FIRST_N_IF(n, condition, msg) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
 #else // debug and trace messages are compiled out
 #define LOG_TRACE_STREAM(msg)
 #define LOG_TRACE_STREAM_IF(condition, msg)
@@ -350,75 +363,75 @@ do {\
 #define LOG_DEBUG_FIRST_N_IF(n, condition, msg, ...)
 #endif
 
-#define LOG_INFO_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Info, msg)
-#define LOG_INFO_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Info, condition, msg)
-#define LOG_INFO(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Info, format, ##__VA_ARGS__)
-#define LOG_INFO_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Info, condition, format, ##__VA_ARGS__)
-#define LOG_INFO_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Info, n, msg)
-#define LOG_INFO_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Info, msg)
-#define LOG_INFO_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Info, n, msg)
-#define LOG_INFO_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Info, n, msg, ##__VA_ARGS__)
-#define LOG_INFO_ONCE(msg, ...) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Info, msg, ##__VA_ARGS__)
-#define LOG_INFO_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Info, n, msg, ##__VA_ARGS__)
-#define LOG_INFO_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Info, n, condition, msg)
-#define LOG_INFO_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Info, condition, msg)
-#define LOG_INFO_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Info, n, condition, msg)
-#define LOG_INFO_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Info, n, condition, msg, ##__VA_ARGS__)
-#define LOG_INFO_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Info, condition, msg, ##__VA_ARGS__)
-#define LOG_INFO_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Info, n, condition, msg, ##__VA_ARGS__)
+#define LOG_INFO_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Info, msg)
+#define LOG_INFO_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
+#define LOG_INFO(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Info, format, ##__VA_ARGS__)
+#define LOG_INFO_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Info, condition, format, ##__VA_ARGS__)
+#define LOG_INFO_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Info, n, msg)
+#define LOG_INFO_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Info, msg)
+#define LOG_INFO_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Info, n, msg)
+#define LOG_INFO_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Info, n, msg, ##__VA_ARGS__)
+#define LOG_INFO_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Info, msg, ##__VA_ARGS__)
+#define LOG_INFO_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Info, n, msg, ##__VA_ARGS__)
+#define LOG_INFO_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
+#define LOG_INFO_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
+#define LOG_INFO_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
+#define LOG_INFO_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg, ##__VA_ARGS__)
+#define LOG_INFO_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Info, condition, msg, ##__VA_ARGS__)
+#define LOG_INFO_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg, ##__VA_ARGS__)
 
-#define LOG_WARN_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Warning, msg)
-#define LOG_WARN_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Warning, condition, msg)
-#define LOG_WARN(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Warning, format, ##__VA_ARGS__)
-#define LOG_WARN_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Warning, condition, format, ##__VA_ARGS__)
-#define LOG_WARN_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Warning, n, msg)
-#define LOG_WARN_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Warning, msg)
-#define LOG_WARN_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Warning, n, msg)
-#define LOG_WARN_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Warning, n, msg)
-#define LOG_WARN_ONCE(msg, ...) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Warning, msg, ##__VA_ARGS__)
-#define LOG_WARN_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Warning, n, msg, ##__VA_ARGS__)
-#define LOG_WARN_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Warning, n, condition, msg)
-#define LOG_WARN_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Warning, condition, msg)
-#define LOG_WARN_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Warning, n, condition, msg)
-#define LOG_WARN_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Warning, n, condition, msg, ##__VA_ARGS__)
-#define LOG_WARN_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Warning, condition, msg, ##__VA_ARGS__)
-#define LOG_WARN_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Warning, n, condition, msg, ##__VA_ARGS__)
+#define LOG_WARN_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Warning, msg)
+#define LOG_WARN_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
+#define LOG_WARN(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Warning, format, ##__VA_ARGS__)
+#define LOG_WARN_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Warning, condition, format, ##__VA_ARGS__)
+#define LOG_WARN_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Warning, n, msg)
+#define LOG_WARN_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Warning, msg)
+#define LOG_WARN_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Warning, n, msg)
+#define LOG_WARN_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Warning, n, msg)
+#define LOG_WARN_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Warning, msg, ##__VA_ARGS__)
+#define LOG_WARN_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Warning, n, msg, ##__VA_ARGS__)
+#define LOG_WARN_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
+#define LOG_WARN_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
+#define LOG_WARN_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
+#define LOG_WARN_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg, ##__VA_ARGS__)
+#define LOG_WARN_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Warning, condition, msg, ##__VA_ARGS__)
+#define LOG_WARN_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg, ##__VA_ARGS__)
 
-#define LOG_ERROR_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Error, msg)
-#define LOG_ERROR_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Error, condition, msg)
-#define LOG_ERROR(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Error, format, ##__VA_ARGS__)
-#define LOG_ERROR_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Error, condition, format, ##__VA_ARGS__)
-#define LOG_ERROR_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Error, n, msg)
-#define LOG_ERROR_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Error, msg)
-#define LOG_ERROR_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Error, n, msg)
-#define LOG_ERROR_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Error, n, msg, ##__VA_ARGS__)
-#define LOG_ERROR_ONCE(msg, ...) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Error, msg, ##__VA_ARGS__)
-#define LOG_ERROR_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Error, n, msg, ##__VA_ARGS__)
-#define LOG_ERROR_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Error, n, condition, msg)
-#define LOG_ERROR_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Error, condition, msg)
-#define LOG_ERROR_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Error, n, condition, msg)
-#define LOG_ERROR_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Error, n, condition, msg, ##__VA_ARGS__)
-#define LOG_ERROR_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Error, condition, msg, ##__VA_ARGS__)
-#define LOG_ERROR_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Error, n, condition, msg, ##__VA_ARGS__)
+#define LOG_ERROR_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Error, msg)
+#define LOG_ERROR_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
+#define LOG_ERROR(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Error, format, ##__VA_ARGS__)
+#define LOG_ERROR_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Error, condition, format, ##__VA_ARGS__)
+#define LOG_ERROR_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Error, n, msg)
+#define LOG_ERROR_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Error, msg)
+#define LOG_ERROR_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Error, n, msg)
+#define LOG_ERROR_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Error, n, msg, ##__VA_ARGS__)
+#define LOG_ERROR_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Error, msg, ##__VA_ARGS__)
+#define LOG_ERROR_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Error, n, msg, ##__VA_ARGS__)
+#define LOG_ERROR_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
+#define LOG_ERROR_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
+#define LOG_ERROR_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
+#define LOG_ERROR_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg, ##__VA_ARGS__)
+#define LOG_ERROR_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Error, condition, msg, ##__VA_ARGS__)
+#define LOG_ERROR_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg, ##__VA_ARGS__)
 
-#define LOG_FATAL_STREAM(msg) LOG_X_STREAM(certh_core::Application::logger(), certh_core::Fatal, msg)
-#define LOG_FATAL_STREAM_IF(condition, msg) LOG_X_STREAM_IF(certh_core::Application::logger(), certh_core::Fatal, condition, msg)
-#define LOG_FATAL(format, ...) LOG_X_FORMAT(certh_core::Application::logger(), certh_core::Fatal, format, ##__VA_ARGS__)
-#define LOG_FATAL_IF(condition, format, ...) LOG_X_FORMAT_IF(certh_core::Application::logger(), certh_core::Fatal, condition, format, ##__VA_ARGS__)
-#define LOG_FATAL_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(certh_core::Application::logger(), certh_core::Fatal, n, msg)
-#define LOG_FATAL_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(certh_core::Application::logger(), certh_core::Fatal, msg)
-#define LOG_FATAL_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(certh_core::Application::logger(), certh_core::Fatal, n, msg)
-#define LOG_FATAL_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(certh_core::Application::logger(), certh_core::Fatal, n, msg, ##__VA_ARGS__)
-#define LOG_FATAL_ONCE(msg, ...) LOG_X_FORMAT_ONCE(certh_core::Application::logger(), certh_core::Fatal, msg, ##__VA_ARGS__)
-#define LOG_FATAL_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(certh_core::Application::logger(), certh_core::Fatal, n, msg, ##__VA_ARGS__)
-#define LOG_FATAL_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(certh_core::Application::logger(), certh_core::Fatal, n, condition, msg)
-#define LOG_FATAL_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(certh_core::Application::logger(), certh_core::Fatal, condition, msg)
-#define LOG_FATAL_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(certh_core::Application::logger(), certh_core::Fatal, n, condition, msg)
-#define LOG_FATAL_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(certh_core::Application::logger(), certh_core::Fatal, n, condition, msg, ##__VA_ARGS__)
-#define LOG_FATAL_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(certh_core::Application::logger(), certh_core::Fatal, condition, msg, ##__VA_ARGS__)
-#define LOG_FATAL_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(certh_core::Application::logger(), certh_core::Fatal, n, condition, msg, ##__VA_ARGS__)
+#define LOG_FATAL_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Fatal, msg)
+#define LOG_FATAL_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
+#define LOG_FATAL(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Fatal, format, ##__VA_ARGS__)
+#define LOG_FATAL_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Fatal, condition, format, ##__VA_ARGS__)
+#define LOG_FATAL_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
+#define LOG_FATAL_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Fatal, msg)
+#define LOG_FATAL_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
+#define LOG_FATAL_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Fatal, n, msg, ##__VA_ARGS__)
+#define LOG_FATAL_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Fatal, msg, ##__VA_ARGS__)
+#define LOG_FATAL_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Fatal, n, msg, ##__VA_ARGS__)
+#define LOG_FATAL_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
+#define LOG_FATAL_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
+#define LOG_FATAL_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
+#define LOG_FATAL_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg, ##__VA_ARGS__)
+#define LOG_FATAL_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg, ##__VA_ARGS__)
+#define LOG_FATAL_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg, ##__VA_ARGS__)
 
-} // namespace util
+
 } // namespace cvx
 
 

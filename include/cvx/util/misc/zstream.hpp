@@ -16,16 +16,13 @@
 #include <sstream>
 #include <zlib.h>
 
-namespace cvx { namespace util {
-
+namespace cvx {
 
 /// Exception class thrown by failed zlib operations.
-class Exception
-    : public std::exception
+class ZStreamException: public std::exception
 {
 public:
-    Exception(z_stream * zstrm_p, int ret)
-        : _msg("zlib: ")
+    ZStreamException(z_stream * zstrm_p, int ret): _msg("zlib: ")
     {
         switch (ret)
         {
@@ -52,11 +49,11 @@ public:
         }
         _msg += zstrm_p->msg;
     }
-    Exception(const std::string msg) : _msg(msg) {}
+    ZStreamException(const std::string msg) : _msg(msg) {}
     const char * what() const noexcept { return _msg.c_str(); }
 private:
     std::string _msg;
-}; // class Exception
+};
 
 namespace detail
 {
@@ -78,7 +75,7 @@ public:
         else {
             ret = deflateInit2(this, _level, Z_DEFLATED, 15+16, 8, Z_DEFAULT_STRATEGY);
         }
-        if (ret != Z_OK) throw Exception(this, ret);
+        if (ret != Z_OK) throw ZStreamException(this, ret);
     }
     ~z_stream_wrapper()
     {
@@ -176,7 +173,7 @@ public:
                     zstrm_p->avail_out = (out_buff + buff_size) - out_buff_free_start;
                     int ret = inflate(zstrm_p, Z_NO_FLUSH);
                     // process return code
-                    if (ret != Z_OK && ret != Z_STREAM_END) throw Exception(zstrm_p, ret);
+                    if (ret != Z_OK && ret != Z_STREAM_END) throw ZStreamException(zstrm_p, ret);
                     // update in&out pointers following inflate()
                     in_buff_start = reinterpret_cast< decltype(in_buff_start) >(zstrm_p->next_in);
                     in_buff_end = in_buff_start + zstrm_p->avail_in;
@@ -242,7 +239,7 @@ public:
             zstrm_p->next_out = reinterpret_cast< decltype(zstrm_p->next_out) >(out_buff);
             zstrm_p->avail_out = buff_size;
             int ret = deflate(zstrm_p, flush);
-            if (ret != Z_OK && ret != Z_STREAM_END && ret != Z_BUF_ERROR) throw Exception(zstrm_p, ret);
+            if (ret != Z_OK && ret != Z_STREAM_END && ret != Z_BUF_ERROR) throw ZStreamException(zstrm_p, ret);
             std::streamsize sz = sbuf_p->sputn(out_buff, reinterpret_cast< decltype(out_buff) >(zstrm_p->next_out) - out_buff);
             if (sz != reinterpret_cast< decltype(out_buff) >(zstrm_p->next_out) - out_buff)
             {
@@ -310,68 +307,55 @@ private:
     static const std::size_t default_buff_size = (std::size_t)1 << 20;
 }; // class ostreambuf
 
-class izstream
-    : public std::istream
+class izstream: public std::istream
 {
 public:
-    izstream(std::istream & is)
-        : std::istream(new izstreambuf(is.rdbuf()))
-    {
+    izstream(std::istream & is): std::istream(new izstreambuf(is.rdbuf()))  {
         exceptions(std::ios_base::badbit);
     }
-    explicit izstream(std::streambuf * sbuf_p)
-        : std::istream(new izstreambuf(sbuf_p))
-    {
+    explicit izstream(std::streambuf * sbuf_p): std::istream(new izstreambuf(sbuf_p)) {
         exceptions(std::ios_base::badbit);
     }
-    virtual ~izstream()
-    {
+
+    virtual ~izstream()  {
         delete rdbuf();
     }
 }; // class istream
 
-class ozstream
-    : public std::ostream
+class ozstream: public std::ostream
 {
 public:
-    ozstream(std::ostream & os)
-        : std::ostream(new ozstreambuf(os.rdbuf()))
-    {
+    ozstream(std::ostream & os): std::ostream(new ozstreambuf(os.rdbuf())) {
         exceptions(std::ios_base::badbit);
     }
-    explicit ozstream(std::streambuf * sbuf_p)
-        : std::ostream(new ozstreambuf(sbuf_p))
-    {
+
+    explicit ozstream(std::streambuf * sbuf_p): std::ostream(new ozstreambuf(sbuf_p)) {
         exceptions(std::ios_base::badbit);
     }
-    virtual ~ozstream()
-    {
+
+    virtual ~ozstream() {
         delete rdbuf();
     }
-}; // class ostream
+};
 
 
-class izfstream:
-          public std::istream
+class izfstream: public std::istream
 {
 public:
-    explicit izfstream(const std::string& filename, std::ios_base::openmode mode = std::ios_base::in)
-        : strm_(filename, mode),
-          std::istream(new izstreambuf(strm_.rdbuf()))
-    {
+    explicit izfstream(const std::string& filename, std::ios_base::openmode mode = std::ios_base::in): strm_(filename, mode),
+          std::istream(new izstreambuf(strm_.rdbuf()))  {
         exceptions(std::ios_base::badbit);
     }
-    virtual ~izfstream()
-    {
+    virtual ~izfstream()  {
         if (rdbuf()) delete rdbuf();
     }
+
 private:
     std::ifstream strm_ ;
 
-}; // class ifstream
+};
 
-class ozfstream:
-      public std::ostream
+class ozfstream:  public std::ostream
 {
 public:
     explicit ozfstream(const std::string& filename, std::ios_base::openmode mode = std::ios_base::out)
@@ -386,9 +370,9 @@ public:
     }
 private:
     std::ofstream strm_ ;
-}; // class ofstream
+};
 
-} // namespace util
+
 } // namespace cvx
 
 #endif

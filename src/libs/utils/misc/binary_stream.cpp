@@ -69,7 +69,7 @@ static void byte_swap_16(uint16_t &nValue)
 using namespace std ;
 
 namespace cvx {
-namespace util {
+
 
 IBinaryStream::IBinaryStream(std::istream &strm, bool format_little_endian): the_istream_(strm)
 {
@@ -598,4 +598,4 @@ void IBinaryStream::read(cv::Mat &m)
 }
 
 }
-}
+

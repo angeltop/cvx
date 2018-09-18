@@ -15,7 +15,6 @@
 #include <cvx/util/geometry/point.hpp>
 
 namespace cvx {
-    namespace util {
 
 // Lightweight portable binary stream on top of std::stream
 // Portability is not guaranteed on platforms with char != 8 bits and those using floating point representation other that IEEE-754
@@ -101,19 +100,6 @@ public:
         write(cols);
 
         write_bytes((const char *)m.data(), rows * cols * sizeof(_S)) ;
-    }
-
-    template<class T>
-    void write(const Point<T, 2> &p) {
-        write(p.x()) ;
-        write(p.y()) ;
-    }
-
-    template<class T>
-    void write(const Point<T, 3> &p) {
-        write(p.x()) ;
-        write(p.y()) ;
-        write(p.z()) ;
     }
 
 
@@ -211,18 +197,6 @@ public:
         read_bytes((char *)m.data(), rows * cols * sizeof(_S)) ;
     }
 
-    template <class T>
-    void read(Point<T, 2> &p) {
-        read(p.x()) ;
-        read(p.y()) ;
-    }
-
-    template <class T>
-    void read(Point<T, 3> &p) {
-        read(p.x()) ;
-        read(p.y()) ;
-        read(p.z()) ;
-    }
 
     void read(cv::Mat &m) ;
 
@@ -233,6 +207,6 @@ private:
 } ;
 
 }
-}
+
 
 #endif

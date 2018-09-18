@@ -1,11 +1,11 @@
-#ifndef __DIR_ITERATOR_HPP__
-#define __DIR_ITERATOR_HPP__
+#ifndef __CVX_UTIL_DIR_ITERATOR_HPP__
+#define __CVX_UTIL_DIR_ITERATOR_HPP__
 
 #include <string>
 #include <functional>
 #include <memory>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 class DirectoryIteratorImpl ;
 class Path ;
@@ -20,6 +20,8 @@ public:
     std::string path() const { return path_ ; }
     bool isDirectory() const { return type_ == Dir ; }
 
+    operator std::string () const { return path_ ; }
+
 private:
 
     friend class DirectoryIteratorImpl ;
@@ -33,23 +35,19 @@ private:
 // custom filter function for directory iterators ( return true to accept a file and false to skip it)
 typedef std::function<bool (const DirectoryEntry &)> DirectoryFilter ;
 
-// filter matching all entries
-inline DirectoryFilter matchAllFilter() {
-    return [](const DirectoryEntry &) {return true ; } ;
-}
-
-inline DirectoryFilter matchDirectories() {
-    return [](const DirectoryEntry &e) {return e.isDirectory() ; } ;
-}
-
-// creates a filter that matches filenames agains a list of glob patterns (delimited by ';')
-DirectoryFilter matchFilesWithGlobPattern(const std::string &glob_pattern) ;
+class DirectoryFilters {
+public:
+    // filter matching all entries
+    static const DirectoryFilter MatchAll  ;
+    static const DirectoryFilter MatchDirectories ;
+    static const DirectoryFilter MatchFilesWithGlobPattern(const std::string &glob_pattern) ;
+};
 
 // iterator class
 class DirectoryIterator: public std::iterator<std::forward_iterator_tag, DirectoryEntry> {
    public:
 
-    DirectoryIterator(const std::string &dir, DirectoryFilter filter = matchAllFilter() ) ;
+    DirectoryIterator(const std::string &dir, DirectoryFilter filter = DirectoryFilters::MatchAll ) ;
     DirectoryIterator() ;
 
     const DirectoryEntry& operator*() const ;
@@ -73,8 +71,12 @@ class DirectoryListing {
 public:
 
     DirectoryListing(const std::string &dir,
-                     DirectoryFilter filter = matchAllFilter()):
+                     DirectoryFilter filter = DirectoryFilters::MatchAll):
         dir_(dir), filter_(filter) {}
+
+    DirectoryListing(const Path &dir,
+                     DirectoryFilter filter = DirectoryFilters::MatchAll) ;
+
 
     DirectoryIterator begin() { return DirectoryIterator(dir_, filter_) ; }
     DirectoryIterator end() { return DirectoryIterator() ; }
@@ -85,6 +87,6 @@ private:
 };
 
 
-}}
+}
 
 #endif

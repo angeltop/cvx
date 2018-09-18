@@ -7,14 +7,15 @@
 
 #include <cvx/util/misc/strings.hpp>
 #include <cvx/util/misc/zstream.hpp>
+#include <cvx/util/misc/logger.hpp>
 
 using namespace std ;
-using namespace cvx::util ;
+using namespace cvx ;
 
-void list_dirs_recursive(const std::string &base) {
+void list_dirs_recursive(const Path &base) {
     for( auto &e: DirectoryListing(base) ) {
 
-        string p = base + '/' + e.path() ;
+        Path p(base, e) ;
 
         if ( e.isDirectory() ) {
 
@@ -49,6 +50,10 @@ ostream &operator << (ostream &strm, const std::vector<int> &data)  {
 
 int main(int argc, const char *argv[]) {
 
+   // list_dirs_recursive(Path("/home/malasiot/source/maplite")) ;
+
+    Logger::instance()(LogLevel::Error, LogContext(__FILE__, __LINE__, "dkkd"))  << 123 << ' ' << 233 ;
+
     string text = "hello gzip" ;
 
     stringstream tstream ;
@@ -62,7 +67,7 @@ int main(int argc, const char *argv[]) {
     string decomp = read(istrm) ;
 
     cout << Path("/etc/mtab").canonical() << endl ;
-    vector<string> res = Path::entries("/home/malasiot/Downloads/", matchFilesWithGlobPattern("e6*.png")) ;
+    vector<string> res = Path::glob("/home/malasiot/Downloads/", "e6*.png") ;
    cout << Path::tempFilePath("xx", ".png") << endl ;
 
 }
