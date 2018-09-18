@@ -18,8 +18,8 @@ struct LogContext
         file_(file_name), line_(line_num), context_(context), thread_id_(0) {}
 
     uint line_ ;
-    std::string file_ ;
-    std::string context_ ;
+    const char *file_ ;
+    const char *context_ ;
     int thread_id_ ;
 } ;
 
@@ -167,7 +167,7 @@ class LoggerStream: public std::ostringstream
 {
 public:
 
-    LoggerStream(Logger &logger, LogLevel level, const LogContext *ctx): logger_(logger),
+    LoggerStream(Logger &logger, LogLevel level, const LogContext *ctx = nullptr): logger_(logger),
     ctx_(ctx), level_(level) {}
 
     LoggerStream(const LoggerStream& ls) :
@@ -231,10 +231,8 @@ protected:
 
 
 
-#define LOG_X_STREAM(logger, level, msg) cvx::LoggerStream(logger, level, cvx::LogContext(__FILE__, __LINE__, __FUNCTION__)) << msg ;
+#define LOG_X_STREAM(logger, level, msg) logger(level, cvx::LogContext(__FILE__, __LINE__, __FUNCTION__)) << msg ;
 #define LOG_X_STREAM_IF(logger, level, condition, msg) if ( ! (condition) ) ; else LOG_X_STREAM(logger, level, msg) ;
-#define LOG_X_FORMAT(logger, level, format, ...) logger.write(level, cvx::LogContext(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__) ;
-#define LOG_X_FORMAT_IF(logger, level, condition, format, ...) if ( !(condition)) ; else logger.write(level, LogContext(__FILE__, __LINE__, __FUNCTION__), format, ##__VA_ARGS__) ;
 
 #define LOG_X_STREAM_EVERY_N(logger, level, n, msg)\
 do {\
@@ -258,28 +256,7 @@ do {\
     if ( _log_occurences <= n ) \
     LOG_X_STREAM(logger, level, msg) ;\
 } while (0) ;
-#define LOG_X_FORMAT_EVERY_N(logger, level, n, format, ...)\
-do {\
-  static int _log_occurences = 0, _log_occurences_mod_n = 0; \
-  ++_log_occurences; \
-  if ( ++_log_occurences_mod_n > n) _log_occurences_mod_n -= n; \
-  if ( _log_occurences_mod_n == 1 ) \
-    LOG_X_FORMAT(logger, level, format, ##__VA_ARGS__) ;\
-} while (0) ;
-#define LOG_X_FORMAT_ONCE(logger, level, format, ...)\
-do {\
-  static bool _logged_already = false; \
-  if ( !_logged_already ) \
-    LOG_X_FORMAT(logger, level, format, ##__VA_ARGS__) ;\
-  _logged_already = true ;\
-} while (0) ;
-#define LOG_X_FORMAT_FIRST_N(logger, level, n, format, ...)\
-do {\
-    static int _log_occurences = 0; \
-    if ( _log_occurences <= n ) ++_log_occurences ; \
-    if ( _log_occurences <= n ) \
-    LOG_X_FORMAT(logger, level, format, ##__VA_ARGS__) ;\
-} while (0) ;
+
 #define LOG_X_STREAM_EVERY_N_IF(logger, level, n, condition, msg)\
     if ( ! ( condition ) ) ; else LOG_X_STREAM_EVERY_N(logger, level, n, msg) ;
 #define LOG_X_STREAM_ONCE_IF(logger, level, condition, msg)\
@@ -294,142 +271,83 @@ do {\
     if ( ! ( condition ) ) ; else LOG_X_FORMAT_FIRST_N(logger, level, n, msg) ;
 
 #ifndef NO_DEBUG_LOGGING
-#define LOG_TRACE_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Trace, msg)
-#define LOG_TRACE_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
-#define LOG_TRACE(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Trace, format, ##__VA_ARGS__)
-#define LOG_TRACE_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Trace, condition, format, ##__VA_ARGS__)
-#define LOG_TRACE_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Trace, n, msg)
-#define LOG_TRACE_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Trace, msg)
-#define LOG_TRACE_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Trace, n, msg)
-#define LOG_TRACE_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Trace, n, msg)
-#define LOG_TRACE_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Trace, msg)
-#define LOG_TRACE_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Trace, n, msg)
-#define LOG_TRACE_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
-#define LOG_TRACE_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
-#define LOG_TRACE_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
-#define LOG_TRACE_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
-#define LOG_TRACE_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
-#define LOG_TRACE_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+#define LOG_TRACE(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Trace, msg)
+#define LOG_TRACE_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
 
-#define LOG_DEBUG_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Debug, msg)
-#define LOG_DEBUG_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
-#define LOG_DEBUG(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Debug, format, ##__VA_ARGS__)
-#define LOG_DEBUG_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Debug, condition, format, ##__VA_ARGS__)
-#define LOG_DEBUG_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Debug, n, msg)
-#define LOG_DEBUG_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Debug, msg)
-#define LOG_DEBUG_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Debug, n, msg)
-#define LOG_DEBUG_EVERY_N(n, msg) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Debug, n, msg)
-#define LOG_DEBUG_ONCE(msg) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Debug, msg)
-#define LOG_DEBUG_FIRST_N(n, msg) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Debug, n, msg)
-#define LOG_DEBUG_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
-#define LOG_DEBUG_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
-#define LOG_DEBUG_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
-#define LOG_DEBUG_EVERY_N_IF(n, condition, msg) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
-#define LOG_DEBUG_ONCE_IF(condition, msg) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
-#define LOG_DEBUG_FIRST_N_IF(n, condition, msg) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
+#define LOG_TRACE_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+#define LOG_TRACE_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Trace, msg)
+#define LOG_TRACE_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Trace, n, msg)
+
+#define LOG_TRACE_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+#define LOG_TRACE_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Trace, condition, msg)
+#define LOG_TRACE_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Trace, n, condition, msg)
+
+#define LOG_DEBUG(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Debug, msg)
+#define LOG_DEBUG_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
+
+#define LOG_DEBUG_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+#define LOG_DEBUG_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Debug, msg)
+#define LOG_DEBUG_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Debug, n, msg)
+
+#define LOG_DEBUG_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
+#define LOG_DEBUG_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Debug, condition, msg)
+#define LOG_DEBUG_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Debug, n, condition, msg)
 #else // debug and trace messages are compiled out
-#define LOG_TRACE_STREAM(msg)
-#define LOG_TRACE_STREAM_IF(condition, msg)
-#define LOG_TRACE(format, ...)
-#define LOG_TRACE_IF(condition, format, ...)
-#define LOG_TRACE_STREAM_EVERY_N(n, msg)
-#define LOG_TRACE_STREAM_ONCE(msg)
-#define LOG_TRACE_STREAM_FIRST_N(n, msg)
-#define LOG_TRACE_EVERY_N(n, msg, ...)
-#define LOG_TRACE_ONCE(msg, ...)
-#define LOG_TRACE_FIRST_N(n, msg, ...)
-#define LOG_TRACE_STREAM_EVERY_N_IF(n, conditions, msg)
-#define LOG_TRACE_STREAM_ONCE_IF(condition, msg)
-#define LOG_TRACE_STREAM_FIRST_N_IF(n, condition, msg)
-#define LOG_TRACE_EVERY_N_IF(n, condition, msg, ...)
-#define LOG_TRACE_ONCE_IF(condition, msg, ...)
-#define LOG_TRACE_FIRST_N_IF(n, condition, msg, ...)
+#define LOG_TRACE(msg)
+#define LOG_TRACE_IF(condition, msg)
 
-#define LOG_DEBUG_STREAM(msg)
-#define LOG_DEBUG_STREAM_IF(condition, msg)
-#define LOG_DEBUG(format, ...)
-#define LOG_DEBUG_IF(condition, format, ...)
-#define LOG_DEBUG_STREAM_EVERY_N(n, msg)
-#define LOG_DEBUG_STREAM_ONCE(msg)
-#define LOG_DEBUG_STREAM_FIRST_N(n, msg)
-#define LOG_DEBUG_EVERY_N(n, msg, ...)
-#define LOG_DEBUG_ONCE(msg, ...)
-#define LOG_DEBUG_FIRST_N(n, msg, ...)
-#define LOG_DEBUG_STREAM_EVERY_N_IF(n, conditions, msg)
-#define LOG_DEBUG_STREAM_ONCE_IF(condition, msg)
-#define LOG_DEBUG_STREAM_FIRST_N_IF(n, condition, msg)
-#define LOG_DEBUG_EVERY_N_IF(n, condition, msg, ...)
-#define LOG_DEBUG_ONCE_IF(condition, msg, ...)
-#define LOG_DEBUG_FIRST_N_IF(n, condition, msg, ...)
+#define LOG_TRACE_EVERY_N(n, msg)
+#define LOG_TRACE_ONCE(msg)
+#define LOG_TRACE_FIRST_N(n, msg)
+#define LOG_TRACE_EVERY_N_IF(n, conditions, msg)
+#define LOG_TRACE_ONCE_IF(condition, msg)
+#define LOG_TRACE_FIRST_N_IF(n, condition, msg)
+
+#define LOG_DEBUG(msg)
+#define LOG_DEBUG_IF(condition, msg)
+#define LOG_DEBUG_EVERY_N(n, msg)
+#define LOG_DEBUG_ONCE(msg)
+#define LOG_DEBUG_FIRST_N(n, msg)
+#define LOG_DEBUG_EVERY_N_IF(n, conditions, msg)
+#define LOG_DEBUG_ONCE_IF(condition, msg)
+#define LOG_DEBUG_FIRST_N_IF(n, condition, msg)
 #endif
 
-#define LOG_INFO_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Info, msg)
-#define LOG_INFO_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
-#define LOG_INFO(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Info, format, ##__VA_ARGS__)
-#define LOG_INFO_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Info, condition, format, ##__VA_ARGS__)
-#define LOG_INFO_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Info, n, msg)
-#define LOG_INFO_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Info, msg)
-#define LOG_INFO_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Info, n, msg)
-#define LOG_INFO_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Info, n, msg, ##__VA_ARGS__)
-#define LOG_INFO_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Info, msg, ##__VA_ARGS__)
-#define LOG_INFO_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Info, n, msg, ##__VA_ARGS__)
-#define LOG_INFO_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
-#define LOG_INFO_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
-#define LOG_INFO_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
-#define LOG_INFO_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg, ##__VA_ARGS__)
-#define LOG_INFO_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Info, condition, msg, ##__VA_ARGS__)
-#define LOG_INFO_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg, ##__VA_ARGS__)
+#define LOG_INFO(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Info, msg)
+#define LOG_INFO_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
+#define LOG_INFO_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Info, n, msg)
+#define LOG_INFO_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Info, msg)
+#define LOG_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Info, n, msg)
+#define LOG_INFO_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
+#define LOG_INFO_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Info, condition, msg)
+#define LOG_INFO_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Info, n, condition, msg)
 
-#define LOG_WARN_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Warning, msg)
-#define LOG_WARN_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
-#define LOG_WARN(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Warning, format, ##__VA_ARGS__)
-#define LOG_WARN_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Warning, condition, format, ##__VA_ARGS__)
-#define LOG_WARN_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Warning, n, msg)
-#define LOG_WARN_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Warning, msg)
-#define LOG_WARN_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Warning, n, msg)
-#define LOG_WARN_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Warning, n, msg)
-#define LOG_WARN_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Warning, msg, ##__VA_ARGS__)
-#define LOG_WARN_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Warning, n, msg, ##__VA_ARGS__)
-#define LOG_WARN_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
-#define LOG_WARN_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
-#define LOG_WARN_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
-#define LOG_WARN_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg, ##__VA_ARGS__)
-#define LOG_WARN_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Warning, condition, msg, ##__VA_ARGS__)
-#define LOG_WARN_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg, ##__VA_ARGS__)
+#define LOG_WARN(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Warning, msg)
+#define LOG_WARN_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
+#define LOG_WARN_VERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Warning, n, msg)
+#define LOG_WARN_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Warning, msg)
+#define LOG_WARN_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Warning, n, msg)
+#define LOG_WARN_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
+#define LOG_WARN_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Warning, condition, msg)
+#define LOG_WARN_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Warning, n, condition, msg)
 
-#define LOG_ERROR_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Error, msg)
-#define LOG_ERROR_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
-#define LOG_ERROR(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Error, format, ##__VA_ARGS__)
-#define LOG_ERROR_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Error, condition, format, ##__VA_ARGS__)
-#define LOG_ERROR_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Error, n, msg)
-#define LOG_ERROR_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Error, msg)
-#define LOG_ERROR_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Error, n, msg)
-#define LOG_ERROR_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Error, n, msg, ##__VA_ARGS__)
-#define LOG_ERROR_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Error, msg, ##__VA_ARGS__)
-#define LOG_ERROR_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Error, n, msg, ##__VA_ARGS__)
-#define LOG_ERROR_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
-#define LOG_ERROR_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
-#define LOG_ERROR_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
-#define LOG_ERROR_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg, ##__VA_ARGS__)
-#define LOG_ERROR_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Error, condition, msg, ##__VA_ARGS__)
-#define LOG_ERROR_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg, ##__VA_ARGS__)
+#define LOG_ERROR(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Error, msg)
+#define LOG_ERROR_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
+#define LOG_ERROR_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Error, n, msg)
+#define LOG_ERROR_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Error, msg)
+#define LOG_ERROR_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Error, n, msg)
+#define LOG_ERROR_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
+#define LOG_ERROR_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Error, condition, msg)
+#define LOG_ERROR_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Error, n, condition, msg)
 
-#define LOG_FATAL_STREAM(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Fatal, msg)
-#define LOG_FATAL_STREAM_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
-#define LOG_FATAL(format, ...) LOG_X_FORMAT(cvx::Logger::instance(), cvx::Fatal, format, ##__VA_ARGS__)
-#define LOG_FATAL_IF(condition, format, ...) LOG_X_FORMAT_IF(cvx::Logger::instance(), cvx::Fatal, condition, format, ##__VA_ARGS__)
-#define LOG_FATAL_STREAM_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
-#define LOG_FATAL_STREAM_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Fatal, msg)
-#define LOG_FATAL_STREAM_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
-#define LOG_FATAL_EVERY_N(n, msg, ...) LOG_X_FORMAT_EVERY_N(cvx::Logger::instance(), cvx::Fatal, n, msg, ##__VA_ARGS__)
-#define LOG_FATAL_ONCE(msg, ...) LOG_X_FORMAT_ONCE(cvx::Logger::instance(), cvx::Fatal, msg, ##__VA_ARGS__)
-#define LOG_FATAL_FIRST_N(n, msg, ...) LOG_X_FORMAT_FIRST_N(cvx::Logger::instance(), cvx::Fatal, n, msg, ##__VA_ARGS__)
-#define LOG_FATAL_STREAM_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
-#define LOG_FATAL_STREAM_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
-#define LOG_FATAL_STREAM_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
-#define LOG_FATAL_EVERY_N_IF(n, condition, msg, ...) LOG_X_FORMAT_EVERY_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg, ##__VA_ARGS__)
-#define LOG_FATAL_ONCE_IF(condition, msg, ...) LOG_X_FORMAT_ONCE_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg, ##__VA_ARGS__)
-#define LOG_FATAL_FIRST_N_IF(n, condition, msg, ...) LOG_X_FORMAT_FIRST_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg, ##__VA_ARGS__)
+#define LOG_FATAL(msg) LOG_X_STREAM(cvx::Logger::instance(), cvx::Fatal, msg)
+#define LOG_FATAL_IF(condition, msg) LOG_X_STREAM_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
+#define LOG_FATAL_EVERY_N(n, msg) LOG_X_STREAM_EVERY_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
+#define LOG_FATAL_ONCE(msg) LOG_X_STREAM_ONCE(cvx::Logger::instance(), cvx::Fatal, msg)
+#define LOG_FATAL_FIRST_N(n, msg) LOG_X_STREAM_FIRST_N(cvx::Logger::instance(), cvx::Fatal, n, msg)
+#define LOG_FATAL_EVERY_N_IF(n, conditions, msg) LOG_X_STREAM_EVERY_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
+#define LOG_FATAL_ONCE_IF(condition, msg) LOG_X_STREAM_ONCE_IF(cvx::Logger::instance(), cvx::Fatal, condition, msg)
+#define LOG_FATAL_FIRST_N_IF(n, condition, msg) LOG_X_STREAM_FIRST_N_IF(cvx::Logger::instance(), cvx::Fatal, n, condition, msg)
 
 
 } // namespace cvx

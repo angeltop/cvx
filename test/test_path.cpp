@@ -52,7 +52,8 @@ int main(int argc, const char *argv[]) {
 
    // list_dirs_recursive(Path("/home/malasiot/source/maplite")) ;
 
-    Logger::instance()(LogLevel::Error, LogContext(__FILE__, __LINE__, "dkkd"))  << 123 << ' ' << 233 ;
+    int x = -2 ;
+    LOG_ERROR_IF( x > 0, 123 << ' ' <<234 ) ;
 
     string text = "hello gzip" ;
 

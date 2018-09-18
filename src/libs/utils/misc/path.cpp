@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <memory>
+#include <random>
 
 using namespace std ;
 
