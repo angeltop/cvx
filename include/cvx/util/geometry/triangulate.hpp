@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <vector>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 // A Two-Dimensional Quality Mesh Generator and Delaunay Triangulator (J. Shewchuk)
 // https://www.cs.cmu.edu/~quake/triangle.html
@@ -58,7 +58,7 @@ void triangulateConstraint(const triangulation::pts_matrix_t &pts, const std::ve
 // Convex hull of point set. This performed a Delaunay triangulation and thus not as fast as dedicated convex hull algorithms
 void convexHull(const triangulation::pts_matrix_t &pts, std::vector<uint32_t> &hull) ;
 
-}}
+}
 
 
 

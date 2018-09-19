@@ -23,6 +23,7 @@ struct LogContext
     int thread_id_ ;
 } ;
 
+
 enum LogLevel { Trace = 0, Debug = 1, Info = 2, Warning = 3, Error = 4, Fatal = 5 };
 
 // Abstract formatter of messages
@@ -30,11 +31,11 @@ class LogFormatter {
 public:
 
     LogFormatter() {}
+    virtual ~LogFormatter() {}
 
-    virtual std::string format(LogLevel level, const LogContext *ctx, const std::string &message) = 0 ;
+    virtual std::string format(LogLevel level, const std::string &message, const LogContext *ctx) = 0 ;
 };
 
-typedef std::shared_ptr<LogFormatter> LogFormatterPtr ;
 
 // A logj style formater
 class LogPatternFormatter: public LogFormatter
@@ -61,13 +62,15 @@ public:
            where - stand for left align (see log4j PatternLayout class documentation)
     */
 
-    static const std::string DefaultFormat ;
+    static const std::string DefaultFormat ; //"%d{%c} %f (%l) %c: %m";
 
 protected:
 
-    virtual std::string format(LogLevel level, const LogContext *ctx, const std::string &message) ;
+    std::string format(LogLevel level, const std::string &message, const LogContext *ctx) override ;
 
 private:
+
+    ~LogPatternFormatter() override {}
 
     std::string pattern_ ;
 };
@@ -78,77 +81,84 @@ class LogSimpleFormatter: public LogFormatter {
 public:
     LogSimpleFormatter() {}
 
+    ~LogSimpleFormatter() override {}
+
 protected:
-    std::string format(LogLevel level, const LogContext &ctx, const std::string &message) {
+    std::string format(LogLevel, const std::string &message, const LogContext *) override {
         return message ;
     }
 };
 
 // An appender sends a message to a device such as console or file
-class LogAppender {
+class LogSink {
 
 public:
-    LogAppender(LogLevel levelThreshold, LogFormatterPtr formatter):
+    LogSink(LogLevel levelThreshold, LogFormatter * formatter):
         threshold_(levelThreshold), formatter_(formatter) {
         assert(formatter_) ;
     }
 
-    void setFormatter(LogFormatterPtr formatter) {
-        formatter_ = formatter ;
+    virtual ~LogSink() {}
+
+    void setFormatter(LogFormatter *formatter) {
+        formatter_.reset(formatter) ;
     }
 
     bool canAppend(LogLevel level) const {
         return level >= threshold_ ;
     }
 
+    void setThreshold(LogLevel threshold) {
+        threshold_ = threshold ;
+    }
+
 protected:
 
-    std::string formattedMessage(LogLevel level, const LogContext *ctx, const std::string &message) {
-        return formatter_->format(level, ctx, message) ;
+    std::string formattedMessage(LogLevel level, const std::string &message, const LogContext *ctx) {
+        return formatter_->format(level, message, ctx) ;
     }
 
 
     friend class Logger ;
-    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) = 0;
+
+    virtual void append(LogLevel level, const std::string &message, const LogContext *ctx) = 0;
 
 private:
 
     LogLevel threshold_ ;
-    LogFormatterPtr formatter_ ;
+    std::unique_ptr<LogFormatter> formatter_ ;
 };
 
-typedef std::shared_ptr<LogAppender> LogAppenderPtr ;
-
 // Append to a stream object
-class LogStreamAppender: public LogAppender {
+class LogStreamSink: public LogSink {
 public:
-    LogStreamAppender(LogLevel levelThreshold, LogFormatterPtr formatter, std::ostream &strm) ;
-    ~LogStreamAppender() {
+    LogStreamSink(LogLevel levelThreshold, LogFormatter *formatter, std::ostream &strm) ;
+    ~LogStreamSink() override {
         strm_.flush() ;
     }
 
 protected:
 
-    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) ;
-
+    void append(LogLevel level, const std::string &message, const LogContext *ctx) override ;
 private:
 
+    std::recursive_mutex mutex_;
     std::ostream &strm_ ;
 };
 
 // Append to file
-class LogFileAppender: public LogAppender {
+class LogFileSink: public LogSink {
 public:
-    LogFileAppender(LogLevel levelThreshold, LogFormatterPtr formatter,
+    LogFileSink(LogLevel levelThreshold, LogFormatter *formatter,
                     const std::string &file_prefix, // path of file to write messages
                     size_t maxFileSize = 1024*1024, // max size of file after which rotation happens
                     int maxBackupFileIndex = 100,   // maximum number of rotated files to keep
                     bool append_ = true) ;          // append messages to current file instead of starting a new record for a new instance of the appender
-    ~LogFileAppender() ;
+    ~LogFileSink() override ;
 
 protected:
 
-    virtual void append(LogLevel level, const LogContext *ctx, const std::string &message) ;
+    void append(LogLevel level, const std::string &message, const LogContext *ctx) override ;
 
 private:
 
@@ -161,14 +171,16 @@ private:
 
 
 class Logger ;
+
 // Helper class for encapsulated a single formatted message and implement stream like log output
+// This is designed to be used not directly but through logger interface bellow
 
 class LoggerStream: public std::ostringstream
 {
 public:
 
     LoggerStream(Logger &logger, LogLevel level, const LogContext *ctx = nullptr): logger_(logger),
-    ctx_(ctx), level_(level) {}
+    level_(level), ctx_(ctx) {}
 
     LoggerStream(const LoggerStream& ls) :
         logger_(ls.logger_), level_(ls.level_), ctx_(ls.ctx_) {
@@ -179,13 +191,11 @@ public:
 private:
 
     Logger &logger_ ;
-    const LogContext *ctx_ ;
     LogLevel level_ ;
-
+    const LogContext *ctx_ ;
 } ;
 
-// Main logger class. Forwards messages to appenders.
-
+// Main logger class. Forwards messages to sinks.
 
 class Logger
 {
@@ -206,7 +216,7 @@ public:
         return LoggerStream(*this, level, nullptr);
     }
 
-    void addAppender(LogAppenderPtr appender);
+    void addSink(LogSink *sink);
 
     // get global logger
     static Logger &instance() ;
@@ -223,7 +233,7 @@ protected:
     void writex(LogLevel level, const LogContext *ctx, const std::string &message) ;
 
     std::mutex lock_ ;
-    std::vector<LogAppenderPtr> appenders_ ;
+    std::vector<std::unique_ptr<LogSink>> sinks_ ;
 
     static std::unique_ptr<Logger> user_logger_ ;
 };

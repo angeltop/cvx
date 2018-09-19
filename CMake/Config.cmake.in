@@ -1,0 +1,31 @@
+# - Config file for '@PROJECT_NAME@' package
+# It defines the following variables
+#  @PROJECT_NAME_UPPERCASE@_INCLUDE_DIRS - include directories
+#  @PROJECT_NAME_UPPERCASE@_LIBRARIES    - libraries to link against
+
+# Include directory
+set(@PROJECT_NAME_UPPERCASE@_INCLUDE_DIRS "@INSTALL_INCLUDE_DIR@")
+
+# Import the exported targets
+include("@INSTALL_CMAKE_DIR@/@PROJECT_NAME@Targets.cmake")
+
+find_package(OpenCV 3 REQUIRED)
+
+IF( @PROJECT_NAME@_FIND_COMPONENTS )
+  FOREACH(comp ${@PROJECT_NAME@_FIND_COMPONENTS})
+    STRING(TOUPPER ${comp} comp_uc)
+    if(NOT TARGET @PROJECT_NAME@_${comp})
+      SET(@PROJECT_NAME_UPPERCASE@_${comp_uc}_FOUND 0)
+      IF(@PROJECT_NAME@_FIND_REQUIRED_${comp})
+        MESSAGE(FATAL_ERROR "CVX component ${comp} not available.")
+      ENDIF()
+    ELSE()
+      SET(@PROJECT_NAME_UPPERCASE@_${comp_uc}_FOUND 1)
+    ENDIF()
+  ENDFOREACH()
+ENDIF()
+
+# Set the expected library variable
+set(@PROJECT_NAME_UPPERCASE@_LIBRARIES @LIBRARY_NAME@)
+
+

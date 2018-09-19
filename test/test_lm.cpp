@@ -9,7 +9,7 @@
 #include <cvx/util/math/solvers/lm.hpp>
 
 using namespace std ;
-using namespace cvx::util ;
+using namespace cvx ;
 using namespace Eigen ;
 
 

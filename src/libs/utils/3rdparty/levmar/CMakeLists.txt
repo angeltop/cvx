@@ -13,4 +13,11 @@ add_library(levmar SHARED
   levmar.h misc.h compiler.h
 )
 
+install(TARGETS levmar
+  EXPORT ${PROJECT_EXPORT}
+  RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
+  LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
+  ARCHIVE DESTINATION "${INSTALL_LIB_DIR}" COMPONENT stlib
+  COMPONENT dev)
+
 #link_libraries(levmar ${LAPACK_LIBRARIES} ${F2C_LIBRARIES})

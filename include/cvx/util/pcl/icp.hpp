@@ -5,8 +5,7 @@
 #include <vector>
 #include <cvx/util/geometry/kdtree.hpp>
 
-
-namespace cvx { namespace util {
+namespace cvx {
 
 // simple ICP point-to-point alignment class
 
@@ -51,5 +50,5 @@ private:
     Parameters params_ ;
 };
 
-}}
+}
 #endif

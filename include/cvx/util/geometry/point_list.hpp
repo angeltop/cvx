@@ -4,7 +4,7 @@
 #include <cvx/util/geometry/point.hpp>
 #include <Eigen/StdVector>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 template <class T, int D>
 class PointList
@@ -97,6 +97,6 @@ typedef std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> >
 typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > EPointList2d ;
 
 }
-}
+
 
 #endif

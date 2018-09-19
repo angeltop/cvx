@@ -52,7 +52,7 @@ int main(int argc, const char *argv[]) {
 
    // list_dirs_recursive(Path("/home/malasiot/source/maplite")) ;
 
-    int x = -2 ;
+    int x = 2 ;
     LOG_ERROR_IF( x > 0, 123 << ' ' <<234 ) ;
 
     string text = "hello gzip" ;

@@ -22,7 +22,7 @@ inline bool operator < (const Vector3f &a, const Vector3f &b) {
     return (a.x() < b.x() && a.y() < b.y() && a.z() < b.z()) ;
 }
 
-namespace cvx { namespace util {
+namespace cvx {
 
 // Octree data structure parameterized by datatype U i.e. data representation for each point (it can be an index to an external container )
 template<typename U>
@@ -123,6 +123,6 @@ typedef Octree<uint> OctreeIndexed ;   // indexes to data stored ;
 // Subsampling of pointcloud be means of octree. The average of points inside each leaf node is computed and then the point closest to it is selected.
 void sampleCloudCenters(const EPointList3f &cloud, float min_cell_size_, EPointList3f &res, const Vector3f &rmin, const Vector3f &rmax) ;
 
-}}
+}
 
 #endif

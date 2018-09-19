@@ -5,7 +5,7 @@
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 template <class T, int D>
 class Point: public Eigen::Matrix<T, 1, D> {
@@ -87,6 +87,6 @@ typedef Point<float, 3> Point3f ;
 typedef Point<double, 3> Point3d ;
 
 }
-}
+
 
 #endif

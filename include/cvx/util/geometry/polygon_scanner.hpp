@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 class PolygonScanIterator
 {
@@ -83,6 +83,6 @@ public:
 void getPointsInPoly(const Polygon2d &poly, std::vector<Point> &pts) ;
 */
 
-}}
+}
 
 #endif

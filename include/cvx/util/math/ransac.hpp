@@ -2,8 +2,9 @@
 #define __RANSAC_HPP__
 
 #include <cvx/util/math/rng.hpp>
+#include <cassert>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 class RANSAC {
 public:
@@ -33,7 +34,7 @@ public:
         double log_probability  = log (1.0 - params_.outlier_probability_) ;
         double one_over_indices = 1.0 / static_cast<double> (n);
 
-        cvx::util::RNG rng ;
+        RNG rng ;
         size_t trial_count = 0 ;
 
         double min_residual = std::numeric_limits<double>::max();
@@ -82,5 +83,5 @@ protected:
 
 
 
-}}
+}
 #endif

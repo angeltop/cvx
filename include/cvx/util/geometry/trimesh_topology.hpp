@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 typedef int32_t face_idx_t ;
 typedef int32_t vertex_idx_t ;
@@ -16,7 +16,6 @@ typedef int32_t vertex_idx_t ;
         TriangleMeshTopology() ;
         TriangleMeshTopology(const TriangleMeshTopology &other) ;
         TriangleMeshTopology(const std::vector<uint32_t> &triangles) ;
-
 
         ~TriangleMeshTopology() ;
 
@@ -48,7 +47,6 @@ typedef int32_t vertex_idx_t ;
         void getEdge(vertex_idx_t idx, vertex_idx_t &v1, vertex_idx_t &v2, face_idx_t &f1, face_idx_t &f2) const;
 
         bool vtxExists(vertex_idx_t vid) const { return vertex_map_.count(vid) != 0 ; }
-
 
         // bool isBoundaryEdge(vertex_idx_t vtx) ;
 
@@ -156,6 +154,6 @@ private:
     std::map<vertex_idx_t, TriangleMeshTopology::HalfEdge *>::const_iterator it_, last_ ;
 };
 
-}}
+}
 
 #endif

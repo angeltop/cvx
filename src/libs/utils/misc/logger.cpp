@@ -18,7 +18,7 @@ using namespace std;
 
 namespace cvx {
 
-const std::string LogPatternFormatter::DefaultFormat = "%d{%c}-%r-(%t) %f %l %c:";
+const std::string LogPatternFormatter::DefaultFormat = "%d{%c} %f (%l) %c: %m";
 
 static string levelToString(LogLevel ltype)
 {
@@ -280,8 +280,7 @@ LogPatternFormatter::LogPatternFormatter(const string &pattern): LogFormatter(),
 
 }
 
-string LogPatternFormatter::format(LogLevel level, const LogContext *ctx, const string &message)
-{
+string LogPatternFormatter::format(LogLevel level, const string &message, const LogContext *ctx) {
     stringstream strm ;
 
     if ( ctx )
@@ -307,40 +306,39 @@ void Logger::write(LogLevel level, const std::string &msg) {
 }
 
 
-void Logger::addAppender(LogAppenderPtr appender)
+void Logger::addSink(LogSink *sink)
 {
     lock_guard<mutex> lock(lock_);
 
-    appenders_.push_back(appender) ;
+    sinks_.push_back(std::unique_ptr<LogSink>(sink)) ;
 }
 
 
 
 void Logger::writex(LogLevel level, const LogContext *ctx, const string &message)
 {
-//    boost::mutex::scoped_lock lock(lock_) ;
-
-    for(int i=0 ; i<appenders_.size() ; i++)
-        appenders_[i]->append(level, ctx, message) ;
+    for( size_t i=0 ; i<sinks_.size() ; i++ )
+        sinks_[i]->append(level, message, ctx) ;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LogStreamAppender::LogStreamAppender(LogLevel levelThreshold, LogFormatterPtr formatter, ostream &strm):
-    LogAppender(levelThreshold, formatter), strm_(strm) {
+LogStreamSink::LogStreamSink(LogLevel levelThreshold, LogFormatter *formatter, ostream &strm):
+    LogSink(levelThreshold, formatter), strm_(strm) {
 
 }
 
-void LogStreamAppender::append(LogLevel level, const LogContext *ctx, const string &message)
-{
-    if ( canAppend(level) )
-         strm_ << formattedMessage(level, ctx, message) << endl ;
+void LogStreamSink::append(LogLevel level, const string &message, const LogContext *ctx) {
+    if ( canAppend(level) ) {
+        std::lock_guard<std::recursive_mutex> lock(mutex_);
+        strm_ << formattedMessage(level, message, ctx) << endl ;
+    }
 }
 
 #define MAX_BACKUP_INDEX 20
 
-LogFileAppender::LogFileAppender(LogLevel levelThreshold, LogFormatterPtr formatter,
-                                 const string &fileName, size_t maxFileSize, int maxBackupIndex, bool _append): LogAppender(levelThreshold, formatter), fileName_(fileName),
+LogFileSink::LogFileSink(LogLevel levelThreshold, LogFormatter *formatter,
+                                 const string &fileName, size_t maxFileSize, int maxBackupIndex, bool _append): LogSink(levelThreshold, formatter), fileName_(fileName),
     max_file_size_(maxFileSize), max_backup_index_(maxBackupIndex), append_(_append)
 {
     unsigned int flags = O_CREAT | O_APPEND | O_WRONLY ;
@@ -362,7 +360,7 @@ LogFileAppender::LogFileAppender(LogLevel levelThreshold, LogFormatterPtr format
     last_backup_file_index_ = last ;
 }
 
-LogFileAppender::~LogFileAppender()
+LogFileSink::~LogFileSink()
 {
     ::close(fd_) ;
 }
@@ -387,11 +385,11 @@ static string makeOutFilename(const string &name, uint num) {
     return stream.str() ;
 }
 
-void LogFileAppender::append(LogLevel level, const LogContext *ctx, const string &message)
+void LogFileSink::append(LogLevel level, const string &message, const LogContext *ctx)
 {
     if ( !canAppend(level) ) return ;
 
-    string s = formattedMessage(level, ctx, message) + '\n';
+    string s = formattedMessage(level, message, ctx) + '\n';
     ::write(fd_, s.data(), s.length()) ;
 
     off_t offset = ::lseek(fd_, 0, SEEK_END);
@@ -471,8 +469,8 @@ class DefaultLogger: public Logger
 public:
     DefaultLogger() {
         LogPatternFormatter *f = new LogPatternFormatter("%In function %c, %F:%l: %m") ;
-        LogStreamAppender *a = new LogStreamAppender(Trace, std::shared_ptr<LogFormatter>(f), std::cout) ;
-        addAppender(std::shared_ptr<LogAppender>(a)) ;
+        LogStreamSink *a = new LogStreamSink(Trace, f, std::cout) ;
+        addSink(a) ;
     }
 };
 #endif

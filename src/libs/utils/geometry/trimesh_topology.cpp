@@ -6,7 +6,7 @@
 
 using namespace std ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 TriangleMeshTopology::TriangleMeshTopology(const TriangleMeshTopology &other)
 {
@@ -668,4 +668,4 @@ EdgeIterator::operator bool () const
     return it_ != last_ ;
 }
 
-}}
+}

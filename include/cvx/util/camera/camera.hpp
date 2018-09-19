@@ -5,7 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 class PinholeCamera
 {
@@ -115,5 +115,5 @@ protected:
 
 };
 
-}}
+}
 #endif

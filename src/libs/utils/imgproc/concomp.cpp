@@ -5,7 +5,7 @@
 
 using namespace std ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 const int NOLABEL = INT_MAX ;
 
@@ -273,4 +273,4 @@ vector<cv::Point> RegionIterator::contour() const {
 }
 
 }
-}
+

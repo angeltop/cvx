@@ -1,10 +1,9 @@
 #ifndef __LM_SOLVER_HPP__
 #define __LM_SOLVER_HPP__
 
-
 #include <Eigen/Core>
 
-namespace cvx { namespace util {
+namespace cvx {
 
 template<typename T>
 struct LemvarWrapper {
@@ -111,8 +110,7 @@ private:
 };
 
 
-
-}}
+}
 
 #endif
 

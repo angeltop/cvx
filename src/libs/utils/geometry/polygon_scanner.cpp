@@ -16,7 +16,7 @@
 
 using namespace std ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 struct CompareEdge {
 
@@ -270,4 +270,4 @@ void getPointsInPoly(const Eigen::Matrix<float, Eigen::Dynamic, 2, Eigen::RowMaj
 
 }
 
-} }
+}

@@ -4,7 +4,7 @@
 #include <cvx/util/geometry/rectangle.hpp>
 #include <cvx/util/geometry/point_list.hpp>
 
-namespace cvx { namespace  util {
+namespace cvx {
 
 template < class T >
 class Polygon: public PointList<T, 2>
@@ -69,6 +69,6 @@ public:
 typedef Polygon<double> Polygon2d ;
 typedef Polygon<float> Polygon2f;
 
-}}
+}
 
 #endif

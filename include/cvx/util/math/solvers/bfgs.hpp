@@ -1,7 +1,6 @@
 #ifndef __BFGS_SOLVER_HPP__
 #define __BFGS_SOLVER_HPP__
 
-#include <cvx/util/math/solvers/util.hpp>
 #include <cvx/util/math/solvers/line_search.hpp>
 
 #include <Eigen/Core>
@@ -99,5 +98,5 @@ public:
 };
 
 }
-}
+
 #endif

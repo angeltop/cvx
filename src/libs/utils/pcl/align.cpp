@@ -3,7 +3,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 using Eigen::Vector3f ;
 
@@ -55,4 +55,4 @@ Isometry3f alignRigid(const vector<Vector3f> &src, const vector<Vector3f> &dst) 
 
 
 
-}}
+}

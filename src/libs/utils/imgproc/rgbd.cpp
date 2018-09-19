@@ -3,7 +3,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 static void hsv2rgb(float h, cv::Vec3i &rgb)
 {
@@ -271,5 +271,4 @@ void depthToPointCloud(const cv::Mat &depth, const PinholeCamera &model_, EPoint
 }
 
 
-
-}}
+}

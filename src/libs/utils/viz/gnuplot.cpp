@@ -8,8 +8,7 @@
 using namespace std ;
 
 
-namespace cvx { namespace util {
-
+namespace cvx {
 
 string GnuplotPipeWrapper::gnuplot_path_ ;
 
@@ -178,5 +177,4 @@ string Gnuplot::make_tmp_file()
 }
 
 
-}
 }

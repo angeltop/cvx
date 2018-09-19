@@ -7,7 +7,7 @@ using namespace std ;
 using namespace Eigen ;
 using namespace nanoflann ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 struct PointCloudAdaptor3
 {
@@ -223,18 +223,15 @@ private:
     std::shared_ptr<PointCloudAdaptor2> data_ ;
 };
 
-KDTree2::KDTree2(const point_list_t &data): index_(new KDTreeIndex2(data))
-{
+KDTree2::KDTree2(const point_list_t &data): index_(new KDTreeIndex2(data)) {
 
 }
 
-void KDTree2::train(const point_list_t &data)
-{
+void KDTree2::train(const point_list_t &data) {
     index_.reset(new KDTreeIndex2(data)) ;
 }
 
-uint KDTree2::nearest(const point_t &q)
-{
+uint KDTree2::nearest(const point_t &q) {
     vector<uint> indices ;
     vector<float> distances ;
 
@@ -243,8 +240,7 @@ uint KDTree2::nearest(const point_t &q)
     return indices[0] ;
 }
 
-uint KDTree2::nearest(const point_t &q, float &dist)
-{
+uint KDTree2::nearest(const point_t &q, float &dist) {
     vector<uint> indices ;
     vector<float> distances ;
 
@@ -255,28 +251,23 @@ uint KDTree2::nearest(const point_t &q, float &dist)
     return indices[0] ;
 }
 
-void KDTree2::knearest(const point_t &q, uint k, std::vector<uint> &indexes)
-{
+void KDTree2::knearest(const point_t &q, uint k, std::vector<uint> &indexes) {
     vector<float> distances ;
 
     index_->knn(q, k, indexes, distances) ;
-
 }
 
-void KDTree2::knearest(const point_t &q, uint k, std::vector<uint> &indexes, vector<float> &distances)
-{
+void KDTree2::knearest(const point_t &q, uint k, std::vector<uint> &indexes, vector<float> &distances) {
     index_->knn(q, k, indexes, distances) ;
 }
 
-void KDTree2::withinRadius(const point_t &q, float radius, std::vector<uint> &indexes)
-{
+void KDTree2::withinRadius(const point_t &q, float radius, std::vector<uint> &indexes) {
     vector<float> distances ;
     index_->radiusSearch(q, radius, indexes, distances) ;
 }
 
-void KDTree2::withinRadius(const point_t &q, float radius, std::vector<uint> &indexes,  vector<float> &distances )
-{
+void KDTree2::withinRadius(const point_t &q, float radius, std::vector<uint> &indexes,  vector<float> &distances ) {
     index_->radiusSearch(q, radius, indexes, distances) ;
 }
 
-}}
+}

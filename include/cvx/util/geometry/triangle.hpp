@@ -3,7 +3,7 @@
 
 #include <cvx/util/geometry/polygon.hpp>
 
-namespace cvx { namespace  util {
+namespace cvx {
 
 template < class T >
 class Triangle: public Polygon<T>
@@ -57,6 +57,6 @@ public:
 } ;
 
 
-}}
+}
 
 #endif

@@ -8,8 +8,7 @@
 #include <iterator>
 #include <eigen3/Eigen/Core>
 
-
-namespace cvx { namespace util {
+namespace cvx {
 
 class FILEoutbuf ;
 
@@ -258,7 +257,6 @@ inline std::string Gnuplot::file()
 }
 
 
-} // namespace util
 } // namespace cvx
 
 #endif

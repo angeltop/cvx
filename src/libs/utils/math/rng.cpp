@@ -1,9 +1,7 @@
 #include <cvx/util/math/rng.hpp>
 #include <random>
 
-namespace cvx { namespace util {
-
-
+namespace cvx {
 
 RNG::RNG() {
     static std::random_device rd ;
@@ -14,5 +12,4 @@ RNG::RNG(uint64_t seed): generator_(seed) {
 
 }
 
-
-}}
+}

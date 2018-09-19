@@ -1,7 +1,6 @@
 #ifndef __GRADIENT_DESCENT_SOLVER_HPP__
 #define __GRADIENT_DESCENT_SOLVER_HPP__
 
-#include <cvx/util/math/solvers/util.hpp>
 #include <cvx/util/math/solvers/line_search.hpp>
 
 #include <Eigen/Core>
@@ -15,7 +14,7 @@
 //    void  gradient(const VectorXf &x, VectorXf &grad) ;
 // } ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 template<typename T, typename ObjFunc, typename LS = MoreThuente<T, ObjFunc, 1> >
 class GradientDescentSolver {
@@ -74,5 +73,5 @@ public:
 };
 
 }
-}
+
 #endif

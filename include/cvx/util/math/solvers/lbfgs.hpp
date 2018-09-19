@@ -16,7 +16,7 @@
 //    void  gradient(const VectorXf &x, VectorXf &grad) ;
 // } ;
 
-namespace cvx { namespace util {
+namespace cvx {
 
 template<typename T, typename ObjFunc, typename LS = MoreThuente<T, ObjFunc, 1> >
 class LBFGSSolver {
@@ -136,5 +136,5 @@ public:
 };
 
 }
-}
+
 #endif
