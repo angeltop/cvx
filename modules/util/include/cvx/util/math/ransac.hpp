@@ -4,7 +4,7 @@
 #include <cvx/util/math/rng.hpp>
 #include <cassert>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class RANSAC {
 public:
@@ -83,5 +83,5 @@ protected:
 
 
 
-}
+}}
 #endif

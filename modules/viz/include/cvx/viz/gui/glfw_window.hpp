@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 
 class glfwRenderWindow
@@ -52,6 +52,7 @@ protected:
 
 };
 
+} // namespace viz
 } // namespace cvx
 
 #endif

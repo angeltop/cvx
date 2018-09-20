@@ -12,7 +12,7 @@
 
 #include <cvx/util/misc/optional.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 typedef std::function<bool(std::istream &)> ValueParser ;
 
@@ -358,5 +358,5 @@ public:
     }
 };
 
-}
+}}
 #endif

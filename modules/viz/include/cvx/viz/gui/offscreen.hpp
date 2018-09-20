@@ -8,7 +8,7 @@
 
 #include <string>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 class OffscreenRenderingWindow {
 public:
@@ -92,6 +92,7 @@ public:
 
 };
 
+} // namespace viz
 } // namespace cvx
 
 #endif

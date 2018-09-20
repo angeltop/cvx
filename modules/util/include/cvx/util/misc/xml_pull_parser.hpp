@@ -11,7 +11,7 @@
 
 // Simple and fast XML pull style parser that follows the Java XmlPullParse API
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class XmlPullParser {
 public:
@@ -125,5 +125,5 @@ private:
     int line_,col_ ;
 };
 
-}
+}}
 #endif

@@ -10,7 +10,7 @@
 #include <cvx/util/misc/logger.hpp>
 
 using namespace std ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 void list_dirs_recursive(const Path &base) {
     for( auto &e: DirectoryListing(base) ) {

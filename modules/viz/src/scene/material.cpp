@@ -234,7 +234,7 @@ void main (void)
 }
 )";
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 OpenGLShaderProgram::Ptr PhongMaterial::prog() const
 {
@@ -356,4 +356,4 @@ MaterialPtr Material::makeConstant(const Eigen::Vector4f &clr) {
 }
 
 
-}
+}}

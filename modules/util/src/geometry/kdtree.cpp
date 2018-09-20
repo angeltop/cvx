@@ -7,7 +7,7 @@ using namespace std ;
 using namespace Eigen ;
 using namespace nanoflann ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 struct PointCloudAdaptor3
 {
@@ -270,4 +270,4 @@ void KDTree2::withinRadius(const point_t &q, float radius, std::vector<uint> &in
     index_->radiusSearch(q, radius, indexes, distances) ;
 }
 
-}
+}}

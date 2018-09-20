@@ -14,7 +14,7 @@
 //    void  gradient(const VectorXf &x, VectorXf &grad) ;
 // } ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 template<typename T, typename ObjFunc, typename LS = MoreThuente<T, ObjFunc, 1> >
 class GradientDescentSolver {
@@ -72,6 +72,6 @@ public:
 
 };
 
-}
+}}
 
 #endif

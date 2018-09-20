@@ -13,10 +13,12 @@
 #include <cvx/viz/scene/drawable.hpp>
 #include <assimp/scene.h>
 
-class AssimpImporter ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
+namespace impl {
+    class AssimpImporter ;
+}
 // class defining a complete scene
 
 class Scene: public Node {
@@ -44,5 +46,5 @@ public:
         std::runtime_error(message + "(" + fname  + ")") {}
 };
 
-}
+}}
 #endif

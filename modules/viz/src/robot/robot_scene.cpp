@@ -4,7 +4,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 RobotScenePtr RobotScene::loadURDF(const string &filename, const map<string, string> &packages, bool load_collision_geometry) {
     URDFLoader loader(packages, load_collision_geometry) ;
@@ -32,4 +32,4 @@ float RevoluteJoint::setPosition(float pos)
     return pos ;
 }
 
-}
+}}

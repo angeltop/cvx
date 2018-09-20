@@ -6,7 +6,7 @@
 
 #include <math.h>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 template< class T >
 class Rectangle
@@ -139,6 +139,6 @@ inline std::ostream & operator << (std::ostream &strm, const Rectangle<T> &r)
 typedef Rectangle<double> Rect2d ;
 typedef Rectangle<float> Rect2f ;
 
-}
+}}
 
 #endif

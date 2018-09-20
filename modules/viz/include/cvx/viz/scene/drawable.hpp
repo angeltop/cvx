@@ -3,7 +3,7 @@
 
 #include <cvx/viz/scene/scene_fwd.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 // a drawable is a combination of geometry and material
 
@@ -24,6 +24,6 @@ private:
     MaterialPtr material_ ;
 };
 
-
+} // namespace viz
 } // namespace cvx
 #endif

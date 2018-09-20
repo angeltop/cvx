@@ -5,7 +5,7 @@
 #include <functional>
 #include <memory>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class DirectoryIteratorImpl ;
 class Path ;
@@ -86,7 +86,6 @@ private:
     DirectoryFilter filter_ ;
 };
 
-
-}
+}}
 
 #endif

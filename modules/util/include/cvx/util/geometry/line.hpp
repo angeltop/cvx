@@ -7,7 +7,7 @@
 
 #include <Eigen/Eigenvalues>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 template<class T, int D>
 class Line
@@ -235,5 +235,5 @@ typedef LineSegment<float, 2> LineSegment2f ;
 typedef LineSegment<double, 3> LineSegment3d ;
 typedef LineSegment<float, 3> LineSegment3f ;
 
-}
+}}
 #endif

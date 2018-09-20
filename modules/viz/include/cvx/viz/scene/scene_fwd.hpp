@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 struct Material ;
 typedef std::shared_ptr<Material> MaterialPtr ;
@@ -29,6 +29,6 @@ typedef std::shared_ptr<Drawable> DrawablePtr ;
 class Node ;
 typedef std::shared_ptr<Node> NodePtr ;
 
-}
+}}
 
 #endif

@@ -12,7 +12,7 @@
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz { namespace impl {
 
 class RendererImpl {
 public:
@@ -89,6 +89,6 @@ private:
 } ;
 
 
-}
+}}}
 
 #endif

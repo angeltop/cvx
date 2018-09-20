@@ -4,7 +4,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 string format(double arg, int fieldWidth, char format, int precision, char fill_char)
 {
@@ -222,5 +222,5 @@ string join(const std::vector<string> &parts, const char *delimeter)
 
 
 
-}
+}}
 

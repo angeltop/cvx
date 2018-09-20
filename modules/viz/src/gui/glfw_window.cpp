@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 glfwRenderWindow::~glfwRenderWindow()
 {
@@ -131,4 +131,5 @@ void glfwRenderWindow::sizeCallback(GLFWwindow *window, int width, int height) {
     instance->onResize(width, height) ;
 }
 
+} // namespace viz
 } // namespace cvx

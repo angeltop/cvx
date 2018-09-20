@@ -16,7 +16,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 bool Renderer::init() {
     return impl_->init() ;
@@ -27,7 +27,7 @@ void Renderer::render(const CameraPtr &cam) {
 }
 
 
-Renderer::Renderer(const ScenePtr &scene): impl_(new RendererImpl(scene)) {
+Renderer::Renderer(const ScenePtr &scene): impl_(new impl::RendererImpl(scene)) {
 }
 
 Renderer::~Renderer() {
@@ -50,4 +50,4 @@ void Renderer::addTextureImage(const string &id, const cv::Mat &im) {
 }
 
 
-}
+}}

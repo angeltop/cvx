@@ -6,7 +6,9 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
+
+
 static bool is_valid_name_char(char c, int idx) {
     if ( idx == 0 )
         return ( isalpha(c) || c == '_' || c == ':' ) ;
@@ -468,4 +470,5 @@ string XmlPullParserException::make_message(const string &msg, int line, int col
     return msg_strm.str() ;
 }
 
+} // namespace util
 } // namespace cvx

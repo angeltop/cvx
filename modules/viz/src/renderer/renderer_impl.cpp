@@ -23,7 +23,7 @@ using namespace std ;
 using namespace Eigen ;
 using namespace cvx ;
 
-namespace cvx {
+namespace cvx { namespace viz { namespace impl {
 
 void RendererImpl::makeVertexBuffers() {
 
@@ -545,4 +545,4 @@ cv::Mat RendererImpl::getDepth() {
 
 }
 
-}
+}}}

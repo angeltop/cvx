@@ -17,11 +17,14 @@
 
 using namespace std ;
 using namespace Eigen ;
-using namespace cvx ;
+
 
 static Vector4f color4_to_float4(const aiColor4D &c) {
     return Vector4f(c.r, c.g, c.b, c.a) ;
 }
+
+namespace cvx { namespace viz { namespace impl {
+
 
 class AssimpImporter {
 public:
@@ -341,7 +344,7 @@ bool AssimpImporter::import(const aiScene *sc, const std::string &fname, const N
     return true ;
 }
 
-namespace cvx {
+}
 
 void Scene::load(const std::string &fname, const NodePtr &parent) {
   //  const aiScene *sc = aiImportFile(fname.c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs | aiProcess_TransformUVCoords);
@@ -364,7 +367,7 @@ void Scene::load(const std::string &fname, const NodePtr &parent) {
 
 void Scene::load(const aiScene *sc, const std::string &fname, const NodePtr &parent) {
 
-    AssimpImporter importer(*this) ;
+    impl::AssimpImporter importer(*this) ;
 
     bool res = importer.import(sc, fname, parent) ;
 
@@ -376,5 +379,5 @@ void Scene::load(const aiScene *sc, const std::string &fname, const NodePtr &par
 }
 
 
-}
+}}
 

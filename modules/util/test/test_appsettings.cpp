@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 struct GVector {
     vector<int> vals_ ;

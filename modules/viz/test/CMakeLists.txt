@@ -1,4 +1,8 @@
-include_directories(../include ${EIGEN3_INCLUDE_DIR})
+include_directories(
+    ${CMAKE_SOURCE_DIR}/modules/viz/include
+    ../util/include
+    ${EIGEN3_INCLUDE_DIR}
+)
 
 add_executable(test_renderer test_renderer.cpp)
 target_link_libraries(test_renderer cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES} ${catkin_LIBRARIES})

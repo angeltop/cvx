@@ -6,7 +6,7 @@
 
 
 using namespace std ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 int main(int argc, char *argv[]) {
 

@@ -11,7 +11,9 @@
 
 #include <iostream>
 
-using namespace cvx;
+using namespace cvx::viz ;
+using namespace cvx::util ;
+
 using namespace std ;
 using namespace Eigen ;
 

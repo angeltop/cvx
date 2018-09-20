@@ -7,9 +7,11 @@
 #include <cvx/viz/gui/offscreen.hpp>
 #include <opencv2/opencv.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
-class RendererImpl ;
+namespace impl {
+    class RendererImpl ;
+}
 
 class Renderer {
 public:
@@ -37,7 +39,7 @@ public:
 
 private:
 
-    std::unique_ptr<RendererImpl> impl_ ;
+    std::unique_ptr<impl::RendererImpl> impl_ ;
 
 } ;
 
@@ -49,6 +51,6 @@ protected:
     OffscreenRenderingWindow ow_ ;
 } ;
 
-}
+}}
 
 #endif

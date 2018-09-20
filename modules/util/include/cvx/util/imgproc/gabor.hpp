@@ -2,7 +2,8 @@
 #define __IMGPROC_GABOR_HPP__
 
 #include <opencv2/opencv.hpp>
-namespace cvx {
+
+namespace cvx { namespace util {
 
 // Gabor filter-bank creation
 void makeGaborFilterBank(int nOctaves, int nAngles, double sigma, std::vector<cv::Mat> &kernels) ;
@@ -10,6 +11,6 @@ void makeGaborFilterBank(int nOctaves, int nAngles, double sigma, std::vector<cv
 // filter image with filter-bank
 void applyGaborFilterBank(const cv::Mat &src, std::vector<cv::Mat> &kernels, std::vector<cv::Mat> &responses) ;
 
-}
+}}
 
 #endif

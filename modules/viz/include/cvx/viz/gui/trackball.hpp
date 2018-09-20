@@ -4,9 +4,10 @@
 #include <cvx/viz/scene/scene_fwd.hpp>
 #include <Eigen/Geometry>
 
-using cvx::Camera ;
 
 // adapted from https://github.com/rsmz/trackball/
+
+namespace cvx { namespace viz {
 
 class TrackBall
 {
@@ -30,7 +31,7 @@ public:
     CameraMotionType getMotionScroll();
 
     void setScrollDirection(bool up);
-    void setCamera(cvx::CameraPtr c, const Eigen::Vector3f &eye, const Eigen::Vector3f &center, const Eigen::Vector3f &up);
+    void setCamera(CameraPtr c, const Eigen::Vector3f &eye, const Eigen::Vector3f &center, const Eigen::Vector3f &up);
     void setZoomScale(float zoom_scale) ;
 	void setClickPoint(double x, double y);
 	void setLeftClicked(bool value);
@@ -67,7 +68,7 @@ protected:
     void updateCameraEyeUp(bool eye, bool up);
 
 private:
-    cvx::CameraPtr camera_;
+    CameraPtr camera_;
     CameraMotionType camera_motion_left_click_;
     CameraMotionType camera_motion_middle_click_;
     CameraMotionType camera_motion_right_click_;
@@ -84,6 +85,7 @@ private:
 
 };
 
+}}
 #endif
 
 /*

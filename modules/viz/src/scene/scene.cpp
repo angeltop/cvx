@@ -12,7 +12,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 Scene::Scene() {}
 
@@ -104,4 +104,4 @@ NodePtr Node::findNodeByName(const std::string &name)
 }
 
 
-}
+}}

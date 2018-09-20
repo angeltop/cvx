@@ -5,7 +5,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 bool Mesh::isSimpleIndexed() const {
     if ( normals_.hasIndices() ) return false ;
@@ -463,4 +463,5 @@ MeshPtr Mesh::flatten(const MeshPtr &src) {
     return dst ;
 }
 
+} // namespace viz
 } // namespace cvx

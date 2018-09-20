@@ -5,7 +5,7 @@
 #include <cvx/util/misc/optional.hpp>
 
 using namespace std ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 struct BBox {
     float min_x_, min_y_, max_x_, max_y_ ;

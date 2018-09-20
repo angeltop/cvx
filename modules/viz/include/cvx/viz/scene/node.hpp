@@ -12,7 +12,7 @@
 #include <cvx/viz/scene/scene_fwd.hpp>
 #include <cvx/viz/scene/drawable.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 class NodeVisitor ;
 
@@ -132,7 +132,7 @@ public:
     }
 };
 
-
+} // namespace viz
 } // namespace cvx
 #endif
 

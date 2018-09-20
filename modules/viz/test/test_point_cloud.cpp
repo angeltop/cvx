@@ -9,11 +9,14 @@
 #include <cvx/viz/gui/trackball.hpp>
 
 #include <cvx/util/imgproc/rgbd.hpp>
+#include <cvx/util/camera/camera.hpp>
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-using namespace cvx ;
+using namespace cvx::viz ;
+using namespace cvx::util ;
+
 
 using namespace std ;
 using namespace Eigen ;

@@ -4,7 +4,7 @@
 #include <random>
 #include <algorithm>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class RNG {
 public:
@@ -98,6 +98,6 @@ private:
 
 
 
-}
+}}
 
 #endif

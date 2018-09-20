@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 #include <cvx/viz/renderer/ogl_shaders.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 struct Material ;
 typedef std::shared_ptr<Material> MaterialPtr ;
@@ -126,5 +126,6 @@ protected:
     float opacity_ = 1.0 ;
 } ;
 
+} // namespace viz
 } // namespave cvx
 #endif

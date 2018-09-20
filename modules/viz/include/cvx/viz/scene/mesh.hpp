@@ -12,7 +12,7 @@
 
 #include <Eigen/Core>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 #define MAX_TEXTURES 4
 
@@ -99,6 +99,6 @@ private:
 
 };
 
-
+} // namespavce viz
 } // namespace cvx
 #endif

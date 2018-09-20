@@ -4,7 +4,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 const DirectoryFilter DirectoryFilters::MatchAll = [](const DirectoryEntry &) {return true ; } ;
 const DirectoryFilter DirectoryFilters::MatchDirectories = [](const DirectoryEntry &e) {return e.isDirectory() ; } ;
@@ -150,5 +150,4 @@ DirectoryListing::DirectoryListing(const Path &dir, DirectoryFilter filter): dir
 
 }
 
-
-}
+}}

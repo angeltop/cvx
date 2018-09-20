@@ -7,7 +7,7 @@
 
 #include <cvx/util/misc/dir_iterator.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // Filesystem path
 
@@ -161,7 +161,7 @@ public:
         std::runtime_error("Invalid filesystem path: " + path_name) {}
 };
 
-
+} // util
 } // cvx
 
 #endif

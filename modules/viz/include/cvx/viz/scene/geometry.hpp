@@ -9,7 +9,7 @@
 
 #include <Eigen/Core>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 // abstract geometry class
 
@@ -65,6 +65,6 @@ private:
     float radius_, height_ ;
 };
 
-
+} // namespace viz
 } // namespace cvx
 #endif

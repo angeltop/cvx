@@ -10,7 +10,7 @@
 
 // various string manipulation functions
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // format floating point value
 //
@@ -73,6 +73,6 @@ std::string replace(std::string &src, const regex &subject, const std::string &r
 // regex replace with a callback function
 std::string replace(std::string &src, const regex &subject, std::function<std::string (const smatch &)> callback) ;
 
-}
+}}
 
 #endif

@@ -6,8 +6,8 @@
 
 #include <cvx/util/misc/detail/optional.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
     using nonstd::optional ;
-}
+}}
 
 #endif

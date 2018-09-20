@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <thread>
-using namespace cvx ;
+using namespace cvx::viz ;
 
 using namespace std ;
 using namespace Eigen ;

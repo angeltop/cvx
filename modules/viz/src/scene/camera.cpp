@@ -8,7 +8,7 @@
 using namespace std ;
 using namespace Eigen ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 Eigen::Matrix4f PerspectiveCamera::projectionMatrix() const {
     assert(abs(aspect_ - std::numeric_limits<float>::epsilon()) > static_cast<float>(0));
@@ -49,4 +49,5 @@ void Camera::lookAt(const Vector3f &eye, const Vector3f &center, float roll) {
     mat_ = mat_ * rot.matrix() ;
 }
 
+} // namespace viz
 } // namespace cvx

@@ -6,7 +6,7 @@
 using namespace Eigen ;
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 float ICPAligner::align(KDTree3 &search, const EPointList3f &target_pts, const EPointList3f &src, Isometry3f &pose, uint &n_inliers)
 {
@@ -57,4 +57,4 @@ float ICPAligner::align(KDTree3 &search, const EPointList3f &target_pts, const E
     return current_error ;
 }
 
-}
+}}

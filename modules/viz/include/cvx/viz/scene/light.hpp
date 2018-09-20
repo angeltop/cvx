@@ -8,8 +8,7 @@
 
 #include <Eigen/Core>
 
-namespace cvx {
-
+namespace cvx { namespace viz {
 
 // Abstract light
 
@@ -57,5 +56,6 @@ struct SpotLight: public Light {
     float falloff_angle_ = M_PI, falloff_exponent_ = 0 ;
 };
 
+} // namespace viz
 } // namespace cvx
 #endif

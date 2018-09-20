@@ -4,7 +4,7 @@
 #include <map>
 #include <cvx/util/misc/regex.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // A class of key/value pairs of strings.
 
@@ -130,7 +130,7 @@ class DictionaryIterator
     Dictionary::ContainerType::const_iterator it_ ;
 } ;
 
-}
+}}
 
 
 #endif

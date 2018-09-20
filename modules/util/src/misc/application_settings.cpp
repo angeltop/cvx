@@ -7,7 +7,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 ApplicationSettings::ApplicationSettings(): root_(new Node)
 {
@@ -253,5 +253,5 @@ ApplicationSettings::Node::Ptr ApplicationSettings::findNode(const string &key) 
     return p ;
 }
 
-
+} // namespace util
 } // namespace cvx

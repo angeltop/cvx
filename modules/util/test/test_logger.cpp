@@ -7,7 +7,7 @@
 #include <cvx/util/misc/logger.hpp>
 
 using namespace std ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 
 int main(int argc, const char *argv[]) {

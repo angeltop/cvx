@@ -14,7 +14,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class DirectoryIteratorImpl {
 public:
@@ -103,4 +103,4 @@ bool operator==(DirectoryIterator a, DirectoryIterator b)
 }
 
 
-}
+}}

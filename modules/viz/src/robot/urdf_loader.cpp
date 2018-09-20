@@ -11,6 +11,9 @@ using namespace pugi ;
 using namespace cvx ;
 using namespace Eigen ;
 
+namespace cvx { namespace viz {
+
+
 void URDFLoader::parse(const string &urdf_file) {
     xml_document doc ;
 
@@ -450,4 +453,6 @@ void URDFLoader::parseMaterial(const xml_node &node)
 
 
 }
+
+}}
 

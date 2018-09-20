@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 typedef int32_t face_idx_t ;
 typedef int32_t vertex_idx_t ;
@@ -154,6 +154,6 @@ private:
     std::map<vertex_idx_t, TriangleMeshTopology::HalfEdge *>::const_iterator it_, last_ ;
 };
 
-}
+}}
 
 #endif

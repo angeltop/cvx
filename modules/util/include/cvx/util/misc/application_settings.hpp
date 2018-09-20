@@ -4,7 +4,7 @@
 #include <cvx/util/misc/strings.hpp>
 #include <cvx/util/misc/dictionary.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // provides mechanism to serialize application settings in XML config file
 class ApplicationSettings
@@ -137,6 +137,6 @@ bool ApplicationSettings::Node::deserialize<bool>() const {
 }
 
 
-}
+}}
 
 #endif

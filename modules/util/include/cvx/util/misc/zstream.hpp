@@ -16,7 +16,7 @@
 #include <sstream>
 #include <zlib.h>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 /// Exception class thrown by failed zlib operations.
 class ZStreamException: public std::exception
@@ -372,7 +372,7 @@ private:
     std::ofstream strm_ ;
 };
 
-
+} // namespace util
 } // namespace cvx
 
 #endif

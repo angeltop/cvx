@@ -14,7 +14,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 void Path::parse(const std::string &path) {
 
@@ -128,5 +128,5 @@ bool Path::rename(const string &old_path, const string &new_path) {
 }
 
 
-} // namespace cvx
+}} // namespace cvx
 

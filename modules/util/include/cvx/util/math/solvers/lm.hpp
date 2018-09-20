@@ -3,7 +3,7 @@
 
 #include <Eigen/Core>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 template<typename T>
 struct LemvarWrapper {
@@ -110,7 +110,7 @@ private:
 };
 
 
-}
+}}
 
 #endif
 

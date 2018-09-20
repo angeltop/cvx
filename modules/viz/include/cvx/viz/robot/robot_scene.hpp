@@ -5,7 +5,7 @@
 
 class URDFLoader ;
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 class JointNode ;
 typedef std::shared_ptr<JointNode> JointNodePtr ;
@@ -24,7 +24,7 @@ public:
 
 protected:
 
-    friend class ::URDFLoader ;
+    friend class URDFLoader ;
 
     Type type_ ;
     NodePtr node_ ;
@@ -39,7 +39,7 @@ public:
     float setPosition(float pos) ;
 
 protected:
-    friend class ::URDFLoader ;
+    friend class URDFLoader ;
     float upper_limit_, lower_limit_ ;
     Eigen::Vector3f axis_ ;
 };
@@ -64,7 +64,7 @@ public:
     }
 
 private:
-    friend class ::URDFLoader ;
+    friend class URDFLoader ;
     std::map<std::string, JointNodePtr> joints_ ;
 };
 
@@ -73,7 +73,7 @@ public:
     URDFLoadException(const std::string &msg): std::runtime_error(msg) {}
 };
 
-
+} // namespace viz
 } // namespace cvx
 
 #endif

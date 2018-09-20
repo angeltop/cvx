@@ -8,9 +8,8 @@
 
 #include <Eigen/Core>
 
-#include <cvx/util/camera/camera.hpp>
 
-namespace cvx {
+namespace cvx { namespace viz {
 
 // Abstract camera
 
@@ -63,7 +62,7 @@ public:
         aspect_(aspect), yfov_(yfov), znear_(znear), zfar_(zfar) {
     }
 
-    PerspectiveCamera(const cvx::PinholeCamera &cam, float znear = 0.01, float zfar = 10.0): znear_(znear), zfar_(zfar) {
+    PerspectiveCamera(const cvx::util::PinholeCamera &cam, float znear = 0.01, float zfar = 10.0): znear_(znear), zfar_(zfar) {
         yfov_ = 2 * atan( cam.sz().height / cam.fy()/2.0)  ;
         aspect_ = cam.sz().width / (float) cam.sz().height ;
         vp_.width_ = cam.sz().width ;
@@ -93,7 +92,7 @@ protected:
 };
 
 
-
+} // namespace viz
 } // namespace cvx
 
 #endif

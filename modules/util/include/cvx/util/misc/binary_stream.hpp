@@ -14,7 +14,7 @@
 
 #include <cvx/util/geometry/point.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // Lightweight portable binary stream on top of std::stream
 // Portability is not guaranteed on platforms with char != 8 bits and those using floating point representation other that IEEE-754
@@ -206,7 +206,7 @@ private:
     bool compatible_endianess_ ;
 } ;
 
-}
+}}
 
 
 #endif

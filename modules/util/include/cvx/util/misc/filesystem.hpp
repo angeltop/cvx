@@ -3,11 +3,11 @@
 
 #include <string>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 std::string get_file_contents(const std::string &fname) ;
 
-}
+}}
 
 
 #endif

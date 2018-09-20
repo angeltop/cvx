@@ -9,7 +9,7 @@
 
 // 2D/3D point cloud Search (wrapper over nanoflann)
 
-namespace cvx {
+namespace cvx { namespace util {
 
 class KDTreeIndex3 ;
 
@@ -68,6 +68,6 @@ private:
     std::shared_ptr<KDTreeIndex2> index_ ;
 } ;
 
-}
+}}
 
 #endif

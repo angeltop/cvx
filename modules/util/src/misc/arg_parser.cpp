@@ -7,7 +7,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 void ArgumentParser::parse(int argc, const char *argv[], uint c0) {
 
@@ -339,4 +339,4 @@ bool ArgumentParser::Option::matches(const string &arg) const
 }
 
 
-}
+}}

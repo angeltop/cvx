@@ -4,7 +4,7 @@ extern "C" {
 #include <levmar/levmar.h>
 }
 
-namespace cvx {
+namespace cvx { namespace util {
 
 template<>
 int LemvarWrapper<double>::levmar_der(void (*func)(double *p, double *hx, int m, int n, void *adata),
@@ -36,4 +36,4 @@ int LemvarWrapper<float>::levmar_dif(void (*func)(float *p, float *hx, int m, in
     return slevmar_dif(func, p, x, m, n, itmax, opts, info, work, covar, adata) ;
 }
 
-}
+}}

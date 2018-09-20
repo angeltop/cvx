@@ -4,7 +4,7 @@
 #include <memory>
 #include <opencv2/opencv.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // find connected components in a binary image. The components are returned as a label image (unsigned int).
 // nc can be 4 for 4-connected and 8 for 8-connected regions
@@ -68,6 +68,6 @@ private:
 
 RegionIterator findLargestBlob(const cv::Mat &src,  unsigned int minArea = 0) ;
 
-}
+}}
 
 #endif

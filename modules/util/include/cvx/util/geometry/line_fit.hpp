@@ -3,7 +3,7 @@
 
 #include <cvx/util/geometry/line.hpp>
 
-namespace cvx {
+namespace cvx { namespace util {
 
 // Least squares fit of line to list of points
 
@@ -209,7 +209,7 @@ Line<T, D> fitLineRobust(const PointList<T, D> &pts,
     return Line<T, D>(bm, bu) ;
 }
 
-}
+}}
 
 
 

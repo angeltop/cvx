@@ -7,7 +7,9 @@
 
 using namespace std ;
 using namespace Eigen ;
-using namespace cvx ;
+
+namespace cvx { namespace viz {
+
 
 Eigen::Vector3f TrackBall::X(1.f, 0.f, 0.f);
 Eigen::Vector3f TrackBall::Y(0.f, 1.f, 0.f);
@@ -412,3 +414,4 @@ void TrackBall::updateCameraEyeUp(bool eye, bool up)
     camera_->lookAt(eye_, center_, up_);
 }
 
+}}

@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 const std::string LogPatternFormatter::DefaultFormat = "%d{%c} %f (%l) %c: %m";
 
@@ -487,5 +487,5 @@ LoggerStream::~LoggerStream()  {
     logger_.writex(level_, ctx_, str()) ;
 }
 
-}
+}}
 
