@@ -1,3 +1,17 @@
+
+find_package(OpenCV 3 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(ZLIB REQUIRED)
+
+find_package(F2C REQUIRED)
+find_package(LAPACK)
+
+include_directories(
+        ${CMAKE_SOURCE_DIR}/include/
+        ${EIGEN3_INCLUDE_DIR}
+        ${OpenCV_INCLUDE_DIRS}
+)
+
 set ( LIBRARY_FOLDER "util")
 set ( LIBRARY_INCLUDE_DIR ${CVX_INCLUDE_DIR}/${LIBRARY_FOLDER}/)
 
