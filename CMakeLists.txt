@@ -33,10 +33,11 @@ SET ( CVX_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include/cvx/ )
 
 
 # build modules
-set(MODULES_SRC_DIR "${CMAKE_SOURCE_DIR}/src/modules")
+set(MODULES_SRC_DIR "${CMAKE_SOURCE_DIR}/modules")
 file(GLOB modules RELATIVE ${MODULES_SRC_DIR} "${MODULES_SRC_DIR}/*")
 
 set(BUILD_MODULE_UTIL_CONDITION "TRUE")
+set(BUILD_MODULE_VIZ_CONDITION "BUILD_MODULE_UTIL")
 
 foreach(module ${modules})
     string(TOUPPER ${module} module_uc)
@@ -50,9 +51,6 @@ foreach(module ${modules})
     endif()
 endforeach(module)
 
-
-#ADD_SUBDIRECTORY(src/modules/utils)
-ADD_SUBDIRECTORY(test)
 
 include(${CMAKE_SOURCE_DIR}/CMake/Install.cmake)
 
