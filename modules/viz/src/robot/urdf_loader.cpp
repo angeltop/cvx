@@ -8,7 +8,7 @@
 using namespace std ;
 using namespace pugi ;
 
-using namespace cvx ;
+using namespace cvx::util ;
 using namespace Eigen ;
 
 namespace cvx { namespace viz {

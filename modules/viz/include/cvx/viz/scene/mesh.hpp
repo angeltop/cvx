@@ -83,8 +83,8 @@ public:
     static MeshPtr createWireCylinder(float radius, float height, size_t slices, size_t stacks) ;
     static MeshPtr createSolidCylinder(float radius, float height, size_t slices, size_t stacks) ;
 
-    static MeshPtr makePointCloud(const EPointList3f &pts) ;
-    static MeshPtr makePointCloud(const EPointList3f &coords, const EPointList3f &clrs) ;
+    static MeshPtr makePointCloud(const cvx::util::EPointList3f &pts) ;
+    static MeshPtr makePointCloud(const cvx::util::EPointList3f &coords, const cvx::util::EPointList3f &clrs) ;
 
     void computeNormals() ;
 

@@ -29,8 +29,6 @@ IF ( CMAKE_COMPILER_IS_GNUCXX )
 	SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wreturn-type" )
 ENDIF( CMAKE_COMPILER_IS_GNUCXX )
 
-SET ( CVX_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include/cvx/ )
-
 
 # build modules
 set(MODULES_SRC_DIR "${CMAKE_SOURCE_DIR}/modules")
@@ -39,16 +37,24 @@ file(GLOB modules RELATIVE ${MODULES_SRC_DIR} "${MODULES_SRC_DIR}/*")
 set(BUILD_MODULE_UTIL_CONDITION "TRUE")
 set(BUILD_MODULE_VIZ_CONDITION "BUILD_MODULE_UTIL")
 
+# collect module information
+
 foreach(module ${modules})
     string(TOUPPER ${module} module_uc)
     if ( EXISTS ${MODULES_SRC_DIR}/${module}/CMakeLists.txt )
         cmake_dependent_option(BUILD_MODULE_${module_uc} "Build module ${module}" ON BUILD_MODULE_${module_uc}_CONDITION OFF)
         if ( BUILD_MODULE_${module_uc} )
-            add_subdirectory(${MODULES_SRC_DIR}/${module})
+            set(MODULE_${module_uc}_LOCATION ${MODULES_SRC_DIR}/${module})
+            list(APPEND CVX_INCLUDE_DIRS ${MODULES_SRC_DIR}/${module}/include)
+            list(APPEND BUILD_MODULES ${module_uc})
         else()
             message(WARNING "module ${module} not configured, skipping...")
         endif()
     endif()
+endforeach(module)
+
+foreach(module ${BUILD_MODULES})
+    add_subdirectory(${MODULE_${module}_LOCATION})
 endforeach(module)
 
 

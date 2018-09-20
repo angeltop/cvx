@@ -2,7 +2,9 @@
 #define __POINT_LIST_HPP__
 
 #include <cvx/util/geometry/point.hpp>
-#include <Eigen/StdVector>
+
+// https://stackoverflow.com/questions/24311357/why-are-initializer-lists-not-available-when-changing-the-allocator-of-stdvect/24346064
+// #include <Eigen/StdVector>
 
 namespace cvx { namespace util {
 

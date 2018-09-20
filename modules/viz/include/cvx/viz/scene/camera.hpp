@@ -8,6 +8,8 @@
 
 #include <Eigen/Core>
 
+#include <cvx/util/camera/camera.hpp>
+
 
 namespace cvx { namespace viz {
 

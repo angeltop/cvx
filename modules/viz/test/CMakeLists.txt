@@ -1,6 +1,5 @@
 include_directories(
-    ${CMAKE_SOURCE_DIR}/modules/viz/include
-    ../util/include
+    ${CVX_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
 )
 

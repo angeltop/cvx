@@ -4,6 +4,7 @@
 
 using namespace std ;
 using namespace Eigen ;
+using namespace cvx::util ;
 
 namespace cvx { namespace viz {
 
@@ -21,7 +22,7 @@ MeshPtr Mesh::createWireCube(const Vector3f &hs) {
     MeshPtr m(new Mesh(Lines)) ;
 
     m->vertices().data() =
-    {{ -hs.x(), +hs.y(), +hs.z() }, { +hs.x(), +hs.y(), +hs.z() }, { +hs.x(), -hs.y(), +hs.z() }, { -hs.x(), -hs.y(), +hs.z() },
+    EPointList3f{{ -hs.x(), +hs.y(), +hs.z() }, { +hs.x(), +hs.y(), +hs.z() }, { +hs.x(), -hs.y(), +hs.z() }, { -hs.x(), -hs.y(), +hs.z() },
     { -hs.x(), +hs.y(), -hs.z() }, { +hs.x(), +hs.y(), -hs.z() }, { +hs.x(), -hs.y(), -hs.z() }, { -hs.x(), -hs.y(), -hs.z() } } ;
     m->vertices().indices() =  {  0, 1, 1, 2, 2, 3, 3, 0,  4, 5, 5, 6, 6, 7,  7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
 

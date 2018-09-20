@@ -5,7 +5,7 @@
 
 using namespace std ;
 
-namespace cvx {
+namespace cvx { namespace util {
 
 string get_file_contents(const std::string &fname) {
     ifstream strm(fname) ;
@@ -23,5 +23,5 @@ string get_file_contents(const std::string &fname) {
 }
 
 
-}
+}}
 

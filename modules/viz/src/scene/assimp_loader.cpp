@@ -17,7 +17,8 @@
 
 using namespace std ;
 using namespace Eigen ;
-
+using cvx::util::optional ;
+using cvx::util::Path ;
 
 static Vector4f color4_to_float4(const aiColor4D &c) {
     return Vector4f(c.r, c.g, c.b, c.a) ;

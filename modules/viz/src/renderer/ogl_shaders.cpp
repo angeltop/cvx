@@ -8,7 +8,7 @@
 
 using namespace std ;
 using namespace Eigen ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 OpenGLShader::OpenGLShader(Type t, const std::string &code, const string &rname): type_(t) {
     compileString(code, rname) ;
@@ -32,8 +32,8 @@ void OpenGLShader::compileString(const std::string &code, const string &resource
         GLchar info_log[1024];
         glGetShaderInfoLog(handle_, 1024, NULL, info_log);
 
-        if ( resource_name.empty()) throw OpenGLShaderError(cvx::format("Error compilining shader: %s", info_log)) ;
-        else throw OpenGLShaderError(cvx::format("Error compilining shader (%s): %s", resource_name, info_log)) ;
+        if ( resource_name.empty()) throw OpenGLShaderError(format("Error compilining shader: %s", info_log)) ;
+        else throw OpenGLShaderError(format("Error compilining shader (%s): %s", resource_name, info_log)) ;
     }
 }
 

@@ -21,7 +21,7 @@
 
 using namespace std ;
 using namespace Eigen ;
-using namespace cvx ;
+using namespace cvx::util ;
 
 namespace cvx { namespace viz { namespace impl {
 
