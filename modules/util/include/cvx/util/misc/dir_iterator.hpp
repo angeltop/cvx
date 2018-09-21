@@ -40,7 +40,7 @@ public:
     // filter matching all entries
     static const DirectoryFilter MatchAll  ;
     static const DirectoryFilter MatchDirectories ;
-    static const DirectoryFilter MatchFilesWithGlobPattern(const std::string &glob_pattern) ;
+    static const DirectoryFilter Glob(const std::string &glob_pattern) ;
 };
 
 // iterator class

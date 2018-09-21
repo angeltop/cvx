@@ -113,7 +113,7 @@ static string glob_to_regex(const char *pat)
     return rx ;
 }
 
-const DirectoryFilter DirectoryFilters::MatchFilesWithGlobPattern(const string &glob_pattern)
+const DirectoryFilter DirectoryFilters::Glob(const string &glob_pattern)
 {
     std::vector<string> el = split(glob_pattern, ";") ;
 

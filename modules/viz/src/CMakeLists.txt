@@ -10,7 +10,7 @@ FIND_PACKAGE(OpenCV 3 REQUIRED)
 
 set ( LIBRARY_FOLDER "viz")
 get_filename_component(LIBRARY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../include/cvx/${LIBRARY_FOLDER}/" ABSOLUTE)
-message(${LIBRARY_INCLUDE_DIR})
+
 include_directories(
     ${CVX_INCLUDE_DIRS}
     3rdparty/

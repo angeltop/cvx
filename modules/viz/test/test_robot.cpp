@@ -33,12 +33,12 @@ public:
         subfinger_pos_ = 0.0 ;
     }
 
-    void onInit() {
+    void onInit() override {
         rdr_.init() ;
 
     }
 
-    void onResize(int width, int height) {
+    void onResize(int width, int height) override {
         float ratio;
         ratio = width / (float) height;
 
@@ -103,20 +103,20 @@ public:
         trackball_.setClickPoint(xpos, ypos) ;
     }
 
-    void onMouseWheel(double x) {
+    void onMouseWheel(double x) override {
         trackball_.setScrollDirection(x>0);
     }
 
 
-    void onRender() {
+    void onRender() override {
         trackball_.update() ;
         rdr_.render(camera_) ;
         this_thread::yield() ;
     }
 
     string text_ ;
-    Renderer rdr_ ;
     RobotScenePtr scene_ ;
+    Renderer rdr_ ;
     TrackBall trackball_ ;
     CameraPtr camera_ ;
     std::shared_ptr<RevoluteJoint> palm_joint_, subfinger_joint_ ;
@@ -156,7 +156,7 @@ int main(int argc, char *argv[]) {
 //    RobotScenePtr scene = RobotScene::loadURDF(package_path + "urdf/radioroso-gripper.urdf", { { "cvx_grasp_planner", package_path } }) ;
 
     string package_path = "/home/malasiot/source/radioroso_ws/src/clopema_testbed/clopema_description/" ;
-    RobotScenePtr scene = RobotScene::loadURDF(package_path + "robots/clopema.urdf", { { "clopema_description", package_path } }, true) ;
+    RobotScenePtr scene = RobotScene::loadURDF(package_path + "robots/clopema.urdf", { { "clopema_description", package_path } }, false) ;
 
     vector<string> hidden_nodes = { "ctu_f_roof_1", "ctu_f_roof_2", "ctu_f_roof_3", "ctu_f_wall_1",
                                     "ctu_f_wall_2", "ctu_f_wall_3", "ctu_f_wall_4" };

@@ -137,7 +137,7 @@ class Path {
     static std::vector<std::string> entries(const std::string &dir, DirectoryFilter filter, bool relative = true) ;
     // all files in dir matching glob pattern
     static std::vector<std::string> glob(const std::string &dir, const std::string &pattern, bool relative = true) {
-        return entries(dir, DirectoryFilters::MatchFilesWithGlobPattern(pattern), relative) ;
+        return entries(dir, DirectoryFilters::Glob(pattern), relative) ;
     }
 
 private:
