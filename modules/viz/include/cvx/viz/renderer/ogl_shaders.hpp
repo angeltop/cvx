@@ -2,6 +2,7 @@
 #define __CVX_VIZ_OPENGL_SHADERS_HPP__
 
 #include <GL/glew.h>
+
 #include <string>
 #include <stdexcept>
 #include <memory>

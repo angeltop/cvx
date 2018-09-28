@@ -22,9 +22,6 @@ public:
     // initialize renderer
     bool init() ;
 
-    // set free space color
-    void setBackgroundColor(const Eigen::Vector4f &clr);
-
     // render scene
     void render(const CameraPtr &cam) ;
 
