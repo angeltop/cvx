@@ -20,6 +20,16 @@ struct Viewport {
     size_t x_ = 0, y_ = 0, width_, height_ ;
 };
 
+class Ray
+{
+    public:
+    Ray(const Eigen::Vector3f &orig, const Eigen::Vector3f &dir);
+
+    Eigen::Vector3f orig_, dir_;
+    Eigen::Vector3f invdir_ ;
+    int sign_[3];
+};
+
 class Camera {
 public:
 
@@ -42,6 +52,10 @@ public:
     void setBgColor(const Eigen::Vector4f &clr) {
         bg_clr_ = clr ;
     }
+
+    virtual Ray getRay(float x, float y) const = 0 ;
+
+    virtual Eigen::Matrix4f getProjectionMatrix() const = 0;
 
     Eigen::Matrix4f getViewMatrix() const { return mat_ ; }
     const Viewport &getViewport() const { return vp_ ; }
@@ -75,6 +89,12 @@ public:
         aspect_ = asp ;
     }
 
+    Eigen::Matrix4f getProjectionMatrix() const override {
+        return projectionMatrix() ;
+    }
+
+    Ray getRay(float x, float y) const override ;
+
     Eigen::Matrix4f projectionMatrix() const ;
     float zNear() const { return znear_ ; }
     float zFar() const { return zfar_ ; }
@@ -89,8 +109,12 @@ protected:
 class OrthographicCamera: public Camera {
 
     OrthographicCamera() {}
+
+    Ray getRay(float x, float y) const override ;
 protected:
     float xmag_, ymag_, znear_, zfar_ ;
+
+
 };
 
 

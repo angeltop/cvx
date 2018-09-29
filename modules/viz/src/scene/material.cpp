@@ -28,7 +28,7 @@ void main()
 
 static string pnt_vertex_shader_code =
 R"(
-#version 330
+#version 330 core
 
 layout (location = 0) in vec3 vposition;
 layout (location = 1) in vec3 vnormal;
@@ -93,7 +93,7 @@ void main()
 static string phong_fragment_shader_common =
 R"(
 #version 330
-
+precision mediump float;
 in vec3 normal;
 in vec3 position;
 
@@ -176,12 +176,12 @@ vec4 phongIllumination(vec4 dc) {
 
         //calculate Diffuse Term:
 
-        vec4 Idiff = vec4(g_light_source[i].color, 1.0) * dc * max(dot(N,L), 0);
+        vec4 Idiff = vec4(g_light_source[i].color, 1.0) * dc * max(dot(N,L), 0.0f);
         Idiff = clamp(Idiff, 0.0, 1.0);
 
         // calculate Specular Term:
         vec4 Ispec = vec4(g_light_source[i].color, 1.0) * g_material.specular
-             * pow(max(dot(R,E),0.0),g_material.shininess);
+             * pow(max(dot(R,E),0.0f),g_material.shininess);
         Ispec = clamp(Ispec, 0.0, 1.0);
 
         finalColor +=  att*clamp(Ispec + Idiff, 0.0, 1.0);

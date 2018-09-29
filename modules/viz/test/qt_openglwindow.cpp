@@ -65,17 +65,20 @@ OpenGLWindow::OpenGLWindow(QWindow *parent)
 {
     setSurfaceType(QWindow::OpenGLSurface);
 
- /*   QSurfaceFormat format;
+    QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setMajorVersion(3);
     format.setMinorVersion(3);
+
     format.setSamples(4);
     format.setProfile(QSurfaceFormat::CoreProfile);
 
+    QSurfaceFormat::setDefaultFormat(format);
     setFormat(format);
 
+
     create() ;
-*/
+
     connect(this, SIGNAL(widthChanged(int)), this, SLOT(resizeGL()));
     connect(this, SIGNAL(heightChanged(int)), this, SLOT(resizeGL()));
 
@@ -109,7 +112,7 @@ void OpenGLWindow::render()
 
 void OpenGLWindow::renderLater()
 {
-    requestUpdate();
+ //   requestUpdate();
 }
 
 bool OpenGLWindow::event(QEvent *event)
@@ -118,9 +121,7 @@ bool OpenGLWindow::event(QEvent *event)
     case QEvent::UpdateRequest:
         renderNow();
         return true;
-    case QEvent::Resize:
-        QSize sz = ((QResizeEvent *)event)->size() ;
-        resize(
+
     default:
         return QWindow::event(event);
     }
@@ -143,7 +144,7 @@ void OpenGLWindow::renderNow()
 
     if (!m_context) {
         m_context = new QOpenGLContext(this);
-        m_context->setFormat(requestedFormat());
+        m_context->setFormat(QSurfaceFormat::defaultFormat());
         m_context->create();
 
         needsInitialize = true;
