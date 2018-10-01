@@ -29,10 +29,17 @@ set(LIB_SOURCES
     scene/camera.cpp
     scene/mesh.cpp
     scene/material.cpp
+    scene/geometry.cpp
+    scene/intersect.cpp
+    scene/intersect.hpp
+    scene/octree.hpp
+    scene/octree.cpp
 
     gui/trackball.cpp
     gui/glfw_window.cpp
     gui/offscreen.cpp
+
+
 
     3rdparty/pugixml/pugixml.cpp
     3rdparty/pugixml/pugixml.hpp

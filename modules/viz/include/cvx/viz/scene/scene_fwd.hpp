@@ -11,7 +11,7 @@ typedef std::shared_ptr<Material> MaterialPtr ;
 struct Mesh ;
 typedef std::shared_ptr<Mesh> MeshPtr ;
 
-struct Geometry ;
+class Geometry ;
 typedef std::shared_ptr<Geometry> GeometryPtr ;
 
 struct Camera ;

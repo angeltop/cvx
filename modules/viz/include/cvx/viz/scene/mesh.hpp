@@ -88,6 +88,8 @@ public:
 
     void computeNormals() ;
 
+  //  bool hit(const Ray &ray, Eigen::Vector3f &pos) const override ;
+
     // create a new
     static MeshPtr flatten(const MeshPtr &src) ;
 

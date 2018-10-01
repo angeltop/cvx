@@ -5,12 +5,14 @@
 #include <QMainWindow>
 #include "qt_glwidget.hpp"
 
-
-
+#include <cvx/util/misc/strings.hpp>
+#include <cvx/util/math/rng.hpp>
 #include <cvx/viz/renderer/renderer.hpp>
 #include <cvx/viz/scene/camera.hpp>
 #include <cvx/viz/scene/light.hpp>
+#include <cvx/viz/scene/material.hpp>
 #include <cvx/viz/scene/node.hpp>
+#include <cvx/viz/scene/geometry.hpp>
 #include <cvx/viz/gui/trackball.hpp>
 
 #include <iostream>
@@ -19,124 +21,70 @@ using namespace Eigen ;
 
 using namespace std ;
 using namespace cvx::viz ;
+using namespace cvx::util ;
 
 
-class AABBox
-{
-    public:
-    AABBox(const Vector3f &b0, const Vector3f &b1) {
-        bounds[0] = b0 ;
-        bounds[1] = b1;
-    }
+RNG g_rng ;
 
-    bool intersect(const Ray &r, float &t) const  {
-        float tmin, tmax, tymin, tymax, tzmin, tzmax;
+Matrix3f makeSkewSymmetric(const Vector3f& v) {
+    Matrix3f result = Matrix3f::Zero();
 
-        tmin = (bounds[r.sign_[0]].x() - r.orig_.x()) * r.invdir_.x();
-        tmax = (bounds[1-r.sign_[0]].x() - r.orig_.x()) * r.invdir_.x();
-        tymin = (bounds[r.sign_[1]].y() - r.orig_.y()) * r.invdir_.y();
-        tymax = (bounds[1-r.sign_[1]].y() - r.orig_.y()) * r.invdir_.y();
+    result(0, 1) = -v(2);
+    result(1, 0) =  v(2);
+    result(0, 2) =  v(1);
+    result(2, 0) = -v(1);
+    result(1, 2) = -v(0);
+    result(2, 1) =  v(0);
 
-        if ((tmin > tymax) || (tymin > tmax)) return false;
-
-        if (tymin > tmin) tmin = tymin;
-        if (tymax < tmax) tmax = tymax;
-
-        tzmin = (bounds[r.sign_[2]].z() - r.orig_.z()) * r.invdir_.z();
-        tzmax = (bounds[1-r.sign_[2]].z() - r.orig_.z()) * r.invdir_.z();
-
-        if ((tmin > tzmax) || (tzmin > tmax)) return false;
-
-        if (tzmin > tmin) tmin = tzmin;
-        if (tzmax < tmax) tmax = tzmax;
-
-        t = tmin ;
-        if ( t < 0 ) {
-            t = tmax ;
-            if ( t < 0 ) return false;
-        }
-
-        return true;
-    }
-
-    Vector3f bounds[2];
-};
-
-struct Triangle {
-    Vector3f vtx_[3] ;
-};
-
-bool rayIntersectsTriangle(const Ray ray,
-                           const Vector3f &v0,
-                           const Vector3f &v1,
-                           const Vector3f &v2,
-                           bool back_face_culling,
-                           float &t)
-{
-    const float eps = 0.0000001;
-    Vector3f edge1, edge2, h, s, q;
-    float a,f,u,v;
-    edge1 = v1 - v0;
-    edge2 = v2 - v0;
-    h = ray.dir_.cross(edge2);
-    a = edge1.dot(h);
-    f = 1/a;
-
-    if ( back_face_culling ) {
-        if ( a < eps ) return false;
-        s = ray.orig_ - v0;
-        u =  ( s.dot(h) );
-        if ( u < 0.0 || u > a ) return false;
-        q = s.cross(edge1);
-        v = ray.dir_.dot(q) ;
-        if (v < 0.0 || u + v > a) return false;
-
-        // At this stage we can compute t to find out where the intersection point is on the line.
-        t = f * edge2.dot(q) ;
-    }
-    else {
-        if ( a > -eps && a < eps ) return false;
-        s = ray.orig_ - v0;
-        u = f * ( s.dot(h) );
-        if ( u < 0.0 || u > 1.0 ) return false;
-        q = s.cross(edge1);
-        v = f * ray.dir_.dot(q) ;
-        if (v < 0.0 || u + v > 1.0)
-            return false;
-
-        // At this stage we can compute t to find out where the intersection point is on the line.
-        t = f * edge2.dot(q);
-
-    }
-
-    return t > eps ;
-
+    return result;
 }
 
-bool rayIntersectsSphere(const Ray &ray, const Vector3f &center, float radius, float &t) {
+#define EPSILON_EXPMAP_THETA 1.0e-3
 
-    float t0, t1; // solutions for t if the ray intersects
+Eigen::Matrix3f expMapRot(const Vector3f& q) {
+    float theta = q.norm();
 
-    float radius2 = radius * radius ;
-    Vector3f L = center - ray.orig_;
-    float tca = L.dot(ray.dir_);
-    // if (tca < 0) return false;
-    float d2 = L.dot(L) - tca * tca;
-    if (d2 > radius2) return false;
-    float thc = sqrt(radius2 - d2);
-    t0 = tca - thc;
-    t1 = tca + thc;
+    Matrix3f R = Matrix3f::Zero();
+    Matrix3f qss =  makeSkewSymmetric(q);
+    Matrix3f qss2 =  qss*qss;
 
-    if (t0 > t1) std::swap(t0, t1);
+    if (theta < EPSILON_EXPMAP_THETA)
+        R = Matrix3f::Identity() + qss + 0.5*qss2;
+    else
+        R = Eigen::Matrix3f::Identity()
+                + (sin(theta)/theta)*qss
+                + ((1-cos(theta))/(theta*theta))*qss2;
 
-    t = t0 ;
-    if ( t < 0 ) {
-        t = t1; // if t0 is negative, let's use t1 instead
-        if ( t < 0 ) return false; // both t0 and t1 are negative
-    }
+    return R;
+}
 
-    return true;
+Isometry3f getRandTransform(double d)
+{
+    Isometry3f t = Isometry3f::Identity();
 
+    Vector3f rotation(g_rng.uniform(-M_PI, M_PI),  g_rng.uniform(-M_PI, M_PI), g_rng.uniform(-M_PI, M_PI)) ;
+    Vector3f position(g_rng.uniform(-0.8, 0.8), g_rng.uniform(d, d + 0.1), g_rng.uniform(-0.8, 0.8));
+
+    t.translation() = position;
+    t.linear() = expMapRot(rotation);
+
+    return t;
+}
+
+NodePtr randomBox(const string &name, MaterialPtr material, const Vector3f &hs) {
+
+    NodePtr box_node(new Node) ;
+    box_node->setName(name) ;
+
+    GeometryPtr geom(new BoxGeometry(hs)) ;
+
+    DrawablePtr dr(new Drawable(geom, material)) ;
+
+    box_node->addDrawable(dr) ;
+
+    box_node->matrix() = getRandTransform(0) ;
+
+    return box_node ;
 }
 
 class ExampleWindow : public GLWidget
@@ -147,22 +95,15 @@ public:
     void hit(int mouse_x, int mouse_y) {
 
         Ray ray = camera_->getRay(mouse_x, mouse_y);
-/*
-        AABBox box(  {-0.5, -0.5, -0.5}, {0.5, 0.5, 0.5}) ;
 
-        float t ;
-        if ( box.intersect(ray, t) ) {
-                cout << ray.orig_ + t * ray.dir_ << endl ;
-        }
-        */
+       Hit h ;
+        if ( scene_->hit(ray, h) ) {
 
-        float t ;
-        if ( rayIntersectsTriangle(ray, { -0.5, -0.5, 0.5 }, {  0.5, -0.5, 0.5 }, { -0.5, 0.5, 0.5}, false, t ) ) {
-                cout << ray.orig_ + t * ray.dir_ << endl ;
+            cout << h.node_->name() << ' ' << h.t_ << "  " ;
+
+            cout << endl ;
         }
     }
-
-
 
 private:
 
@@ -263,10 +204,12 @@ ExampleWindow::ExampleWindow(ScenePtr scene): scene_(scene), rdr_(scene) {
 
 
 
-     auto c = scene->geomCenter() ;
-     auto r = scene->geomRadius(c) ;
+     //auto c = scene->geomCenter() ;
+    // auto r = scene->geomRadius(c) ;
 
 
+     Vector3f c {0, 0, 0} ;
+     float r = 1.0 ;
 
      // create a camera
      uint width = 640, height = 480 ;
@@ -284,8 +227,15 @@ int main(int argc, char **argv)
 {
 
     ScenePtr scene(new Scene) ;
+
    //  scene->load("/home/malasiot/Downloads/greek_column.obj") ;
-     scene->load("/home/malasiot/Downloads/triangle.obj") ;
+    // scene->load("/home/malasiot/Downloads/cube.obj") ;
+
+    for( uint i=0 ; i<10 ; i++ ) {
+        Vector4f clr(0.5, g_rng.uniform(0.0, 1.0), g_rng.uniform(0.0, 1.0), 1.0) ;
+
+        scene->addChild(randomBox(format("box%d", i), Material::makeLambertian(clr), Vector3f(0.04, g_rng.uniform(0.1, 0.15), 0.04))) ;
+    }
 
     DirectionalLight *dl = new DirectionalLight(Vector3f(0.5, 0.5, 1)) ;
     dl->diffuse_color_ = Vector3f(1, 1, 1) ;

@@ -13,10 +13,14 @@ namespace cvx { namespace viz {
 
 // abstract geometry class
 
+class Ray ;
+
 class Geometry {
 public:
     Geometry() = default ;
     virtual ~Geometry() {}
+
+    virtual bool intersect(const Ray &ray, float &t) const { return false  ; }
 };
 
 
@@ -27,6 +31,8 @@ public:
     ~BoxGeometry() {}
 
     Eigen::Vector3f halfExtents() const { return half_extents_ ; }
+
+    bool intersect(const Ray &ray, float &t) const override ;
 private:
 
     Eigen::Vector3f half_extents_ ;
@@ -37,6 +43,8 @@ public:
     SphereGeometry(float radius): radius_(radius) {}
 
     float radius() const { return radius_ ; }
+
+    bool intersect(const Ray &ray, float &t) const override ;
 
 private:
     float radius_ ;
@@ -50,6 +58,8 @@ public:
     float radius() const { return radius_ ; }
     float height() const { return height_ ; }
 
+  //  bool hit(const Ray &ray, Eigen::Vector3f &pos) const override ;
+
 private:
     float radius_, height_ ;
 };
@@ -60,6 +70,8 @@ public:
 
     float radius() const { return radius_ ; }
     float height() const { return height_ ; }
+
+ //   bool hit(const Ray &ray, Eigen::Vector3f &pos) const override ;
 
 private:
     float radius_, height_ ;

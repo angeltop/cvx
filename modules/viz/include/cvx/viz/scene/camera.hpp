@@ -7,6 +7,7 @@
 #include <map>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include <cvx/util/camera/camera.hpp>
 
@@ -24,6 +25,8 @@ class Ray
 {
     public:
     Ray(const Eigen::Vector3f &orig, const Eigen::Vector3f &dir);
+
+    Ray(const Ray &other, const Eigen::Isometry3f &tr) ;
 
     Eigen::Vector3f orig_, dir_;
     Eigen::Vector3f invdir_ ;

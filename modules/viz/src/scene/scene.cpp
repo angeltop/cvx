@@ -3,6 +3,7 @@
 #include <cvx/viz/scene/node.hpp>
 #include <cvx/viz/scene/drawable.hpp>
 #include <cvx/viz/scene/material.hpp>
+#include <cvx/viz/scene/camera.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -102,6 +103,31 @@ NodePtr Node::findNodeByName(const std::string &name)
     nf.visit(*this) ;
     return nf.node_ ;
 }
+
+bool Node::hit(const Ray &ray, Hit &hit)
+{
+    if ( !is_visible_ ) return false ;
+
+    Isometry3f tf = globalTransform().inverse() ;
+    for( const DrawablePtr &dr: drawables() ) {
+        GeometryPtr geom = dr->geometry() ;
+        float t ;
+        Ray tr(ray, tf) ; // ray transform to local coordinate system
+        if ( geom->intersect(tr,  t) && t < hit.t_ ) {
+            hit.geom_ = geom.get() ;
+            hit.node_ = this ;
+            hit.t_ = t ;
+        }
+    }
+
+    for( auto &c: children() ) {
+        c->hit(ray, hit) ;
+    }
+
+    return hit.geom_ != nullptr ;
+}
+
+
 
 
 }}

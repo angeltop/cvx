@@ -15,6 +15,14 @@
 namespace cvx { namespace viz {
 
 class NodeVisitor ;
+class Ray ;
+
+// structure containing a single ray/scene hit result
+struct Hit {
+    Node* node_ = nullptr ;
+    Geometry* geom_ = nullptr ;
+    float t_ = std::numeric_limits<float>::max() ;
+};
 
 // a hieracrchy of nodes. each node applies a transformation to the attached geometries, cameras, lights
 
@@ -91,7 +99,11 @@ public:
         return n ;
     }
 
+
+    bool hit(const Ray &ray, Hit &hit) ;
+
 private:
+
 
     bool is_visible_ = true ;
 
@@ -104,6 +116,7 @@ private:
     std::vector<LightPtr> lights_ ;
 
     Node *parent_ = nullptr;
+
 };
 
 class NodeVisitor {

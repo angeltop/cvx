@@ -19,6 +19,9 @@ namespace cvx { namespace viz {
 namespace impl {
     class AssimpImporter ;
 }
+
+
+
 // class defining a complete scene
 
 class Scene: public Node {
@@ -29,12 +32,8 @@ public:
     void load(const std::string &fname, const NodePtr &parent = nullptr) ;
     void load(const aiScene *sc, const std::string &fname, const NodePtr &parent = nullptr) ;
 
-
-
     Eigen::Vector3f geomCenter() const ;
     float geomRadius(const Eigen::Vector3f &center) const ;
-
-
 
 };
 
