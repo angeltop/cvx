@@ -41,7 +41,7 @@ bool rayIntersectsTriangle(const Ray ray,
                            bool back_face_culling,
                            float &t)
 {
-    const float eps = 0.0000001;
+    const float eps = 1.0e-30;
     Vector3f edge1, edge2, h, s, q;
     float a,f,u,v;
     edge1 = v1 - v0;
@@ -134,7 +134,7 @@ inline void findMinMax(float x0, float x1, float x2, float &min, float &max) {
 inline bool planeBoxOverlap(const Vector3f &normal, const Vector3f &vert, const Vector3f &maxbox) {
     Vector3f vmin, vmax;
     float v;
-    for (size_t q = 0; q < 3; q++) {
+    for (int q = 0; q < 3; q++) {
         v = vert[q];
         if (normal[q] > 0.0f) {
             vmin[q] = -maxbox[q] - v;
@@ -151,6 +151,7 @@ inline bool planeBoxOverlap(const Vector3f &normal, const Vector3f &vert, const 
 }
 
 /*======================== X-tests ========================*/
+
 
 inline bool axisTestX01(float a, float b, float fa, float fb, const Vector3f &v0,
                         const Vector3f &v2, const Vector3f &boxhalfsize, float &rad, float &min,
@@ -169,6 +170,7 @@ inline bool axisTestX01(float a, float b, float fa, float fb, const Vector3f &v0
         return false;
     return true;
 }
+
 
 inline bool axisTestX2(float a, float b, float fa, float fb, const Vector3f &v0,
                        const Vector3f &v1, const Vector3f &boxhalfsize, float &rad, float &min,
@@ -226,10 +228,20 @@ inline bool axisTestY1(float a, float b, float fa, float fb, const Vector3f &v0,
     return true;
 }
 
+
 /*======================== Z-tests ========================*/
-inline bool axisTestZ12(float a, float b, float fa, float fb, const Vector3f &v2,
-                        const Vector3f &boxhalfsize, float &rad, float min, float max, float &p2) {
+inline bool axisTestZ12(float a, float b, float fa, float fb, const Vector3f &v1, const Vector3f &v2,
+                        const Vector3f &boxhalfsize, float &rad, float min, float max, float &p1, float &p2) {
+    p1 = a * v1.x() - b * v1.y() ;
     p2 = a * v2.x() - b * v2.y();
+
+    if ( p2 < p1 ) {
+        min = p2 ;
+        max = p1 ;
+    } else {
+        min = p1 ;
+        max = p2 ;
+    }
     rad = fa * boxhalfsize.x() + fb * boxhalfsize.y();
     if (min > rad || max < -rad)
         return false;
@@ -252,6 +264,32 @@ inline bool axisTestZ0(float a, float b, float fa, float fb, const Vector3f &v0,
     if (min > rad || max < -rad)
         return false;
     return true;
+}
+
+bool triangleInsideBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
+                   const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) {
+    Vector3f v0, v1, v2;
+    float min, max ;
+
+    /* This is the fastest branch on Sun */
+    /* move everything so that the boxcenter is in (0,0,0) */
+    v0 = tv0 - boxcenter;
+    v1 = tv1 - boxcenter;
+    v2 = tv2 - boxcenter;
+
+    if ( v0.x() < -boxhalfsize.x() || v0.x() > boxhalfsize.x() ) return false ;
+    if ( v1.x() < -boxhalfsize.x() || v1.x() > boxhalfsize.x() ) return false ;
+    if ( v2.x() < -boxhalfsize.x() || v2.x() > boxhalfsize.x() ) return false ;
+
+    if ( v0.y() < -boxhalfsize.y() || v0.y() > boxhalfsize.y() ) return false ;
+    if ( v1.y() < -boxhalfsize.y() || v1.y() > boxhalfsize.y() ) return false ;
+    if ( v2.y() < -boxhalfsize.y() || v2.y() > boxhalfsize.y() ) return false ;
+
+    if ( v0.z() < -boxhalfsize.z() || v0.z() > boxhalfsize.z() ) return false ;
+    if ( v1.z() < -boxhalfsize.z() || v1.z() > boxhalfsize.z() ) return false ;
+    if ( v2.z() < -boxhalfsize.z() || v2.z() > boxhalfsize.z() ) return false ;
+
+    return true ;
 }
 
 bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
@@ -278,6 +316,8 @@ bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv
     e1 = v2 - v1;
     e2 = v0 - v2;
 
+
+
     /* Bullet 3:  */
     /*  test the 9 tests first (this was faster) */
     fex = fabsf(e0.x());
@@ -288,7 +328,7 @@ bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv
         return false;
     if (!axisTestY02(e0.z(), e0.x(), fez, fex, v0, v2, boxhalfsize, rad, min, max, p0, p2))
         return false;
-    if (!axisTestZ12(e0.y(), e0.x(), fey, fex, v2, boxhalfsize, rad, min, max, p2))
+    if (!axisTestZ12(e0.y(), e0.x(), fey, fex, v1, v2, boxhalfsize, rad, min, max, p1, p2))
         return false;
 
     fex = fabsf(e1.x());
@@ -299,24 +339,23 @@ bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv
         return false;
     if (!axisTestY02(e1.z(), e1.x(), fez, fex, v0, v2, boxhalfsize, rad, min, max, p0, p2))
         return false;
-    if (!axisTestZ0(e1.y(), e1.x(), fez, fex, v0, v1, boxhalfsize, rad, min, max, p0, p1))
+    if (!axisTestZ0(e1.y(), e1.x(), fey, fex, v0, v1, boxhalfsize, rad, min, max, p0, p1))
         return false;
 
     fex = fabsf(e2.x());
     fey = fabsf(e2.y());
     fez = fabsf(e2.z());
+
     if (!axisTestX2(e2.z(), e2.y(), fez, fey, v0, v1, boxhalfsize, rad, min, max, p0, p1))
         return false;
-    if (!axisTestY02(e2.z(), e2.x(), fez, fex, v0, v2, boxhalfsize, rad, min, max, p0, p2))
+    if (!axisTestY1(e2.z(), e2.x(), fez, fex, v0, v1, boxhalfsize, rad, min, max, p0, p1))
         return false;
-    if (!axisTestZ12(e2.y(), e2.x(), fey, fex, v2, boxhalfsize, rad, min, max, p2))
+    if (!axisTestZ12(e2.y(), e2.x(), fey, fex, v1, v2, boxhalfsize, rad, min, max, p1, p2))
         return false;
 
+
     /* Bullet 1: */
-    /*  first test overlap in the {x,y,z}-directions */
-    /*  find min, max of the triangle each direction, and test for overlap in */
-    /*  that direction -- this is equivalent to testing a minimal AABB around */
-    /*  the triangle against the AABB */
+    // Test if triangle is completely outside box
 
     /* test in X-direction */
     findMinMax(v0.x(), v1.x(), v2.x(), min, max);
@@ -339,6 +378,7 @@ bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv
     normal = e0.cross(e1) ;
     if (!planeBoxOverlap(normal, v0, boxhalfsize))
         return false;
+
 
     return true; /* box and triangle overlaps */
 }

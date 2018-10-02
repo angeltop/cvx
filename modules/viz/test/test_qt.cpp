@@ -204,13 +204,13 @@ ExampleWindow::ExampleWindow(ScenePtr scene): scene_(scene), rdr_(scene) {
 
 
 
-     //auto c = scene->geomCenter() ;
-    // auto r = scene->geomRadius(c) ;
+     auto c = scene->geomCenter() ;
+     auto r = scene->geomRadius(c) ;
 
-
+/*
      Vector3f c {0, 0, 0} ;
      float r = 1.0 ;
-
+*/
      // create a camera
      uint width = 640, height = 480 ;
 
@@ -228,15 +228,16 @@ int main(int argc, char **argv)
 
     ScenePtr scene(new Scene) ;
 
-   //  scene->load("/home/malasiot/Downloads/greek_column.obj") ;
+  //   scene->load("/home/malasiot/Downloads/greek_column.obj") ;
     // scene->load("/home/malasiot/Downloads/cube.obj") ;
-
+    scene->load("/home/malasiot/Downloads/bunny.obj") ;
+/*
     for( uint i=0 ; i<10 ; i++ ) {
         Vector4f clr(0.5, g_rng.uniform(0.0, 1.0), g_rng.uniform(0.0, 1.0), 1.0) ;
 
         scene->addChild(randomBox(format("box%d", i), Material::makeLambertian(clr), Vector3f(0.04, g_rng.uniform(0.1, 0.15), 0.04))) ;
     }
-
+*/
     DirectionalLight *dl = new DirectionalLight(Vector3f(0.5, 0.5, 1)) ;
     dl->diffuse_color_ = Vector3f(1, 1, 1) ;
     scene->addLight(LightPtr(dl)) ;

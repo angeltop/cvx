@@ -27,6 +27,9 @@ bool rayIntersectsTriangle(const Ray ray,
                            float &t) ;
 bool rayIntersectsSphere(const Ray &ray, const Eigen::Vector3f &center, float radius, float &t) ;
 
+bool triangleInsideBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
+                   const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) ;
+
 bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
                    const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) ;
 }}}

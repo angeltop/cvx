@@ -197,6 +197,9 @@ bool AssimpImporter::importMeshes(const aiScene *sc) {
             }
         }
 
+        if ( smesh->ptype() == Mesh::Triangles )
+            smesh->makeOctree() ;
+
         meshes_[mesh] = smesh ;
     }
 

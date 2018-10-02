@@ -14,15 +14,22 @@
 
 namespace cvx { namespace viz {
 
+namespace detail {
+    class Octree ;
+}
+
 #define MAX_TEXTURES 4
 
 template<typename T, typename Allocator = std::allocator<T>>
 class VertexBuffer {
 public:
+
+    using data_t = std::vector<T, Allocator> ;
+
     VertexBuffer() = default ;
     VertexBuffer(std::initializer_list<T> &vdata, std::initializer_list<T> &indices = {}): data_(data), indices_(indices) {}
 
-    std::vector<T, Allocator> &data() { return data_ ; }
+    data_t &data() { return data_ ; }
     std::vector<uint32_t> &indices() { return indices_ ; }
 
     const std::vector<T, Allocator> &data() const { return data_ ; }
@@ -30,9 +37,10 @@ public:
 
     bool hasIndices() const { return !indices_.empty() ; }
 
+
 protected:
 
-    std::vector<T, Allocator> data_ ;
+    data_t data_ ;
     std::vector<uint32_t> indices_ ;
 };
 
@@ -42,6 +50,7 @@ public:
     enum PrimitiveType { Triangles, Lines, Points } ;
 
     Mesh(PrimitiveType t): ptype_(t) {}
+     ~Mesh();
 
     using vb3_t = VertexBuffer<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ;
     using vb2_t = VertexBuffer<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f>> ;
@@ -87,10 +96,12 @@ public:
     static MeshPtr makePointCloud(const cvx::util::EPointList3f &coords, const cvx::util::EPointList3f &clrs) ;
 
     void computeNormals() ;
+    void computeBoundingBox(Eigen::Vector3f &bmin, Eigen::Vector3f &bmax) ;
+    void makeOctree() ;
 
-  //  bool hit(const Ray &ray, Eigen::Vector3f &pos) const override ;
+    bool intersect(const cvx::viz::Ray &ray, float &t) const override ;
 
-    // create a new
+    // create a new mesh without indices
     static MeshPtr flatten(const MeshPtr &src) ;
 
 private:
@@ -98,6 +109,7 @@ private:
     vb2_t tex_coords_[MAX_TEXTURES] ;
 
     PrimitiveType ptype_ ;
+    detail::Octree *octree_ = nullptr ;
 
 };
 
