@@ -49,5 +49,12 @@ void Renderer::addTextureImage(const string &id, const cv::Mat &im) {
     impl_->addTextureImage(id, im) ;
 }
 
+void Renderer::renderText(const string &text, float x, float y, const Font &f)
+{
+    impl_->renderText(text, x, y, f) ;
+
+
+}
+
 
 }}

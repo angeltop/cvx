@@ -5,6 +5,7 @@
 
 #include <cvx/viz/scene/scene.hpp>
 #include <cvx/viz/gui/offscreen.hpp>
+#include <cvx/viz/renderer/font.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace cvx { namespace viz {
@@ -33,6 +34,8 @@ public:
     // It should be called before calling init.
 
     void addTextureImage(const std::string &id, const cv::Mat &im) ;
+
+    void renderText(const std::string &text, float x, float y, const Font &f) ;
 
 private:
 

@@ -20,12 +20,19 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
     ${GLFW3_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIR}
+    ${FREETYPE_INCLUDE_DIRS}
+    ${HARFBUZZ_INCLUDE_DIRS}
+    ${FONTCONFIG_INCLUDE_DIR}
 )
 
 set(LIB_SOURCES
     renderer/ogl_shaders.cpp
     renderer/renderer.cpp
     renderer/renderer_impl.cpp
+    renderer/font_manager.cpp
+    renderer/font_manager.hpp
+    renderer/glyph_cache.cpp
+    renderer/glyph_cache.hpp
 
     scene/scene.cpp
     scene/assimp_loader.cpp
@@ -41,8 +48,6 @@ set(LIB_SOURCES
     gui/trackball.cpp
     gui/glfw_window.cpp
     gui/offscreen.cpp
-
-
 
     3rdparty/pugixml/pugixml.cpp
     3rdparty/pugixml/pugixml.hpp
@@ -69,7 +74,15 @@ set(LIB_SOURCES
 )
 
 add_library(cvx_viz ${LIBRARY_TYPE} ${LIB_SOURCES})
-target_link_libraries(cvx_viz cvx_util ${ASSIMP_LIBRARIES} ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${GLFW3_LIBRARY} ${OpenCV_LIBRARIES} )
+target_link_libraries(cvx_viz cvx_util
+    ${ASSIMP_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${GLEW_LIBRARIES}
+    ${GLFW3_LIBRARY}
+    ${OpenCV_LIBRARIES}
+    ${HARFBUZZ_LIBRARIES}
+    ${FONTCONFIG_LIBRARIES}
+    ${FREETYPE_LIBRARIES})
 
 # Install library
 install(TARGETS cvx_viz

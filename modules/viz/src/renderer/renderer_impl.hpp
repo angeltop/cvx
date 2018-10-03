@@ -12,6 +12,8 @@
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>
 
+#include "glyph_cache.hpp"
+
 namespace cvx { namespace viz { namespace impl {
 
 class RendererImpl {
@@ -57,7 +59,7 @@ public:
     void setLights(const NodePtr &node, const Eigen::Isometry3f &parent_tf) ;
 
     void initTextures() ;
-    void renderText(const std::string &text, float x, float y) ;
+    void renderText(const std::string &text, float x, float y, const Font &face) ;
     void initFontData() ;
     void makeVertexBuffers();
     void addTextureImage(const std::string &id, const cv::Mat &im) ;
@@ -86,6 +88,7 @@ private:
     MaterialPtr default_material_ ;
     OpenGLShaderProgram::Ptr prog_ ;
     uint light_index_ = 0 ;
+    std::map< std::pair<FT_Face, size_t>, detail::GlyphCache> glyphs_ ;
 } ;
 
 

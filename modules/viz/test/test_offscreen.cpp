@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
     Renderer rdr(scene) ;
     rdr.init() ;
 
+    rdr.renderText("hello", 100, 100, Font("arial", 12)) ;
     // render scene (possibly multiple times)
     rdr.render(cam) ;
 

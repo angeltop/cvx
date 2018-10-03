@@ -1,4 +1,6 @@
 #include "renderer_impl.hpp"
+#include "font_manager.hpp"
+#include "glyph_cache.hpp"
 
 #include <iostream>
 #include <cstring>
@@ -377,6 +379,8 @@ void RendererImpl::initTextures()
     }
 }
 
+
+
 void RendererImpl::drawMeshData(MeshData &data, GeometryPtr geom) {
     glBindVertexArray(data.vao_);
 
@@ -551,6 +555,20 @@ cv::Mat RendererImpl::getDepth() {
 
     // cv::imwrite("/tmp/dmap.png", vl::depthViz(depth_scale)) ;
     return depth_scale;
+
+}
+
+void RendererImpl::renderText(const string &text, float x, float y, const Font &font) {
+    using namespace detail ;
+    FT_Face f = FontManager::instance().createFontFace(font) ;
+
+    if ( f == nullptr ) return ;
+
+    auto it = glyphs_.emplace(make_pair(f, (size_t)font.size()), GlyphCache(f, font.size())).first ;
+
+    GlyphCache &cache = it->second ;
+    cache.cache(text) ;
+
 
 }
 
