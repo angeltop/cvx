@@ -363,7 +363,7 @@ void Mesh::computeNormals()
 
 
 
-void Mesh::computeBoundingBox(Vector3f &vmin, Vector3f &vmax) {
+void Mesh::computeBoundingBox(Vector3f &vmin, Vector3f &vmax) const {
 
     auto &&vertices = vertices_.data() ;
     assert( !vertices.empty() ) ;
@@ -384,36 +384,7 @@ void Mesh::makeOctree()
 {
     assert( this->ptype_ == Mesh::Triangles ) ;
 
-    auto &&vertices = vertices_.data() ;
-    assert( !vertices.empty() ) ;
-
-    Vector3f bmin, bmax ;
-    computeBoundingBox(bmin, bmax) ;
-
-    // to handle planar objects (i,e one dimension is zero)
-   Vector3f sz = bmax - bmin ;
-    float max_dim = std::max(sz.x(), std::max(sz.y(), sz.z()) ) ;
-    if ( max_dim < std::numeric_limits<float>::min() ) return ;
-    float sz_offset = max_dim * 0.01 ;
-    Vector3f offset(sz_offset, sz_offset, sz_offset) ;
-    bmin -= offset ; bmax += offset ;
-
-    octree_ = new detail::Octree(this, bmin, bmax, 5) ;
-
-
-
-    auto &&indices = vertices_.indices() ;
-
-    for( uint i=0 ; i<indices.size() ; i+=3 ) {
-        uint i0 = indices[i] ;
-        uint i1 = indices[i+1] ;
-        uint i2 = indices[i+2] ;
-        const Vector3f &v0 = vertices[i0] ;
-        const Vector3f &v1 = vertices[i1] ;
-        const Vector3f &v2 = vertices[i2] ;
-
-        octree_->insert(i, v0, v1, v2) ;
-    }
+    octree_ = new detail::Octree(*this, 5) ;
 }
 
 bool Mesh::intersect(const Ray &ray, float &t) const
@@ -421,7 +392,7 @@ bool Mesh::intersect(const Ray &ray, float &t) const
     if ( octree_ == nullptr ) return false ;
 
     uint tindex ;
-    octree_->intersectRay(ray, tindex, t) ;
+    octree_->intersect(ray, tindex, t) ;
 
     return true ;
 }

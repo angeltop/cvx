@@ -292,6 +292,33 @@ bool triangleInsideBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
     return true ;
 }
 
+bool triangleOutsideBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
+                   const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) {
+
+    float min, max ;
+    Vector3f v0 = tv0 - boxcenter;
+    Vector3f v1 = tv1 - boxcenter;
+    Vector3f v2 = tv2 - boxcenter;
+
+    /* test in X-direction */
+    findMinMax(v0.x(), v1.x(), v2.x(), min, max);
+    if (min > boxhalfsize.x() || max < -boxhalfsize.x())
+        return true;
+
+    /* test in Y-direction */
+    findMinMax(v0.y(), v1.y(), v2.y(), min, max);
+    if (min > boxhalfsize.y() || max < -boxhalfsize.y())
+        return true;
+
+    /* test in Z-direction */
+    findMinMax(v0.z(), v1.z(), v2.z(), min, max);
+    if (min > boxhalfsize.z() || max < -boxhalfsize.z())
+        return true;
+
+    return false;
+
+}
+
 bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
                    const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) {
     /*    use separating axis theorem to test overlap between triangle and box */

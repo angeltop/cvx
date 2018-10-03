@@ -60,8 +60,8 @@ public:
     OpenGLShaderProgram(const char *vshader, const char *fshader) ;
 
     void setUniform(const std::string &name, float v) ;
-    void setUniform(const std::string &name, GLint v) ;
-    void setUniform(const std::string &name, GLuint v) ;
+    void setUniform(const std::string &name, int v) ;
+    void setUniform(const std::string &name, uint v) ;
     void setUniform(const std::string &name, const Eigen::Vector3f &v) ;
     void setUniform(const std::string &name, const Eigen::Vector4f &v) ;
     void setUniform(const std::string &name, const Eigen::Matrix3f &v) ;
@@ -82,13 +82,7 @@ private:
 
 class OpenGLShaderError: public std::runtime_error {
 public:
-    OpenGLShaderError(const std::string &msg):
-        std::runtime_error(msg), id_(glGetError()) {}
-
-    GLenum glError() const { return id_ ; }
-
-private:
-    GLenum id_ ;
+    OpenGLShaderError(const std::string &msg);
 };
 
 class OpenGLShaderLibrary {

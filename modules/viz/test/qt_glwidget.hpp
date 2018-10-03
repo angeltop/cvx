@@ -54,8 +54,6 @@
 
 #include <QOpenGLWidget>
 
-
-
 class GLWidget : public QOpenGLWidget
 {
     Q_OBJECT

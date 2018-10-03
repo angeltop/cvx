@@ -58,6 +58,15 @@ void RendererImpl::addTextureImage(const string &id, const cv::Mat &im)
 
 bool RendererImpl::init() {
 
+    // setup glew
+
+    glewExperimental = GL_TRUE ;
+
+    GLenum err ;
+    if ( ( err = glewInit() ) != GLEW_OK ) {
+       return false ; // this may indicate that context has not been initialized
+    }
+
     // create vertex buffers
 
     makeVertexBuffers() ;

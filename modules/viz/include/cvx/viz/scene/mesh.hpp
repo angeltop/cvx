@@ -24,24 +24,24 @@ template<typename T, typename Allocator = std::allocator<T>>
 class VertexBuffer {
 public:
 
-    using data_t = std::vector<T, Allocator> ;
+    using data_container_t = std::vector<T, Allocator> ;
+    using index_container_t = std::vector<uint32_t> ;
 
     VertexBuffer() = default ;
     VertexBuffer(std::initializer_list<T> &vdata, std::initializer_list<T> &indices = {}): data_(data), indices_(indices) {}
 
-    data_t &data() { return data_ ; }
-    std::vector<uint32_t> &indices() { return indices_ ; }
+    data_container_t &data() { return data_ ; }
+    index_container_t &indices() { return indices_ ; }
 
-    const std::vector<T, Allocator> &data() const { return data_ ; }
-    const std::vector<uint32_t> &indices() const { return indices_ ; }
+    const data_container_t &data() const { return data_ ; }
+    const index_container_t &indices() const { return indices_ ; }
 
     bool hasIndices() const { return !indices_.empty() ; }
 
-
 protected:
 
-    data_t data_ ;
-    std::vector<uint32_t> indices_ ;
+    data_container_t data_ ;
+    index_container_t indices_ ;
 };
 
 class Mesh: public Geometry {
@@ -96,7 +96,7 @@ public:
     static MeshPtr makePointCloud(const cvx::util::EPointList3f &coords, const cvx::util::EPointList3f &clrs) ;
 
     void computeNormals() ;
-    void computeBoundingBox(Eigen::Vector3f &bmin, Eigen::Vector3f &bmax) ;
+    void computeBoundingBox(Eigen::Vector3f &bmin, Eigen::Vector3f &bmax) const ;
     void makeOctree() ;
 
     bool intersect(const cvx::viz::Ray &ray, float &t) const override ;

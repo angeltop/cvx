@@ -107,6 +107,7 @@ NodePtr Node::findNodeByName(const std::string &name)
 bool Node::hit(const Ray &ray, Hit &hit)
 {
     if ( !is_visible_ ) return false ;
+    if ( !is_pickable_ ) return false ;
 
     Isometry3f tf = globalTransform().inverse() ;
     for( const DrawablePtr &dr: drawables() ) {

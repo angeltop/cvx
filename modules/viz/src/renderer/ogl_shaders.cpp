@@ -231,3 +231,6 @@ OpenGLShaderProgram::Ptr OpenGLShaderLibrary::get(const string &prog_name) {
     else return nullptr ;
 }
 
+
+OpenGLShaderError::OpenGLShaderError(const string &msg):
+    std::runtime_error(msg) {}

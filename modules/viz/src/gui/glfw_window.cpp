@@ -37,14 +37,6 @@ bool glfwRenderWindow::run(size_t width, size_t height, const string &wname) {
     glfwSetScrollCallback(handle_, scrollCallback);
     glfwSetWindowSizeCallback(handle_, sizeCallback);
 
-    // this is needed for non core profiles or instead use gl3w
-    glewExperimental = GL_TRUE ;
-
-    GLenum err ;
-    if ( ( err = glewInit() ) != GLEW_OK ) {
-       return false ;
-    }
-
     onInit() ;
 
     sizeCallback(handle_, width, height); // Set initial size.

@@ -29,8 +29,8 @@ public:
 
     Scene() ;
 
-    void load(const std::string &fname, const NodePtr &parent = nullptr) ;
-    void load(const aiScene *sc, const std::string &fname, const NodePtr &parent = nullptr) ;
+    void load(const std::string &fname, const NodePtr &parent = nullptr, bool make_pickable = false) ;
+    void load(const aiScene *sc, const std::string &fname, const NodePtr &parent = nullptr, bool make_pickable = false) ;
 
     Eigen::Vector3f geomCenter() const ;
     float geomRadius(const Eigen::Vector3f &center) const ;

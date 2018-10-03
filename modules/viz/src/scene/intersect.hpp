@@ -32,5 +32,8 @@ bool triangleInsideBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
 
 bool triangleIntersectsBox(const Eigen::Vector3f &tv0, const Eigen::Vector3f &tv1,
                    const Eigen::Vector3f &tv2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) ;
+
+bool triangleOutsideBox(const Eigen::Vector3f &v0, const Eigen::Vector3f &v1,
+                   const Eigen::Vector3f &v2, const Eigen::Vector3f &boxcenter, const Eigen::Vector3f &boxhalfsize) ;
 }}}
 #endif

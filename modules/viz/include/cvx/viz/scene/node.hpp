@@ -70,7 +70,13 @@ public:
         else return mat_ ;
     }
 
-    void setVisible(bool visible) { is_visible_ = visible ; }
+    void setVisible(bool visible) {
+        visit([&](Node &n){ n.is_visible_ = visible ; }) ;
+    }
+
+    void setPickable(bool pickable) {
+        visit([&](Node &n){ n.is_pickable_ = pickable ; }) ;
+    }
 
     bool isVisible() const { return is_visible_ ; }
 
@@ -106,6 +112,7 @@ private:
 
 
     bool is_visible_ = true ;
+    bool is_pickable_ = false ; // node contributes to hit tests otherwise rays pass through
 
     std::string name_ ;
 

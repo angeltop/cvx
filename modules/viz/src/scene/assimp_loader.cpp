@@ -29,7 +29,7 @@ namespace cvx { namespace viz { namespace impl {
 
 class AssimpImporter {
 public:
-    AssimpImporter(Scene &sc): scene_(sc) {}
+    AssimpImporter(Scene &sc, bool make_pickable): scene_(sc), make_pickable_(make_pickable) {}
 
     MaterialPtr importMaterial(const struct aiMaterial *mtl, const string &model_path) ;
 
@@ -39,6 +39,7 @@ public:
     map<const aiMaterial *, MaterialPtr> materials_ ;
     map<string, LightPtr> lights_ ;
     map<string, CameraPtr> cameras_ ;
+    bool make_pickable_ ;
 
     bool importMaterials(const string &mpath, const aiScene *sc);
     bool importMeshes(const aiScene *sc);
@@ -197,7 +198,7 @@ bool AssimpImporter::importMeshes(const aiScene *sc) {
             }
         }
 
-        if ( smesh->ptype() == Mesh::Triangles )
+        if ( smesh->ptype() == Mesh::Triangles && make_pickable_ )
             smesh->makeOctree() ;
 
         meshes_[mesh] = smesh ;
@@ -281,6 +282,7 @@ bool AssimpImporter::importNodes(NodePtr &pnode, const struct aiScene *sc, const
 
     NodePtr snode(new Node) ;
 
+
     Matrix4f tf ;
     tf << m.a1, m.a2, m.a3, m.a4,
             m.b1, m.b2, m.b3, m.b4,
@@ -332,6 +334,8 @@ bool AssimpImporter::importNodes(NodePtr &pnode, const struct aiScene *sc, const
             return false ;
     }
 
+    pnode->setPickable(make_pickable_) ;
+
     return true ;
 }
 
@@ -350,7 +354,7 @@ bool AssimpImporter::import(const aiScene *sc, const std::string &fname, const N
 
 }
 
-void Scene::load(const std::string &fname, const NodePtr &parent) {
+void Scene::load(const std::string &fname, const NodePtr &parent, bool make_pickable) {
   //  const aiScene *sc = aiImportFile(fname.c_str(), aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_FlipUVs | aiProcess_TransformUVCoords);
     const aiScene *sc = aiImportFile(fname.c_str(),
     aiProcess_GenNormals
@@ -364,14 +368,14 @@ void Scene::load(const std::string &fname, const NodePtr &parent) {
         throw SceneLoaderException(aiGetErrorString(), fname) ;
     }
 
-    load(sc, fname, parent) ;
+    load(sc, fname, parent, make_pickable) ;
 
     aiReleaseImport(sc) ;
 }
 
-void Scene::load(const aiScene *sc, const std::string &fname, const NodePtr &parent) {
+void Scene::load(const aiScene *sc, const std::string &fname, const NodePtr &parent, bool make_pickable) {
 
-    impl::AssimpImporter importer(*this) ;
+    impl::AssimpImporter importer(*this, make_pickable) ;
 
     bool res = importer.import(sc, fname, parent) ;
 

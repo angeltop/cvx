@@ -1,16 +1,23 @@
-#include <GL/glew.h>
+/* these should be included before QtGui */
+/* there will be a warning that you cannot mix glew with Qt GL which you can ignore */
 
-#include <QtGui/QtGui>
+#include <cvx/viz/renderer/renderer.hpp>
+#include <cvx/viz/scene/material.hpp>
+
+//#include <QtGui/QtGui>
 #include <QApplication>
 #include <QMainWindow>
+#include <QMouseEvent>
+#include <QWheelEvent>
+
 #include "qt_glwidget.hpp"
 
 #include <cvx/util/misc/strings.hpp>
 #include <cvx/util/math/rng.hpp>
-#include <cvx/viz/renderer/renderer.hpp>
+
 #include <cvx/viz/scene/camera.hpp>
 #include <cvx/viz/scene/light.hpp>
-#include <cvx/viz/scene/material.hpp>
+
 #include <cvx/viz/scene/node.hpp>
 #include <cvx/viz/scene/geometry.hpp>
 #include <cvx/viz/gui/trackball.hpp>
@@ -175,9 +182,7 @@ private:
 
 void ExampleWindow::initializeGL()
 {
-    glewExperimental = GL_TRUE ;
 
-    glewInit() ;
 
    rdr_.init() ;
 
@@ -228,9 +233,9 @@ int main(int argc, char **argv)
 
     ScenePtr scene(new Scene) ;
 
-  //   scene->load("/home/malasiot/Downloads/greek_column.obj") ;
+     scene->load("/home/malasiot/Downloads/greek_column.obj", nullptr, true) ;
     // scene->load("/home/malasiot/Downloads/cube.obj") ;
-    scene->load("/home/malasiot/Downloads/bunny.obj") ;
+  //  scene->load("/home/malasiot/Downloads/bunny.obj") ;
 /*
     for( uint i=0 ; i<10 ; i++ ) {
         Vector4f clr(0.5, g_rng.uniform(0.0, 1.0), g_rng.uniform(0.0, 1.0), 1.0) ;
