@@ -62,6 +62,7 @@ public:
     void setUniform(const std::string &name, float v) ;
     void setUniform(const std::string &name, int v) ;
     void setUniform(const std::string &name, uint v) ;
+    void setUniform(const std::string &name, const Eigen::Vector2f &v);
     void setUniform(const std::string &name, const Eigen::Vector3f &v) ;
     void setUniform(const std::string &name, const Eigen::Vector4f &v) ;
     void setUniform(const std::string &name, const Eigen::Matrix3f &v) ;
@@ -70,6 +71,7 @@ public:
     ~OpenGLShaderProgram() ;
 
     GLuint handle() const { return handle_ ; }
+
 
 private:
 

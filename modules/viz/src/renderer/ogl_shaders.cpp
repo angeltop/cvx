@@ -93,6 +93,12 @@ void OpenGLShaderProgram::setUniform(const string &name, const Vector3f &v)
     if ( loc != -1 ) glUniform3fv(loc, 1, v.data()) ;
 }
 
+void OpenGLShaderProgram::setUniform(const string &name, const Vector2f &v)
+{
+    GLint loc = glGetUniformLocation(handle_, name.c_str()) ;
+    if ( loc != -1 ) glUniform2fv(loc, 1, v.data()) ;
+}
+
 void OpenGLShaderProgram::setUniform(const string &name, const Vector4f &v)
 {
     GLint loc = glGetUniformLocation(handle_, name.c_str()) ;
@@ -139,7 +145,7 @@ void OpenGLShaderProgram::addShaderFromFile(OpenGLShader::Type t, const string &
 void OpenGLShaderProgram::link(bool validate) {
 
 
-#if 0
+#if 1
     const GLchar* feedbackVaryings[] = { "gl_Position" };
     glTransformFeedbackVaryings(handle_, 1, feedbackVaryings, GL_INTERLEAVED_ATTRIBS);
 #endif
