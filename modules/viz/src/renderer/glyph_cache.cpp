@@ -46,6 +46,7 @@ GlyphCache::GlyphCache(FT_Face face, size_t px): face_(face), sz_(px) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 }
 
@@ -63,9 +64,7 @@ void GlyphCache::prepare(const std::string &text, TextQuads &data)
     hb_glyph_info_t* glyphs = hb_buffer_get_glyph_infos(buffer, nullptr);
     hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer, nullptr);
 
-    glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, texture_);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
 
     vector<GlyphQuad> quads ;
     // Iterate over the glyphs of the text and cache characters (codepoints) not already cached
@@ -92,14 +91,11 @@ void GlyphCache::prepare(const std::string &text, TextQuads &data)
 
         // offset each quad according to hurfbazz shaping
 
-        for( uint k=0 ; k<8 ; k++ ) {
-            if ( k % 2 == 0 )
-                data.vertices_.push_back(quad.vertices_[k] + position_x + positions[i].x_offset) ;
-            else
-                data.vertices_.push_back(quad.vertices_[k] + position_y + positions[i].y_offset) ;
-        }
+        for( uint k=0 ; k<4 ; k++ ) {
+            Glyph &q = quad[k] ;
+            data.vertices_.emplace_back( Glyph{ q.x_ + position_x + positions[i].x_offset, q.y_ + position_y + positions[i].y_offset , q.u_, q.v_} ) ;
 
-        data.uvs_.insert(data.uvs_.end(), quad.uvs_.begin(), quad.uvs_.end()) ;
+        }
 
         GLuint ioffset = 4 * i ;
 
@@ -166,19 +162,12 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
     float offset_x = face_->glyph->bitmap_left;
     float offset_y = face_->glyph->bitmap_top - bitmap.rows; // Can be negative
 
-    quad.vertices_ = {
-        offset_x, offset_y,
-        offset_x + bitmap.width, offset_y,
-        offset_x, offset_y + bitmap.rows,
-        offset_x + bitmap.width, offset_y + bitmap.rows
+    quad = {
+        Glyph{ offset_x, offset_y, x_/static_cast<float>(width_), (y_ + bitmap.rows)/static_cast<float>(height_) },
+        Glyph{ offset_x + bitmap.width, offset_y, (x_ + bitmap.width)/static_cast<float>(width_), (y_ + bitmap.rows)/static_cast<float>(height_) },
+        Glyph{ offset_x, offset_y + bitmap.rows, x_/static_cast<float>(width_), y_/static_cast<float>(height_) },
+        Glyph{ offset_x + bitmap.width, offset_y + bitmap.rows, (x_ + bitmap.width)/static_cast<float>(width_), y_/static_cast<float>(height_)}
     } ;
-
-    quad.uvs_ = {
-        x_/static_cast<float>(width_), (y_ + bitmap.rows)/static_cast<float>(height_),
-        (x_ + bitmap.width)/static_cast<float>(width_), (y_ + bitmap.rows)/static_cast<float>(height_),
-        x_/static_cast<float>(width_), y_/static_cast<float>(height_),
-        (x_ + bitmap.width)/static_cast<float>(width_), y_/static_cast<float>(height_)
-    };
 
 
 

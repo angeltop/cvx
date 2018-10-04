@@ -8,16 +8,20 @@
 
 namespace cvx { namespace viz { namespace detail {
 
+struct Glyph {
+    GLfloat x_ ;
+    GLfloat y_ ;
+    GLfloat u_ ;
+    GLfloat v_ ;
+};
 struct TextQuads {
-    std::vector<GLfloat> vertices_, uvs_ ;
+    std::vector<Glyph> vertices_ ;
     std::vector<GLuint> indices_ ;
 };
 
 class GlyphCache {
 public:
     GlyphCache(FT_Face face, size_t pixel_size) ;
-
-
 
     // performs shaping and composition of quads that may be used for rendering
     void prepare(const std::string &characters, TextQuads &td) ;
@@ -28,10 +32,9 @@ private:
 
     friend class RendererImpl ;
 
-    struct GlyphQuad {
-        std::array<GLfloat, 8> vertices_ ;
-        std::array<GLfloat, 8> uvs_ ;
-    };
+
+
+    using GlyphQuad = std::array<Glyph, 4> ;
 
     void cache(hb_codepoint_t cp, GlyphQuad &) ;
 

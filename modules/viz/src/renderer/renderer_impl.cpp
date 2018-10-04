@@ -576,8 +576,7 @@ static const char* text_vertex_shader_code =
 "\n"
 "void main() {\n"
 "    // positions are scaled and offseted\n"
-"    /*gl_Position = projection * vec4(position + offset, 0.0f, 1.0f);*/\n"
-"    gl_Position = vec4(position + offset, 0.0f, 1.0f);\n"
+"    gl_Position =  vec4((position + offset)/256.0, 0.0f, 1.0f);\n"
 "    smoothTexCoord = texCoord;\n"
 "}\n";
 
@@ -596,7 +595,7 @@ static const char* text_fragment_shader_code =
 "    // Texture gives only grayed ('black & white') intensity onto the 'GL_RED' color component\n"
 "    float textureIntensity = texture(textureCache, smoothTexCoord).r;\n"
 "    // Texture intensity is composed with pen color, and also drives the alpha component\n"
-"    outputColor = vec4(color*textureIntensity, textureIntensity);\n"
+"    outputColor = vec4(color, textureIntensity);\n"
 "}\n";
 
 
@@ -646,6 +645,14 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     TextQuads quads ;
     cache.prepare(text, quads) ;
 
+
+   glEnable(GL_BLEND);
+  // glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+
+    glDisable(GL_DEPTH_TEST) ;
+    glDisable(GL_CULL_FACE) ;
+
     GLuint vao_, vbo_, ebo_ ;                    ///< Vertex Array Object used to render a text
 
     static const GLuint VERTEX_ATTRIBUTE = 0 ;
@@ -661,20 +668,19 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     glGenBuffers(1, &ebo_);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
 
-    glBufferData(GL_ARRAY_BUFFER,   quads.vertices_.size(), &quads.vertices_[0], GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER,   quads.uvs_.size(), &quads.uvs_[0], GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quads.indices_.size(),  &quads.indices_[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,   quads.vertices_.size() * sizeof(Glyph), &quads.vertices_[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quads.indices_.size() * sizeof(GLuint),  &quads.indices_[0], GL_STATIC_DRAW);
     glEnableVertexAttribArray(VERTEX_ATTRIBUTE);
-    glVertexAttribPointer(VERTEX_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, quads.vertices_.size(), nullptr);
+    glVertexAttribPointer(VERTEX_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, sizeof(Glyph), nullptr);
     glEnableVertexAttribArray(UV_ATTRIBUTE);
-    glVertexAttribPointer(UV_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, quads.uvs_.size(), nullptr); // NOLINT
+    glVertexAttribPointer(UV_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, sizeof(Glyph), reinterpret_cast<GLvoid*>(sizeof(Glyph)/2));
 
 
-#if 1
+#if 0
     GLuint tfb ;
     glGenBuffers(1, &tfb);
     glBindBuffer(GL_ARRAY_BUFFER, tfb);
-    glBufferData(GL_ARRAY_BUFFER, quads.vertices_.size() * sizeof(GLfloat), 0, GL_STATIC_READ);
+    glBufferData(GL_ARRAY_BUFFER, quads.vertices_.size() * 4 * sizeof(GLfloat), 0, GL_STATIC_READ);
 #endif
     OpenGLShaderProgram::Ptr prog = get_text_program() ;
 
@@ -683,30 +689,34 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     glGetIntegerv( GL_VIEWPORT, viewport );
     GLint w = viewport[2], h = viewport[3] ;
     Matrix4f proj ;
-    glOrtho(0, w, 0, h, -1, 1, proj) ;
+    glOrtho(0, w, 0, h, 0.01, 100, proj) ;
 
+    Vector4f p = proj * Vector4f(quads.vertices_[0].x_ + x, quads.vertices_[0].y_ + y, 0, 1) ;
+
+    cout << proj << endl ;
+    cout <<   p.x()/p.w() << ' ' <<  p.y()/p.w() << ' ' << p.z()/p.w() << endl ;
     prog->setUniform("offset", Vector2f(x, y)) ;
-    prog->setUniform("scale", Vector2f(-1/256.0f, -1/256.0f)) ;
-    prog->setUniform("color", Vector3f(1.0f, 1.0f, 1.0f)) ;
+    prog->setUniform("color", Vector3f(1.0f, 0.0f, 0.0f)) ;
     prog->setUniform("projection", proj) ;
 
        glActiveTexture(GL_TEXTURE0);
        glBindTexture(GL_TEXTURE_2D, cache.textureId());
+       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-       /*
+
        std::vector<GLubyte> atlas_img(256*265*sizeof(GLubyte));
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, &atlas_img[0]);
 
        cv::Mat im(256, 256, CV_8U, &atlas_img[0]) ;
        cv::imwrite("/tmp/atlas.png", im) ;
-       */
+
        // Bind to sampler name zero == the currently bound texture's sampler state becomes active (no dedicated sampler)
        glBindSampler(0, 0);
 
        // Draw the rendered text
        glBindVertexArray(vao_);
 
-#if 1
+#if 0
 
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tfb);
 
@@ -720,12 +730,14 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
 
     glDisable(GL_RASTERIZER_DISCARD);
 
-    vector<GLfloat> fdata(36, 0) ;
+    vector<GLfloat> fdata(quads.vertices_.size() * 4, 0) ;
 
-    glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, 36*sizeof(GLfloat), fdata.data());
+    glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, quads.vertices_.size() * 4 * sizeof(GLfloat), fdata.data());
 
     glBindVertexArray(0) ;
 #else
+
+
         glDrawElements(GL_TRIANGLES, quads.indices_.size(), GL_UNSIGNED_INT, 0);
 #endif
 }

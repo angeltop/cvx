@@ -18,8 +18,8 @@ int main(int argc, char *argv[]) {
     // load scene
 
     ScenePtr scene(new Scene) ;
-    scene->load("/home/malasiot/Downloads/greek_column.obj") ;
-    //scene->load("/home/malasiot/Downloads/cube.obj") ;
+   // scene->load("/home/malasiot/Downloads/greek_column.obj") ;
+    scene->load("/home/malasiot/Downloads/cube.obj") ;
 
     // optional compute center and radius to properly position camera
     auto c = scene->geomCenter() ;
@@ -41,6 +41,8 @@ int main(int argc, char *argv[]) {
 
     CameraPtr cam(pcam) ;
 
+    cam->setBgColor({0, 0, 0, 0});
+
     // position camera to look at the center of the object
 
     pcam->lookAt(c + Vector3f{0.0, 0, 2*r}, c, {0, 1, 0}) ;
@@ -58,12 +60,12 @@ int main(int argc, char *argv[]) {
     Renderer rdr(scene) ;
     rdr.init() ;
 
-    rdr.renderText("hello", 100, 100, Font("arial", 12)) ;
+
     // render scene (possibly multiple times)
     rdr.render(cam) ;
-
+  rdr.renderText("hello", 0, 0, Font("arial", 32)) ;
     // obtain the color buffer
-    cv::Mat clr = rdr.getColor() ;
+    cv::Mat clr = rdr.getColor(true) ;
 
     cv::imwrite("/tmp/oo.png", clr) ;
 
