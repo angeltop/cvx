@@ -66,7 +66,7 @@ bool RendererImpl::init() {
 
     GLenum err ;
     if ( ( err = glewInit() ) != GLEW_OK ) {
-       return false ; // this may indicate that context has not been initialized
+        return false ; // this may indicate that context has not been initialized
     }
 
     // create vertex buffers
@@ -252,42 +252,42 @@ void RendererImpl::setLights(const NodePtr &node, const Isometry3f &parent_tf)
 
     for( uint i=0 ; i< node->lights().size() ; i++  ) {
 
-         if ( light_index_ >= MAX_LIGHTS ) return ;
+        if ( light_index_ >= MAX_LIGHTS ) return ;
 
-         string vname = format("g_light_source[%d]", light_index_++) ;
+        string vname = format("g_light_source[%d]", light_index_++) ;
 
-         const LightPtr &light = node->lights()[i] ;
+        const LightPtr &light = node->lights()[i] ;
 
-         if ( const auto &alight = std::dynamic_pointer_cast<AmbientLight>(light) ) {
+        if ( const auto &alight = std::dynamic_pointer_cast<AmbientLight>(light) ) {
 
-             prog_->setUniform(vname + ".light_type", 0) ;
-             prog_->setUniform(vname + ".color", alight->color_) ;
-         }
-         else if ( const auto &dlight = std::dynamic_pointer_cast<DirectionalLight>(light) ) {
-             prog_->setUniform(vname + ".light_type", 1) ;
-             prog_->setUniform(vname + ".color", dlight->diffuse_color_) ;
-             prog_->setUniform(vname + ".direction", tf * dlight->direction_) ;
-         }
-         else if ( const auto &slight = std::dynamic_pointer_cast<SpotLight>(light) ) {
+            prog_->setUniform(vname + ".light_type", 0) ;
+            prog_->setUniform(vname + ".color", alight->color_) ;
+        }
+        else if ( const auto &dlight = std::dynamic_pointer_cast<DirectionalLight>(light) ) {
+            prog_->setUniform(vname + ".light_type", 1) ;
+            prog_->setUniform(vname + ".color", dlight->diffuse_color_) ;
+            prog_->setUniform(vname + ".direction", tf * dlight->direction_) ;
+        }
+        else if ( const auto &slight = std::dynamic_pointer_cast<SpotLight>(light) ) {
 
-             prog_->setUniform(vname + ".light_type", 2) ;
-             prog_->setUniform(vname + ".color", slight->diffuse_color_) ;
-             prog_->setUniform(vname + ".direction", tf * slight->direction_) ;
-             prog_->setUniform(vname + ".position", tf * slight->position_) ;
-             prog_->setUniform(vname + ".constant_attenuation", slight->constant_attenuation_) ;
-             prog_->setUniform(vname + ".linear_attenuation", slight->linear_attenuation_) ;
-             prog_->setUniform(vname + ".quadratic_attenuation", slight->quadratic_attenuation_) ;
-             prog_->setUniform(vname + ".spot_exponent", slight->falloff_exponent_) ;
-             prog_->setUniform(vname + ".spot_cos_cutoff", (float)cos(M_PI*slight->falloff_angle_/180.0)) ;
-         }
-         else if ( const auto &plight = std::dynamic_pointer_cast<PointLight>(light)) {
-             prog_->setUniform(vname + ".light_type", 3) ;
-             prog_->setUniform(vname + ".color", plight->diffuse_color_) ;
-             prog_->setUniform(vname + ".position", tf * plight->position_) ;
-             prog_->setUniform(vname + ".constant_attenuation", plight->constant_attenuation_) ;
-             prog_->setUniform(vname + ".linear_attenuation", plight->linear_attenuation_) ;
-             prog_->setUniform(vname + ".quadratic_attenuation", plight->quadratic_attenuation_) ;
-         }
+            prog_->setUniform(vname + ".light_type", 2) ;
+            prog_->setUniform(vname + ".color", slight->diffuse_color_) ;
+            prog_->setUniform(vname + ".direction", tf * slight->direction_) ;
+            prog_->setUniform(vname + ".position", tf * slight->position_) ;
+            prog_->setUniform(vname + ".constant_attenuation", slight->constant_attenuation_) ;
+            prog_->setUniform(vname + ".linear_attenuation", slight->linear_attenuation_) ;
+            prog_->setUniform(vname + ".quadratic_attenuation", slight->quadratic_attenuation_) ;
+            prog_->setUniform(vname + ".spot_exponent", slight->falloff_exponent_) ;
+            prog_->setUniform(vname + ".spot_cos_cutoff", (float)cos(M_PI*slight->falloff_angle_/180.0)) ;
+        }
+        else if ( const auto &plight = std::dynamic_pointer_cast<PointLight>(light)) {
+            prog_->setUniform(vname + ".light_type", 3) ;
+            prog_->setUniform(vname + ".color", plight->diffuse_color_) ;
+            prog_->setUniform(vname + ".position", tf * plight->position_) ;
+            prog_->setUniform(vname + ".constant_attenuation", plight->constant_attenuation_) ;
+            prog_->setUniform(vname + ".linear_attenuation", plight->linear_attenuation_) ;
+            prog_->setUniform(vname + ".quadratic_attenuation", plight->quadratic_attenuation_) ;
+        }
     }
 
     for( uint i=0 ; i<node->numChildren() ; i++ )
@@ -360,14 +360,14 @@ void RendererImpl::initTextures()
                 glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
 
                 glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-                                          0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                                          GL_RGB,            // Internal colour format to convert to
-                                          image.cols,
-                                          image.rows,
-                                          0,                 // Border width in pixels (can either be 1 or 0)
-                                          GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-                                          GL_UNSIGNED_BYTE,  // Image data type
-                                          image.ptr());        // The actual image data itself
+                             0,                 // Pyramid level (for mip-mapping) - 0 is the top level
+                             GL_RGB,            // Internal colour format to convert to
+                             image.cols,
+                             image.rows,
+                             0,                 // Border width in pixels (can either be 1 or 0)
+                             GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
+                             GL_UNSIGNED_BYTE,  // Image data type
+                             image.ptr());        // The actual image data itself
 
                 glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -420,7 +420,7 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 
     MeshData &data = buffers_[geom->geometry()] ;
 
-   // prog_ = shaders_.get(mode) ;
+    // prog_ = shaders_.get(mode) ;
 
     MaterialPtr material = geom->material() ;
     if ( !material ) material = default_material_ ;
@@ -431,13 +431,14 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 
     assert( prog_ ) ;
 
-    if ( prog_ != old_prog ) prog_->use() ;
+    //    if ( prog_ != old_prog )
+    prog_->use() ;
 
     setModelTransform(mat) ;
 
     setMaterial(material) ;
 
-   setLights() ;
+    setLights() ;
 
 #if 0
 
@@ -462,7 +463,7 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
     drawMeshData(data, geom->geometry()) ;
 
 #endif
-  // glUseProgram(0) ;
+    // glUseProgram(0) ;
 }
 
 
@@ -559,45 +560,43 @@ cv::Mat RendererImpl::getDepth() {
 }
 
 /// Source of the vertex shader used to scale the glyphs vertices
-static const char* text_vertex_shader_code =
-"#version 330\n"
-"\n"
-"// Attributes (input data streams ; 2D vertex position and texture coordinates)\n"
-"layout(location = 0) in vec2 position;\n"
-"layout(location = 1) in vec2 texCoord;\n"
-"\n"
-"// Output data stream (smoothed interpolated texture 2D coordinates)\n"
-"smooth out vec2 smoothTexCoord;\n"
-"uniform mat4 projection;\n"
-"\n"
-"// Uniform variables\n"
-"uniform vec2 scale;\n"
-"uniform vec2 offset;\n"
-"\n"
-"void main() {\n"
-"    // positions are scaled and offseted\n"
-"    gl_Position =  vec4((position + offset)/256.0, 0.0f, 1.0f);\n"
-"    smoothTexCoord = texCoord;\n"
-"}\n";
+static const char* text_vertex_shader_code = R"(
+                                             #version 330
+
+                                             layout(location = 0) in vec2 position;
+                                             layout(location = 1) in vec2 texCoord;
+
+                                             smooth out vec2 smoothTexCoord;
+                                             uniform mat4 projection;
+
+                                             uniform float aspect ;
+                                             uniform vec2 scale;
+                                             uniform vec2 offset;
+
+                                             void main() {
+
+                                             gl_Position =  vec4((position + offset)*scale - vec2(1, 1), 0.0f, 1.0f);
+                                             smoothTexCoord = texCoord;
+                                             }
+                                             )";
 
 /// Source of the fragment shader used to draw the glyphs using the cache texture
-static const char* text_fragment_shader_code =
-"#version 330\n"
-"\n"
-"smooth in vec2 smoothTexCoord;\n"
-"\n"
-"out vec4 outputColor;\n"
-"\n"
-"uniform sampler2D textureCache;\n"
-"uniform vec3 color;\n"
-"\n"
-"void main() {\n"
-"    // Texture gives only grayed ('black & white') intensity onto the 'GL_RED' color component\n"
-"    float textureIntensity = texture(textureCache, smoothTexCoord).r;\n"
-"    // Texture intensity is composed with pen color, and also drives the alpha component\n"
-"    outputColor = vec4(color, textureIntensity);\n"
-"}\n";
+static const char* text_fragment_shader_code = R"(
+                                               #version 330
 
+                                               smooth in vec2 smoothTexCoord;
+                                               out vec4 outputColor;
+
+                                               uniform sampler2D textureCache;
+                                               uniform vec3 color;
+
+                                               void main() {
+                                               // Texture gives only grayed ('black & white') intensity onto the 'GL_RED' color component
+                                               float textureIntensity = texture(textureCache, smoothTexCoord).r;
+                                               // Texture intensity is composed with pen color, and also drives the alpha component
+                                               outputColor = vec4(color, textureIntensity);
+                                               }
+                                               )";
 
 static  OpenGLShaderProgram::Ptr get_text_program() {
 
@@ -617,22 +616,6 @@ static  OpenGLShaderProgram::Ptr get_text_program() {
     return prog_ ;
 }
 
-void glOrtho(
-const float &l, const float &r, const float &b, const float &t,
-const float &n, const float &f,
-Matrix4f &M)
-{
-    M.setZero() ;
-
-    M(0, 0) = 2 / (r - l);
-    M(1, 1) = 2 / (t - b);
-    M(2, 2) = -2 / (f - n);
-    M(3, 0) = -(r + l) / (r - l);
-    M(3, 1) = -(t + b) / (t - b);
-    M(3, 2) = -(f + n) / (f - n);
-    M(3, 3) = 1;
-}
-
 void RendererImpl::renderText(const string &text, float x, float y, const Font &font) {
     using namespace detail ;
     FT_Face f = FontManager::instance().createFontFace(font) ;
@@ -646,27 +629,27 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     cache.prepare(text, quads) ;
 
 
-   glEnable(GL_BLEND);
-  // glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-   glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+    glEnable(GL_BLEND);
+    // glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
     glDisable(GL_DEPTH_TEST) ;
     glDisable(GL_CULL_FACE) ;
 
-    GLuint vao_, vbo_, ebo_ ;                    ///< Vertex Array Object used to render a text
+    GLuint tvao, tvbo, tebo ;                    ///< Vertex Array Object used to render a text
 
     static const GLuint VERTEX_ATTRIBUTE = 0 ;
     static const GLuint UV_ATTRIBUTE = 1 ;
     static const GLuint TEXTURE_UNIT = 0 ;
 
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
+    glGenVertexArrays(1, &tvao);
+    glBindVertexArray(tvao);
 
-    glGenBuffers(1, &vbo_);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
+    glGenBuffers(1, &tvbo);
+    glBindBuffer(GL_ARRAY_BUFFER, tvbo);
 
-    glGenBuffers(1, &ebo_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
+    glGenBuffers(1, &tebo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tebo);
 
     glBufferData(GL_ARRAY_BUFFER,   quads.vertices_.size() * sizeof(Glyph), &quads.vertices_[0], GL_STATIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, quads.indices_.size() * sizeof(GLuint),  &quads.indices_[0], GL_STATIC_DRAW);
@@ -685,36 +668,35 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     OpenGLShaderProgram::Ptr prog = get_text_program() ;
 
     prog->use() ;
+
     GLint viewport[4];
     glGetIntegerv( GL_VIEWPORT, viewport );
     GLint w = viewport[2], h = viewport[3] ;
-    Matrix4f proj ;
-    glOrtho(0, w, 0, h, 0.01, 100, proj) ;
 
-    Vector4f p = proj * Vector4f(quads.vertices_[0].x_ + x, quads.vertices_[0].y_ + y, 0, 1) ;
+    float aspect = w/static_cast<float>(h);
 
-    cout << proj << endl ;
-    cout <<   p.x()/p.w() << ' ' <<  p.y()/p.w() << ' ' << p.z()/p.w() << endl ;
+
     prog->setUniform("offset", Vector2f(x, y)) ;
+    prog->setUniform("aspect", aspect) ;
+    prog->setUniform("scale", Vector2f(2.0f/w, 2.0f/h)) ;
     prog->setUniform("color", Vector3f(1.0f, 0.0f, 0.0f)) ;
-    prog->setUniform("projection", proj) ;
 
-       glActiveTexture(GL_TEXTURE0);
-       glBindTexture(GL_TEXTURE_2D, cache.textureId());
-       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, cache.textureId());
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    /*
 
        std::vector<GLubyte> atlas_img(256*265*sizeof(GLubyte));
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, &atlas_img[0]);
 
        cv::Mat im(256, 256, CV_8U, &atlas_img[0]) ;
        cv::imwrite("/tmp/atlas.png", im) ;
+*/
+    // Bind to sampler name zero == the currently bound texture's sampler state becomes active (no dedicated sampler)
+    glBindSampler(0, 0);
 
-       // Bind to sampler name zero == the currently bound texture's sampler state becomes active (no dedicated sampler)
-       glBindSampler(0, 0);
-
-       // Draw the rendered text
-       glBindVertexArray(vao_);
+    // Draw the rendered text
+    glBindVertexArray(tvao);
 
 #if 0
 
@@ -736,10 +718,14 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
 
     glBindVertexArray(0) ;
 #else
-
-
-        glDrawElements(GL_TRIANGLES, quads.indices_.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, quads.indices_.size(), GL_UNSIGNED_INT, 0);
 #endif
+
+    glDeleteVertexArrays(1, &tvao);
+    glDeleteBuffers(1, &tvbo);
+    glDeleteBuffers(1, &tebo);
+
+    glBindVertexArray(0) ;
 }
 
 }}}

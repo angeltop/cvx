@@ -13,27 +13,6 @@ GlyphCache::GlyphCache(FT_Face face, size_t px): face_(face), sz_(px) {
 
     FT_Set_Pixel_Sizes(face_, 0, sz_);
     font_ = hb_ft_font_create(face_, 0);
-    // create buffers
-
-    quad_vertices_ = { -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f} ;
-    quad_indices_ = { 0, 1, 2, 1, 2, 3 } ;
-    quad_uvs_ = { 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f} ;
-
-    glGenVertexArrays(1, &vao_);
-    glBindVertexArray(vao_);
-
-    glGenBuffers(1, &vbo_);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-
-    glGenBuffers(1, &ebo_);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo_);
-
-    glBufferData(GL_ARRAY_BUFFER,   quad_vertices_.size(), quad_vertices_.data(), GL_STATIC_DRAW);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, quad_indices_.size(),  quad_indices_.data(), GL_STATIC_DRAW);
-    glEnableVertexAttribArray(VERTEX_ATTRIBUTE);
-    glEnableVertexAttribArray(UV_ATTRIBUTE);
-    glVertexAttribPointer(VERTEX_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, quad_vertices_.size(), nullptr);
-    glVertexAttribPointer(UV_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, quad_uvs_.size(), nullptr); // NOLINT
 
     // create texture atlas
 
@@ -50,6 +29,11 @@ GlyphCache::GlyphCache(FT_Face face, size_t px): face_(face), sz_(px) {
 
 }
 
+GlyphCache::~GlyphCache() {
+  //  hb_font_destroy(font_);
+  //  glDeleteTextures(1, &texture_);
+}
+
 void GlyphCache::prepare(const std::string &text, TextQuads &data)
 {
     // Put the provided UTF-8 encoded characters into a Harfbuzz buffer
@@ -63,8 +47,6 @@ void GlyphCache::prepare(const std::string &text, TextQuads &data)
     size_t text_length = hb_buffer_get_length(buffer);
     hb_glyph_info_t* glyphs = hb_buffer_get_glyph_infos(buffer, nullptr);
     hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer, nullptr);
-
-
 
     vector<GlyphQuad> quads ;
     // Iterate over the glyphs of the text and cache characters (codepoints) not already cached
@@ -114,14 +96,6 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
         throw std::runtime_error("FT_Load_Glyph") ;
     }
 
-    std::cout << "FontImpl::cache(" << cp << "):"
-        << " width=" << bitmap.width
-        << " rows=" << bitmap.rows
-        << " pitch=" << bitmap.pitch
-        << " advance.x=" << (face_->glyph->advance.x >> 6) // ">> 6" is standard freetype formulae
-        << "\n";
-
-
     if ( x_ + bitmap.width >= width_  ) { // need to start a new line
         y_ += line_height_ + PADDING ;
         x_ = line_height_ = 0 ;
@@ -130,7 +104,6 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
     if ( y_ + bitmap.rows >= height_ ) { // if there is no more space panic
         throw std::runtime_error("overflow") ;
     }
-
 
     // Recalculate height of the current row based on height of the new Glyph
 
@@ -158,7 +131,6 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
     // | \ |
     // 0 - 1 -> x/s
 
-
     float offset_x = face_->glyph->bitmap_left;
     float offset_y = face_->glyph->bitmap_top - bitmap.rows; // Can be negative
 
@@ -168,8 +140,6 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
         Glyph{ offset_x, offset_y + bitmap.rows, x_/static_cast<float>(width_), y_/static_cast<float>(height_) },
         Glyph{ offset_x + bitmap.width, offset_y + bitmap.rows, (x_ + bitmap.width)/static_cast<float>(width_), y_/static_cast<float>(height_)}
     } ;
-
-
 
    //  advance cursor to hold the new glyph
    x_ += bitmap.width + PADDING ;

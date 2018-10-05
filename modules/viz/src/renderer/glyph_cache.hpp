@@ -22,6 +22,7 @@ struct TextQuads {
 class GlyphCache {
 public:
     GlyphCache(FT_Face face, size_t pixel_size) ;
+    ~GlyphCache() ;
 
     // performs shaping and composition of quads that may be used for rendering
     void prepare(const std::string &characters, TextQuads &td) ;
@@ -30,11 +31,7 @@ public:
 
 private:
 
-    friend class RendererImpl ;
-
-
-
-    using GlyphQuad = std::array<Glyph, 4> ;
+     using GlyphQuad = std::array<Glyph, 4> ;
 
     void cache(hb_codepoint_t cp, GlyphQuad &) ;
 
@@ -46,15 +43,10 @@ private:
     size_t height_ = 256 ;
     size_t y_ = 0, x_ = 0, line_height_ = 0 ;
 
-    std::array<GLfloat, 8> quad_vertices_ ;
-    std::array<GLuint, 6> quad_indices_ ;
-    std::array<GLfloat, 8> quad_uvs_ ;
-    GLuint vao_, vbo_, ebo_, texture_ ;
+    GLuint texture_ ;
 
     std::map<hb_codepoint_t, GlyphQuad> glyph_map_ ;
 
-    static const GLuint VERTEX_ATTRIBUTE = 0 ;
-    static const GLuint UV_ATTRIBUTE = 1 ;
     static const GLuint TEXTURE_UNIT = 0 ;
     static const uint PADDING = 1 ;
 };

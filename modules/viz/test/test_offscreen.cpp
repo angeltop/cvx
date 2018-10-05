@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
     scene->addLight(LightPtr(dl)) ;
 
     // create a camera
-    uint width = 640, height = 480 ;
+    uint width = 240, height = 480 ;
     PerspectiveCamera *pcam = new PerspectiveCamera(width / (float) height, // aspect ratio
                                                     50*M_PI/180,   // fov
                                                     0.0001,        // zmin
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 
     CameraPtr cam(pcam) ;
 
-    cam->setBgColor({0, 0, 0, 0});
+    cam->setBgColor({0, 0, 0, 1});
 
     // position camera to look at the center of the object
 
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
     // render scene (possibly multiple times)
     rdr.render(cam) ;
-  rdr.renderText("hello", 0, 0, Font("arial", 32)) ;
+  rdr.renderText("ABCDabcd", 100, 100, Font("arial", 32)) ;
     // obtain the color buffer
     cv::Mat clr = rdr.getColor(true) ;
 

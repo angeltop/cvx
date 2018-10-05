@@ -28,14 +28,14 @@ bool glfwRenderWindow::run(size_t width, size_t height, const string &wname) {
     glfwSetWindowUserPointer(handle_, this) ;
 
     glfwMakeContextCurrent(handle_);
-  //  glfwSwapInterval(1);
+    glfwSwapInterval(1);
     glfwSetTime( 0.0 );
 
     glfwSetCursorPosCallback(handle_, moveCallback);
     glfwSetKeyCallback(handle_, keyCallback);
     glfwSetMouseButtonCallback(handle_, buttonCallback);
     glfwSetScrollCallback(handle_, scrollCallback);
-    glfwSetWindowSizeCallback(handle_, sizeCallback);
+    glfwSetFramebufferSizeCallback(handle_, sizeCallback);
 
     onInit() ;
 
