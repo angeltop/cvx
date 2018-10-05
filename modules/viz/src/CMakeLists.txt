@@ -33,6 +33,9 @@ set(LIB_SOURCES
     renderer/font_manager.hpp
     renderer/glyph_cache.cpp
     renderer/glyph_cache.hpp
+    renderer/text_item.cpp
+    renderer/text_item.hpp
+    renderer/text.cpp
 
     scene/scene.cpp
     scene/assimp_loader.cpp
@@ -71,6 +74,7 @@ set(LIB_SOURCES
     ${LIBRARY_INCLUDE_DIR}/robot/robot_scene.hpp
 
     ${LIBRARY_INCLUDE_DIR}/renderer/renderer.hpp
+    ${LIBRARY_INCLUDE_DIR}/renderer/text.hpp
 )
 
 add_library(cvx_viz ${LIBRARY_TYPE} ${LIB_SOURCES})

@@ -6,6 +6,7 @@
 #include <cvx/viz/scene/scene.hpp>
 #include <cvx/viz/gui/offscreen.hpp>
 #include <cvx/viz/renderer/font.hpp>
+#include <cvx/viz/renderer/text.hpp>
 #include <opencv2/opencv.hpp>
 
 namespace cvx { namespace viz {
@@ -35,7 +36,12 @@ public:
 
     void addTextureImage(const std::string &id, const cv::Mat &im) ;
 
-    void renderText(const std::string &text, float x, float y, const Font &f) ;
+    // Draws text on top of the scene using given font and color
+    void text(const std::string &text, float x, float y, const Font &f, const Eigen::Vector3f &clr) ;
+
+    // It returns a text object that may be cached and drawn several times by calling render function.
+    // It uses OpenGL so it should be called after calling init
+    Text text(const std::string &text, const Font &f) ;
 
 private:
 

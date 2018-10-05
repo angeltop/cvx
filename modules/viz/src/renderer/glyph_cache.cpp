@@ -9,6 +9,8 @@ using namespace std ;
 
 namespace cvx { namespace viz { namespace detail {
 
+GlyphCacheMap GlyphCache::g_glyphs ;
+
 GlyphCache::GlyphCache(FT_Face face, size_t px): face_(face), sz_(px) {
 
     FT_Set_Pixel_Sizes(face_, 0, sz_);
@@ -30,8 +32,8 @@ GlyphCache::GlyphCache(FT_Face face, size_t px): face_(face), sz_(px) {
 }
 
 GlyphCache::~GlyphCache() {
-  //  hb_font_destroy(font_);
-  //  glDeleteTextures(1, &texture_);
+    hb_font_destroy(font_);
+    glDeleteTextures(1, &texture_);
 }
 
 void GlyphCache::prepare(const std::string &text, TextQuads &data)

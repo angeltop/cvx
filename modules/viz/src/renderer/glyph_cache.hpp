@@ -19,6 +19,9 @@ struct TextQuads {
     std::vector<GLuint> indices_ ;
 };
 
+class GlyphCache ;
+using GlyphCacheMap = std::map< std::pair<FT_Face, size_t>, GlyphCache> ;
+
 class GlyphCache {
 public:
     GlyphCache(FT_Face face, size_t pixel_size) ;
@@ -49,6 +52,9 @@ private:
 
     static const GLuint TEXTURE_UNIT = 0 ;
     static const uint PADDING = 1 ;
+
+public:
+    static GlyphCacheMap g_glyphs ;
 };
 
 

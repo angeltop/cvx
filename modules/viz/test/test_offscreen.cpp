@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
     // render scene (possibly multiple times)
     rdr.render(cam) ;
-  rdr.renderText("ABCDabcd", 100, 100, Font("arial", 32)) ;
+    rdr.text("ABCDabcd", 100, 100, Font("arial", 32), { 1, 0, 0} ) ;
     // obtain the color buffer
     cv::Mat clr = rdr.getColor(true) ;
 

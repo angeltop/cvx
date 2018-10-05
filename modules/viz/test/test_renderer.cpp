@@ -88,9 +88,8 @@ public:
     void onRender() {
         trackball_.update() ;
 
-
-         rdr_.render(camera_) ;
-          rdr_.renderText("Hello", 100, 100, Font("arial", 32));
+        rdr_.render(camera_) ;
+        rdr_.text("Hello", Font("arial", 24)).render(100, 100, {1, 1, 0});
     }
 
     string text_ ;
