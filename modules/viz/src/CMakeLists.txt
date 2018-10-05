@@ -11,6 +11,13 @@ FIND_PACKAGE(Fontconfig REQUIRED)
 FIND_PACKAGE(Freetype REQUIRED)
 FIND_PACKAGE(HarfBuzz REQUIRED)
 
+
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+
+find_package(Qt5Widgets 5.5 CONFIG REQUIRED)
+
 set ( LIBRARY_FOLDER "viz")
 get_filename_component(LIBRARY_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../include/cvx/${LIBRARY_FOLDER}/" ABSOLUTE)
 
@@ -59,6 +66,11 @@ set(LIB_SOURCES
     robot/urdf_loader.cpp
     robot/urdf_loader.hpp
 
+    image/widget.cpp
+    image/view.cpp
+    image/tools.cpp
+    image/tools_p.hpp
+
     ${LIBRARY_INCLUDE_DIR}/scene/node.hpp
     ${LIBRARY_INCLUDE_DIR}/scene/drawable.hpp
     ${LIBRARY_INCLUDE_DIR}/scene/geometry.hpp
@@ -75,10 +87,17 @@ set(LIB_SOURCES
 
     ${LIBRARY_INCLUDE_DIR}/renderer/renderer.hpp
     ${LIBRARY_INCLUDE_DIR}/renderer/text.hpp
+
+    ${LIBRARY_INCLUDE_DIR}/image/widget.hpp
+    ${LIBRARY_INCLUDE_DIR}/image/tools.hpp
+    ${LIBRARY_INCLUDE_DIR}/image/view.hpp
 )
 
-add_library(cvx_viz ${LIBRARY_TYPE} ${LIB_SOURCES})
+QT5_ADD_RESOURCES(RCC_SRCS "image/mdi.qrc")
+add_library(cvx_viz ${LIBRARY_TYPE} ${LIB_SOURCES} ${RCC_SRCS})
+
 target_link_libraries(cvx_viz cvx_util
+    Qt5::Widgets
     ${ASSIMP_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${GLEW_LIBRARIES}
@@ -88,8 +107,19 @@ target_link_libraries(cvx_viz cvx_util
     ${FONTCONFIG_LIBRARIES}
     ${FREETYPE_LIBRARIES})
 
+add_executable(iview
+    image/iview/main_window.cpp
+    image/iview/main_window.hpp
+    image/iview/iview.cpp
+)
+
+target_link_libraries(iview cvx_viz cvx_util
+    Qt5::Widgets
+    ${OpenCV_LIBRARIES}
+)
+
 # Install library
-install(TARGETS cvx_viz
+install(TARGETS cvx_viz iview
   EXPORT ${PROJECT_EXPORT}
   RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin
   LIBRARY DESTINATION "${INSTALL_LIB_DIR}" COMPONENT shlib
