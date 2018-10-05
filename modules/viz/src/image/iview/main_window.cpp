@@ -379,7 +379,6 @@ CameraGrabber::CameraGrabber():  abort_(false), is_running_(false)
 
 void CameraGrabber::grab()
 {
-
     cv::VideoCapture cap(0) ;
 
     while (cap.isOpened() )
