@@ -58,7 +58,23 @@ void RendererImpl::addTextureImage(const string &id, const cv::Mat &im)
     inmemory_textures_.emplace(id, im) ;
 }
 
+void GLAPIENTRY
+errorCallback( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
+
 bool RendererImpl::init() {
+
+
 
     // setup glew
 
@@ -69,6 +85,12 @@ bool RendererImpl::init() {
         return false ; // this may indicate that context has not been initialized
     }
 
+    // During init, enable debug output
+    glEnable              ( GL_DEBUG_OUTPUT );
+    glDebugMessageCallback( errorCallback, this );
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
+    glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, true);
+
     // create vertex buffers
 
     makeVertexBuffers() ;
@@ -78,6 +100,8 @@ bool RendererImpl::init() {
     initTextures() ;
 
     default_material_.reset(new PhongMaterial) ;
+
+
 
     return true ;
 }
@@ -342,7 +366,7 @@ void RendererImpl::initTextures()
                 cv::flip(image, image, 0) ;
 
                 GLuint texture_id ;
-                glEnable(GL_TEXTURE_2D) ;
+
                 glActiveTexture(GL_TEXTURE0);
                 glGenTextures(1, &texture_id);
                 glBindTexture(GL_TEXTURE_2D, texture_id);
@@ -562,6 +586,8 @@ cv::Mat RendererImpl::getDepth() {
 
 void RendererImpl::renderText(const string &text, float x, float y, const Font &font, const Vector3f &clr) {
     using namespace detail ;
+
+    if ( text.empty() ) return ;
 
     TextItem ti(text, font) ;
     ti.render(x, y, clr) ;

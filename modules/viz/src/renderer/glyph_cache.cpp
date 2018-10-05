@@ -2,6 +2,7 @@
 #include <hb-ft.h>
 #include <cmath>
 #include <iostream>
+#include <memory>
 
 using namespace std ;
 
@@ -39,16 +40,21 @@ GlyphCache::~GlyphCache() {
 void GlyphCache::prepare(const std::string &text, TextQuads &data)
 {
     // Put the provided UTF-8 encoded characters into a Harfbuzz buffer
-    hb_buffer_t* buffer = hb_buffer_create();
-    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
-    hb_buffer_add_utf8(buffer, text.c_str(), text.size(), 0, text.size());
+
+    std::unique_ptr<hb_buffer_t, void (*)(hb_buffer_t *)> buffer(hb_buffer_create(), &hb_buffer_destroy);
+
+    hb_buffer_set_direction(buffer.get(), HB_DIRECTION_LTR);
+    hb_buffer_add_utf8(buffer.get(), text.c_str(), text.size(), 0, text.size());
     // Ask Harfbuzz to shape the UTF-8 buffer
-    hb_shape(font_, buffer, nullptr, 0);
+    hb_shape(font_, buffer.get(), nullptr, 0);
 
     // Get buffer properties
-    size_t text_length = hb_buffer_get_length(buffer);
-    hb_glyph_info_t* glyphs = hb_buffer_get_glyph_infos(buffer, nullptr);
-    hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer, nullptr);
+    size_t text_length = hb_buffer_get_length(buffer.get());
+    hb_glyph_info_t* glyphs = hb_buffer_get_glyph_infos(buffer.get(), nullptr);
+    hb_glyph_position_t* positions = hb_buffer_get_glyph_positions(buffer.get(), nullptr);
+
+    glActiveTexture(GL_TEXTURE0 + TEXTURE_UNIT);
+    glBindTexture(GL_TEXTURE_2D, texture_);
 
     vector<GlyphQuad> quads ;
     // Iterate over the glyphs of the text and cache characters (codepoints) not already cached
@@ -89,6 +95,7 @@ void GlyphCache::prepare(const std::string &text, TextQuads &data)
 
 }
 
+
 void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
     const FT_Bitmap& bitmap = face_->glyph->bitmap;
 
@@ -118,10 +125,11 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
     }
 
     // GL_UNPACK_ROW_LENGTH defines the number of pixels in a row
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
+  //  glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch);
 
     // paste bitmap rendered by FT to texture memory
-    glTexSubImage2D(GL_TEXTURE_2D, 0,  x_, y_, bitmap.width, bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, bitmap.buffer);
+
+    glTexSubImage2D(GL_TEXTURE_2D, 0,  x_, y_, bitmap.width, bitmap.rows, GL_LUMINANCE, GL_UNSIGNED_BYTE, bitmap.buffer);
 
     // compute glyph position on the atlas
 

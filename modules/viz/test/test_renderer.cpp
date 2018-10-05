@@ -27,7 +27,6 @@ public:
 
     void onInit() {
         rdr_.init() ;
-
     }
 
     void onResize(int width, int height) {
@@ -77,6 +76,7 @@ public:
         s << xpos << ',' << ypos ;
         text_ = s.str() ;
 
+
         trackball_.setClickPoint(xpos, ypos) ;
     }
 
@@ -89,8 +89,9 @@ public:
         trackball_.update() ;
 
         rdr_.render(camera_) ;
-        rdr_.text("Hello", Font("arial", 24)).render(100, 100, {1, 1, 0});
+        rdr_.text(text_, 10, 10, Font("arial", 24), {1, 1, 0});
     }
+
 
     string text_ ;
     Renderer rdr_ ;
