@@ -76,14 +76,12 @@ void GlyphCache::prepare(const std::string &text, TextQuads &data)
         for( uint k=0 ; k<4 ; k++ ) {
             Glyph &q = quad[k] ;
             data.vertices_.emplace_back( Glyph{ q.x_ + position_x + positions[i].x_offset, q.y_ + position_y + positions[i].y_offset , q.u_, q.v_} ) ;
-
         }
 
         GLuint ioffset = 4 * i ;
 
         data.indices_.insert(data.indices_.end(), { ioffset, ioffset + 1, ioffset + 2, ioffset + 1, ioffset + 2, ioffset + 3}) ;
 
-        // Advance the position (">> 6" is the standard freetype formulae)
         position_x += (positions[i].x_advance >> 6);
     }
 

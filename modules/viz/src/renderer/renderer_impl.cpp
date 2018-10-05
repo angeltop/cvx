@@ -618,16 +618,18 @@ static  OpenGLShaderProgram::Ptr get_text_program() {
 
 void RendererImpl::renderText(const string &text, float x, float y, const Font &font) {
     using namespace detail ;
-    FT_Face f = FontManager::instance().createFontFace(font) ;
+
+    FT_Face f = FontManager::instance().queryFontFace(font) ;
 
     if ( f == nullptr ) return ;
 
-    auto it = glyphs_.emplace(make_pair(f, (size_t)font.size()), GlyphCache(f, font.size())).first ;
+    auto it = glyphs_.find(make_pair(f, font.size())) ;
+    if ( it == glyphs_.end() )
+        it = glyphs_.emplace(make_pair(f, (size_t)font.size()), GlyphCache(f, font.size())).first ;
 
     GlyphCache &cache = it->second ;
     TextQuads quads ;
     cache.prepare(text, quads) ;
-
 
     glEnable(GL_BLEND);
     // glBlendFunc (GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
@@ -658,7 +660,6 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     glEnableVertexAttribArray(UV_ATTRIBUTE);
     glVertexAttribPointer(UV_ATTRIBUTE, 2, GL_FLOAT, GL_FALSE, sizeof(Glyph), reinterpret_cast<GLvoid*>(sizeof(Glyph)/2));
 
-
 #if 0
     GLuint tfb ;
     glGenBuffers(1, &tfb);
@@ -674,7 +675,6 @@ void RendererImpl::renderText(const string &text, float x, float y, const Font &
     GLint w = viewport[2], h = viewport[3] ;
 
     float aspect = w/static_cast<float>(h);
-
 
     prog->setUniform("offset", Vector2f(x, y)) ;
     prog->setUniform("aspect", aspect) ;

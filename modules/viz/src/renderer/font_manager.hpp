@@ -22,7 +22,7 @@ public:
         return s_instance ;
     }
 
-    FT_Face createFontFace(const Font &font) ;
+    FT_Face queryFontFace(const Font &font) ;
 
     // Use FreeType library and FontConfig to query system for desired font
     FT_Face queryFace(const std::string &family_name, FontStyle font_style, FontWeight font_weight) ;

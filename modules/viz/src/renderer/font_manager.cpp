@@ -137,7 +137,7 @@ FT_Face FontManager::queryFace(const std::string &family_name, FontStyle font_st
 }
 
 
-FT_Face FontManager::createFontFace(const Font &font)
+FT_Face FontManager::queryFontFace(const Font &font)
 {
     vector<string> q_family_names(font.familyNames()) ;
     q_family_names.emplace_back("serif") ; // fallback family (OS dependent)
