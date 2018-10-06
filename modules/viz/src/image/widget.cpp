@@ -266,6 +266,10 @@ namespace cvx { namespace viz {
         return curImage ;
     }
 
+    QGraphicsScene *QImageWidget::scene() {
+        return static_cast<QGraphicsScene *>(gscene) ;
+    }
+
 
     QPixmap *QImageWidget::imageToPixmap(const cv::Mat &img)
     {

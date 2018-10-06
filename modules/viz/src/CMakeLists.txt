@@ -94,6 +94,7 @@ set(LIB_SOURCES
 )
 
 QT5_ADD_RESOURCES(RCC_SRCS "image/mdi.qrc")
+
 add_library(cvx_viz ${LIBRARY_TYPE} ${LIB_SOURCES} ${RCC_SRCS})
 
 target_link_libraries(cvx_viz cvx_util

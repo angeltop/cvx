@@ -1,5 +1,5 @@
-#ifndef _IMAGE_WIDGET_H_
-#define _IMAGE_WIDGET_H_
+#ifndef __CVX_VIZ_IMAGE_WIDGET_HPP__
+#define __CVX_VIZ_IMAGE_WIDGET_HPP___
 
 #include <QGraphicsView>
 #include <QGraphicsItem>
@@ -7,7 +7,6 @@
 #include <cvx/viz/image/tools.hpp>
 
 #include <opencv2/opencv.hpp>
-
 
 namespace cvx { namespace viz {
 
@@ -23,9 +22,7 @@ public:
     cv::Mat image() const ;
 
     // the underlying graphics scene
-    QGraphicsScene *scene() {
-        return (QGraphicsScene *)gscene ;
-    }
+    QGraphicsScene *scene();
 
     // set the image
     void setImage(const cv::Mat &im) ;

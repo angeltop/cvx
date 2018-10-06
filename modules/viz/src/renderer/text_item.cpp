@@ -127,13 +127,13 @@ void TextItem::render(float x, float y, const Eigen::Vector3f &clr)
     glBindTexture(GL_TEXTURE_2D, texture_);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-
+/*
        std::vector<GLubyte> atlas_img(256*265*sizeof(GLubyte));
       glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_UNSIGNED_BYTE, &atlas_img[0]);
 
        cv::Mat im(256, 256, CV_8U, &atlas_img[0]) ;
        cv::imwrite("/tmp/atlas.png", im) ;
-
+*/
     // Bind to sampler name zero == the currently bound texture's sampler state becomes active (no dedicated sampler)
     glBindSampler(0, 0);
 

@@ -1,5 +1,6 @@
 #include <cvx/viz/image/view.hpp>
 #include <cvx/viz/image/tools.hpp>
+#include <cvx/viz/image/widget.hpp>
 
 #include "tools_p.hpp"
 
@@ -190,6 +191,22 @@ QImageView::QImageView(QWidget *parent): QMainWindow(parent)
     idx = -1 ;
     it = NULL ;
 }
+
+cv::Mat QImageView::image() const {
+    return pWidget->image() ;
+}
+
+void QImageView::setImage(const cv::Mat &im, const QString &name)
+{
+    pWidget->setImage(im) ;
+    setFileName(name) ;
+}
+
+void QImageView::setImage(const QImage &img) {
+    pWidget->setImage(img) ;
+}
+
+bool QImageView::hasImage() const { return pWidget->hasImage() ; }
 
 
 void QImageView::fitToWindow()

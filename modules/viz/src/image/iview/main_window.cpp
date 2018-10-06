@@ -1,6 +1,7 @@
 #include "main_window.hpp"
 
 #include <cvx/viz/image/view.hpp>
+#include <cvx/viz/image/widget.hpp>
 
 #include <QSettings>
 #include <QFileInfo>

@@ -1,11 +1,10 @@
-#ifndef _TTOOLS_H_
-#define _TTOOLS_H_
+#ifndef __CVX_VIZ_IMAGE_TOOLS_HPP__
+#define __CVX_VIZ_IMAGE_TOOLS_HPP__
 
 #include <QAction>
 #include <QGraphicsSceneMouseEvent>
 
 class QRubberBand ;
-
 
 namespace cvx { namespace viz {
 
@@ -25,24 +24,22 @@ public:
     QImageToolFactory() {};
 
     QImageTool *createImageTool(const char *toolName) {
-        QImageToolCreator *cr = clsMap.value(toolName, 0) ;
+        QImageToolCreator *cr = clsMap.value(toolName, nullptr) ;
         if ( cr ) return cr->create() ;
-        else return (QImageTool *)0 ;
+        else return nullptr ;
     }
 
     QAction *findToolAction(const char *toolName) {
-        QAction *ac = actionMap.value(toolName, 0) ;
+        QAction *ac = actionMap.value(toolName, nullptr) ;
         return ac ;
     }
 
-    QByteArray toolName(QAction *act)
-    {
+    QByteArray toolName(QAction *act) {
         QByteArray k = actionMap.key(act, "") ;
         return k ;
     }
 
-    void registerTool(const char *toolName, QImageToolCreator *cr, QAction *act)
-    {
+    void registerTool(const char *toolName, QImageToolCreator *cr, QAction *act) {
         clsMap[toolName] = cr ;
         if ( act ) actionMap[toolName] = act ;
     }

@@ -1,13 +1,14 @@
-#ifndef _QIMAGEVIEW_H_
-#define _QIMAGEVIEW_H_
+#ifndef __CVX_VIZ_IMAGE_VIEW_HPP__
+#define __CVX_VIZ_IMAGE_VIEW_HPP__
 
-#include <cvx/viz/image/widget.hpp>
+
 
 #include <QLabel>
 #include <QDirIterator>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QComboBox>
+#include <QActionGroup>
 
 #include <opencv2/opencv.hpp>
 
@@ -15,6 +16,8 @@ class QtColorButton ;
 
 namespace cvx { namespace viz {
 
+class QImageWidget ;
+class QImageTool ;
 
     // This is a basic image viewer. It provides a toolbar that may be used for interaction with the image (toy may toggle it by pressing T).
     // It allows browsing the images in the current folder by using PgUp, PgDown, Home, End buttons.
@@ -31,9 +34,7 @@ namespace cvx { namespace viz {
             return pWidget ;
         }
 
-        cv::Mat image() const {
-            return pWidget->image() ;
-        }
+        cv::Mat image() const;
 
         QString fileName() const {
             return pathName ;
@@ -44,17 +45,11 @@ namespace cvx { namespace viz {
             emit imageLoaded(name) ;
         }
 
-        void setImage(const cv::Mat &im, const QString &name)
-        {
-            pWidget->setImage(im) ;
-            setFileName(name) ;
-        }
+        void setImage(const cv::Mat &im, const QString &name);
 
-        void setImage(const QImage &img) {
-            pWidget->setImage(img) ;
-        }
+        void setImage(const QImage &img);
 
-        bool hasImage() const { return pWidget->hasImage() ; }
+        bool hasImage() const;
 
         bool save() ;
         bool saveAs() ;
