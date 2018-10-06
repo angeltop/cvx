@@ -18,7 +18,7 @@ set(INSTALL_BIN_DIR bin
     CACHE PATH "Relative instalation path for executables")
 
 # INSTALL_INCLUDE_DIR
-set(INSTALL_INCLUDE_DIR include/cvx
+set(INSTALL_INCLUDE_DIR include
     CACHE PATH "Relative instalation path for header files")
 
 # INSTALL_CMAKE_DIR
@@ -71,5 +71,5 @@ endif()
 # Create 'version.h'
 configure_file(${CMAKE_SOURCE_DIR}/CMake/version.h.in  "${CMAKE_CURRENT_BINARY_DIR}/version.h" @ONLY)
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h DESTINATION "${INSTALL_INCLUDE_DIR}" )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h DESTINATION "${INSTALL_INCLUDE_DIR}/cvx" )
 
