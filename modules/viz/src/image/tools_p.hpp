@@ -103,7 +103,7 @@ class QPolyRBand : public QGraphicsItem
   
 	enum Flags { ClosedFlag = 0x0001, NoLinesFlag = 0x0002, NoTextFlag = 0x0004, PaintInteriorFlag = 0x0008 } ;
   
-	QPolyRBand(QGraphicsItem *parent, QGraphicsScene *scene, unsigned nFlags = 0) ;
+    QPolyRBand(QGraphicsItem *parent, unsigned nFlags = 0) ;
 
   QPolyRBand(QImageWidget *v, unsigned nFlags = 0) ;
     

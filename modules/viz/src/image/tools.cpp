@@ -514,7 +514,7 @@ void QSamplingTool::mouseReleased(QGraphicsSceneMouseEvent *mouseEvent)
 ///////////////////////////////////////////////////////////////////////////
 
 
-QPolyRBand::QPolyRBand(QGraphicsItem *parent, QGraphicsScene *scene, unsigned nFlags): 
+QPolyRBand::QPolyRBand(QGraphicsItem *parent, unsigned nFlags):
     QGraphicsItem(parent)
 {
     setZValue(1);
@@ -568,7 +568,7 @@ void QPolyRBand::setPolygon(const QPolygonF &ptlist)
         QGrabHandle *pHandle = new QGrabHandle( this ) ;
         pHandle->setPos(poly[i]) ;
         handles.push_back(pHandle) ;
-        scene()->addItem(pHandle) ;
+
     }
 
     updatePoly() ;
@@ -651,7 +651,7 @@ QGrabHandle *QPolyRBand::getHandle(int i)  {
 void QPolyRBand::appendPoint(const QPointF &p) {
     poly.push_back(p) ;
     QGrabHandle *pHandle = new QGrabHandle( this) ;
-    scene()->addItem(pHandle) ;
+
     handles.push_back(pHandle) ;
     updatePoly() ;
 }
@@ -710,7 +710,8 @@ QPolygonTool::~QPolygonTool()
 void QPolygonTool::Register(QImageWidget *v)
 {
     view = v ;
-    rb = new QPolyRBand(0, view->scene()) ;
+    rb = new QPolyRBand((QGraphicsItem *)nullptr) ;
+    view->scene()->addItem(rb) ;
     rb->setMode(rbflags) ;
     rb->hide() ;
 }
