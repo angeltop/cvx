@@ -83,7 +83,8 @@ public:
 
     PerspectiveCamera(const cvx::util::PinholeCamera &cam, float znear = 0.01, float zfar = 10.0): znear_(znear), zfar_(zfar) {
         yfov_ = 2 * atan( cam.sz().height / cam.fy()/2.0)  ;
-        aspect_ = cam.sz().width / (float) cam.sz().height ;
+     //   aspect_ = cam.sz().width / (float) cam.sz().height ;
+        aspect_ = 1.0 ;
         vp_.width_ = cam.sz().width ;
         vp_.height_ = cam.sz().height ;
     }

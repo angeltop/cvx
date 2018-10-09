@@ -65,7 +65,7 @@ errorCallback( GLenum source,
                  GLenum severity,
                  GLsizei length,
                  const GLchar* message,
-                 void* userParam )
+                 const void* userParam )
 {
   fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
@@ -84,13 +84,13 @@ bool RendererImpl::init() {
     if ( ( err = glewInit() ) != GLEW_OK ) {
         return false ; // this may indicate that context has not been initialized
     }
-
+/*
     // During init, enable debug output
     glEnable              ( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( errorCallback, this );
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
     glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, true);
-
+*/
     // create vertex buffers
 
     makeVertexBuffers() ;

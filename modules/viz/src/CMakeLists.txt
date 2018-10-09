@@ -44,6 +44,7 @@ set(LIB_SOURCES
     renderer/text_item.hpp
     renderer/text.cpp
 
+
     scene/scene.cpp
     scene/assimp_loader.cpp
     scene/camera.cpp
@@ -87,6 +88,7 @@ set(LIB_SOURCES
 
     ${LIBRARY_INCLUDE_DIR}/renderer/renderer.hpp
     ${LIBRARY_INCLUDE_DIR}/renderer/text.hpp
+
 
     ${LIBRARY_INCLUDE_DIR}/image/widget.hpp
     ${LIBRARY_INCLUDE_DIR}/image/tools.hpp

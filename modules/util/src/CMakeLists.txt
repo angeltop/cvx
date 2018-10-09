@@ -40,6 +40,7 @@ set ( LIB_SOURCES
     geometry/kdtree.cpp
     geometry/octree.cpp
     geometry/util.cpp
+    geometry/viewpoint_sampler.cpp
 
     viz/gnuplot.cpp
 
@@ -91,6 +92,7 @@ set ( LIB_HEADERS
     geometry/kdtree.hpp
     geometry/octree.hpp
     geometry/util.hpp
+    geometry/viewpoint_sampler.hpp
 
     camera/camera.hpp
 
