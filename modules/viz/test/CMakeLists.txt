@@ -21,8 +21,7 @@ target_link_libraries(test_shapes cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} $
 add_executable(test_point_cloud test_point_cloud.cpp)
 target_link_libraries(test_point_cloud cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
 
-add_executable(render_virtual_scene render_virtual_scene.cpp)
-target_link_libraries(render_virtual_scene cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
