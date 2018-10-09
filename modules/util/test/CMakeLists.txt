@@ -35,3 +35,6 @@ target_link_libraries(test_lm  cvx_util )
 add_executable(test_logger test_logger.cpp)
 target_link_libraries(test_logger  cvx_util )
 
+add_executable(test_geometry test_geometry.cpp)
+target_link_libraries(test_geometry cvx_util )
+

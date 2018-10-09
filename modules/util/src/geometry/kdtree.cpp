@@ -148,7 +148,7 @@ void KDTree3::withinRadius(const point_t &q, float radius, std::vector<uint> &in
 
 struct PointCloudAdaptor2
 {
-    typedef PointList<float, 2> point_list_t ;
+    typedef EPointList2f point_list_t ;
 
     PointCloudAdaptor2(const point_list_t &data): pts_(data) {}
 
@@ -186,7 +186,7 @@ class KDTreeIndex2
 {
 public:
 
-    typedef PointList<float, 2> point_list_t ;
+    typedef EPointList2f point_list_t ;
 
     KDTreeIndex2(const point_list_t &data) {
         data_.reset(new PointCloudAdaptor2(data)) ;

@@ -46,7 +46,7 @@ class KDTree2
 {
 public:
     typedef Eigen::Vector2f point_t ;
-    typedef PointList<float, 2> point_list_t ;
+    typedef EPointList2f point_list_t ;
 
     KDTree2() {}
     KDTree2(const point_list_t &data) ;
