@@ -31,7 +31,7 @@ MeshPtr Mesh::createWireCube(const Vector3f &hs) {
     MeshPtr m(new Mesh(Lines)) ;
 
     m->vertices().data() =
-    EPointList3f{{ -hs.x(), +hs.y(), +hs.z() }, { +hs.x(), +hs.y(), +hs.z() }, { +hs.x(), -hs.y(), +hs.z() }, { -hs.x(), -hs.y(), +hs.z() },
+    {{ -hs.x(), +hs.y(), +hs.z() }, { +hs.x(), +hs.y(), +hs.z() }, { +hs.x(), -hs.y(), +hs.z() }, { -hs.x(), -hs.y(), +hs.z() },
     { -hs.x(), +hs.y(), -hs.z() }, { +hs.x(), +hs.y(), -hs.z() }, { +hs.x(), -hs.y(), -hs.z() }, { -hs.x(), -hs.y(), -hs.z() } } ;
     m->vertices().indices() =  {  0, 1, 1, 2, 2, 3, 3, 0,  4, 5, 5, 6, 6, 7,  7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
 
@@ -306,7 +306,7 @@ MeshPtr Mesh::createSolidCylinder(float radius, float height, size_t slices, siz
     return m ;
 }
 
-MeshPtr Mesh::makePointCloud(const EPointList3f &pts) {
+MeshPtr Mesh::makePointCloud(const PointList3f &pts) {
 
      MeshPtr m(new Mesh(Points)) ;
 
@@ -315,7 +315,7 @@ MeshPtr Mesh::makePointCloud(const EPointList3f &pts) {
      return m ;
 }
 
-MeshPtr Mesh::makePointCloud(const EPointList3f &coords, const EPointList3f &clrs) {
+MeshPtr Mesh::makePointCloud(const PointList3f &coords, const PointList3f &clrs) {
 
     MeshPtr m(new Mesh(Points)) ;
 

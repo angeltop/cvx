@@ -35,13 +35,13 @@ public:
     // Point cloud alignment with ICP. Variable target is the static cloud and src is the moving cloud. Variable pose should be initialized
     // with the initial transform
 
-    float align(const EPointList3f &target, const EPointList3f &src, Eigen::Isometry3f &pose, uint &n_inliers) {
+    float align(const PointList3f &target, const PointList3f &src, Eigen::Isometry3f &pose, uint &n_inliers) {
         KDTree3 tree(target) ;
         return align(tree, target, src, pose, n_inliers) ;
     }
 
     // usefull when one needs to do several alignments to the same model
-    float align(KDTree3 &stree, const EPointList3f &target, const EPointList3f &src, Eigen::Isometry3f &pose,
+    float align(KDTree3 &stree, const PointList3f &target, const PointList3f &src, Eigen::Isometry3f &pose,
                 uint &n_inliers) ;
 
 

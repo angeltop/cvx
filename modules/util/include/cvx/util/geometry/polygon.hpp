@@ -20,8 +20,6 @@ public:
     Polygon(T *data, int n, bool row_major = true):
         PointList<T, 2>(data, n, row_major) {}
 
-    Polygon(const std::vector< Point<T, 2> > &pts): PointList<T, 2>(pts) {}
-
     Polygon(const cv::Mat &src): PointList<T, 2>(src) {}
 
     size_t numPoints() const { return base_t::mat_.rows() ; }

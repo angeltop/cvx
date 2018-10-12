@@ -121,7 +121,7 @@ typedef Octree<Vector3f> OctreeCloud ; // points are stored inside the nodes
 typedef Octree<uint> OctreeIndexed ;   // indexes to data stored ;
 
 // Subsampling of pointcloud be means of octree. The average of points inside each leaf node is computed and then the point closest to it is selected.
-void sampleCloudCenters(const EPointList3f &cloud, float min_cell_size_, EPointList3f &res, const Vector3f &rmin, const Vector3f &rmax) ;
+void sampleCloudCenters(const PointList3f &cloud, float min_cell_size_, PointList3f &res, const Vector3f &rmin, const Vector3f &rmax) ;
 
 }}
 

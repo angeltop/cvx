@@ -18,7 +18,7 @@ class KDTree3
 public:
 
     typedef Eigen::Vector3f point_t ;
-    typedef EPointList3f point_list_t ;
+    typedef PointList3f point_list_t ;
 
     KDTree3() {}
     KDTree3(const point_list_t &data) ;
@@ -46,7 +46,7 @@ class KDTree2
 {
 public:
     typedef Eigen::Vector2f point_t ;
-    typedef EPointList2f point_list_t ;
+    typedef PointList2f point_list_t ;
 
     KDTree2() {}
     KDTree2(const point_list_t &data) ;

@@ -8,7 +8,7 @@ using namespace std ;
 
 namespace cvx { namespace util {
 
-float ICPAligner::align(KDTree3 &search, const EPointList3f &target_pts, const EPointList3f &src, Isometry3f &pose, uint &n_inliers)
+float ICPAligner::align(KDTree3 &search, const PointList3f &target_pts, const PointList3f &src, Isometry3f &pose, uint &n_inliers)
 {
     using Eigen::Vector3f ;
 

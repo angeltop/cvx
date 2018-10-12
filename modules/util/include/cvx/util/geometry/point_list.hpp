@@ -8,96 +8,113 @@
 
 namespace cvx { namespace util {
 
-template <class T, int D>
-class PointList
+template <typename T, int D>
+using pl_point_t = Eigen::Matrix<T, D, 1> ;
+
+template <typename T, int D, typename alloc>
+using pl_container_t = std::vector<pl_point_t<T, D>, alloc> ;
+
+
+
+template <class T, int D, typename alloc = std::allocator<T>>
+class PointList: public pl_container_t<T, D, alloc>
 {
+    using Point = pl_point_t<T, D> ;
+    using Base = pl_container_t<T, D, alloc> ;
+    using Map = Eigen::Map<Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::RowMajor>>;
+    using ConstMap = Eigen::Map<const Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::RowMajor>>;
+
+
 public:
 
-    typedef Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::RowMajor> matrix_t ;
+    PointList(): Base() {}
 
-    PointList(uint n): mat_(n, D) {}
+    PointList(uint n):
+       Base(n) {}
+
+    PointList(const std::initializer_list<Point> &data) {
+        this->resize(data.size()) ;
+        std::copy(data.begin(), data.end(), this->begin()) ;
+
+    }
 
     // fill with row major data i.e. (x, y) or column major ( x1, x2 ... y1, y2 ...)
-    PointList(T *data, int n, bool row_major = true) {
+
+    PointList(T *data, size_t n, bool row_major = true) {
+
+        this->resize(n) ;
         if ( row_major )
-            mat_ = Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::RowMajor> >(data, n, D) ;
-        else
-            mat_ = Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::ColMajor> >(data, n, D) ;
+            for (uint i=0 ; i<n ; i++, data += D ) (*this)[i] = *reinterpret_cast<Point *>(data) ;
+        else {
+            for( uint j=0 ; j<D ; j++ )
+                for (uint i=0 ; i<n ; i++, data++ )
+                    (*this)[i][j] = *data ;
+        }
     }
 
-    template<class Q>
-    PointList(const std::vector< Q > &pts) {
-        mat_.resize(pts.size(), D) ;
-        for(uint i=0 ; i<pts.size() ; i++) mat_.row(i) = pts[i] ;
+    PointList(const PointList<T, D> &other): Base(other) {
     }
 
-    PointList(const matrix_t &x): mat_(x) {}
+    PointList(const Eigen::Matrix<T, Eigen::Dynamic, D> &x): Base(x.rows()) {
+        assert(x.cols() == D);
+        for( uint idx = 0 ; idx<x.rows() ; idx++ )
+            (*this)[idx] = x.row(idx) ;
+    }
+
 
     PointList(const cv::Mat &src) {
          assert(src.cols == D);
-         mat_.resize(src.rows, D) ;
-         cv::Mat dst(src.rows, src.cols, cv::DataType<T>::type, mat_.data(), (size_t)(mat_.stride()*sizeof(T)));
+         this->resize(src.rows) ;
+         cv::Mat dst(src.rows, src.cols, cv::DataType<T>::type, &(*this)[0], D*(size_t)(sizeof(T)));
          src.convertTo(dst, dst.type());
-         assert( dst.data == (uchar*)mat_.data());
+         assert( dst.data == (uchar*)this->data());
     }
 
-    Point<T, D> operator [] (uint idx) const { return mat_.row(idx) ; }
-    Eigen::Map< Eigen::Matrix<T, 1, D> > operator [] (uint idx) { return  Eigen::Map< Eigen::Matrix<T, 1, D> >(mat_.data() + idx * mat_.stride()); }
-
-    Point<T, D> center() const {
-        return mat_.colwise().mean();
+     Map asEigenMap() {
+        return Map(reinterpret_cast<T *>(this->data()->data()), this->size(), D) ;
     }
 
-    size_t size() const { return mat_.rows() ; }
+     ConstMap asEigenMap() const{
+        return ConstMap(reinterpret_cast<const T *>(this->data()->data()), this->size(), D) ;
+    }
 
-    void axes(double &l1, Point<T, D> &v1, double &l2, Point<T, D> &v2) const ;
+    Point center() const {
+        return asEigenMap().colwise().mean();
+    }
+
+    void axes(double &l1, Point &v1, double &l2, Point &v2) const ;
 
     // Procrustes analysis
     // Find the transform  that aligns this shape with the other one:
     // this' = T(s) * T(theta) * this + T(tx, ty)
     Eigen::Affine2d align(const PointList<T, D> &other) const ;
 
-    void transform(const Eigen::Affine2d &xf) {
-        mat_ = xf.cast<float>() * mat_.transpose() ;
+    template <int Mode>
+    void transform(const Eigen::Transform<T, D, Mode> &xf) {
+        for(uint i=0 ;i <this->size() ; i++ ) (*this)[i] = xf * (*this)[i] ;
+
     }
 
-    std::pair< Point<T, D>, Point<T, D> > bbox() const {
-        return std::make_pair(mat_.colwise().minCoeff(), mat_.colwise().maxCoeff()) ;
+    std::pair< Point, Point > bbox() const {
+        auto a = asEigenMap() ;
+        return std::make_pair(a.colwise().minCoeff(), a.colwise().maxCoeff()) ;
     }
 
-    double norm() const { return mat_.norm() ; }
-    void translate(const Point<T, D> &offset) ;
-    void scale(double s) ;
+    double norm() const { return asEigenMap().norm() ; }
 
-    Eigen::Matrix<T, Eigen::Dynamic, 1>  toVector(bool row_major = true) const {
-        Eigen::Matrix<T, Eigen::Dynamic, 1> res(mat_.rows() * D) ;
-        if ( row_major )
-            Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::RowMajor> >(res.data(), mat_.rows(), D) = mat_ ;
-        else
-            Eigen::Map< Eigen::Matrix<T, Eigen::Dynamic, D, Eigen::ColMajor> >(res.data(), mat_.rows(), D) = mat_ ;
-        return res ;
-    }
-
-    const matrix_t &mat() const { return mat_ ; }
     cv::Mat toCVMat() const {
-         return cv::Mat(mat_.rows(), 1, cv::DataType< cv::Vec<T, D> >::type, (void*)mat_.data(), mat_.stride() * sizeof(T));
+         return cv::Mat(this->size(), 1, cv::DataType< cv::Vec<T, D> >::type, (void*)this->data(), D * sizeof(T));
     }
-
-protected:
-
-    matrix_t mat_ ;
 } ;
 
+using PointList2f = PointList<float, 2> ;
+using PointList3f= PointList<float, 3> ;
+using PointList4f = PointList<float, 4, Eigen::aligned_allocator<Eigen::Vector4f>> ;
 
-typedef PointList<double, 2> PointList2d ;
-typedef PointList<float, 2> PointList2f ;
-typedef PointList<double, 3> PointList3d ;
-typedef PointList<float, 3> PointList3f ;
+using PointList2d = PointList<double, 2, Eigen::aligned_allocator<Eigen::Vector2d>> ;
+using PointList3d= PointList<double, 3> ;
+using PointList4d = PointList<double, 4, Eigen::aligned_allocator<Eigen::Vector4d>> ;
 
-typedef std::vector<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f> > EPointList3f ;
-typedef std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > EPointList3d ;
-typedef std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f> > EPointList2f ;
-typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > EPointList2d ;
 
 }}
 

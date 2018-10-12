@@ -20,11 +20,11 @@ namespace detail {
 
 #define MAX_TEXTURES 4
 
-template<typename T, typename Allocator = std::allocator<T>>
+template<typename T, int D>
 class VertexBuffer {
 public:
 
-    using data_container_t = std::vector<T, Allocator> ;
+    using data_container_t = cvx::util::PointList<T, D> ;
     using index_container_t = std::vector<uint32_t> ;
 
     VertexBuffer() = default ;
@@ -52,8 +52,8 @@ public:
     Mesh(PrimitiveType t): ptype_(t) {}
      ~Mesh();
 
-    using vb3_t = VertexBuffer<Eigen::Vector3f, Eigen::aligned_allocator<Eigen::Vector3f>> ;
-    using vb2_t = VertexBuffer<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f>> ;
+    using vb3_t = VertexBuffer<float, 3> ;
+    using vb2_t = VertexBuffer<float, 2> ;
 
     vb3_t &vertices() { return vertices_ ; }
     vb3_t &normals() { return normals_ ; }
@@ -92,8 +92,8 @@ public:
     static MeshPtr createWireCylinder(float radius, float height, size_t slices, size_t stacks) ;
     static MeshPtr createSolidCylinder(float radius, float height, size_t slices, size_t stacks) ;
 
-    static MeshPtr makePointCloud(const cvx::util::EPointList3f &pts) ;
-    static MeshPtr makePointCloud(const cvx::util::EPointList3f &coords, const cvx::util::EPointList3f &clrs) ;
+    static MeshPtr makePointCloud(const cvx::util::PointList3f &pts) ;
+    static MeshPtr makePointCloud(const cvx::util::PointList3f &coords, const cvx::util::PointList3f &clrs) ;
 
     void computeNormals() ;
     void computeBoundingBox(Eigen::Vector3f &bmin, Eigen::Vector3f &bmax) const ;

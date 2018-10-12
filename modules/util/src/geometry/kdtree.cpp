@@ -11,7 +11,7 @@ namespace cvx { namespace util {
 
 struct PointCloudAdaptor3
 {
-    typedef EPointList3f point_list_t ;
+    typedef PointList3f point_list_t ;
 
     PointCloudAdaptor3(const point_list_t &data): pts_(data) {}
 
@@ -50,7 +50,7 @@ class KDTreeIndex3
 {
 public:
 
-    typedef EPointList3f point_list_t ;
+    typedef PointList3f point_list_t ;
 
     KDTreeIndex3(const point_list_t &data) {
         data_.reset(new PointCloudAdaptor3(data)) ;
@@ -148,7 +148,7 @@ void KDTree3::withinRadius(const point_t &q, float radius, std::vector<uint> &in
 
 struct PointCloudAdaptor2
 {
-    typedef EPointList2f point_list_t ;
+    typedef PointList2f point_list_t ;
 
     PointCloudAdaptor2(const point_list_t &data): pts_(data) {}
 
@@ -186,7 +186,7 @@ class KDTreeIndex2
 {
 public:
 
-    typedef EPointList2f point_list_t ;
+    typedef PointList2f point_list_t ;
 
     KDTreeIndex2(const point_list_t &data) {
         data_.reset(new PointCloudAdaptor2(data)) ;

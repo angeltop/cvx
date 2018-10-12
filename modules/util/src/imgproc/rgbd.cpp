@@ -218,7 +218,7 @@ bool sampleBilinearDepth(const cv::Mat &dim, float x, float y, float &z, int ws)
 }
 
 
-void depthToPointCloud(const cv::Mat &depth, const PinholeCamera &model_, EPointList3f &coords, uint sampling )
+void depthToPointCloud(const cv::Mat &depth, const PinholeCamera &model_, PointList3f &coords, uint sampling )
 {
 
     float center_x = model_.cx();

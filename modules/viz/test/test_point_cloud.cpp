@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     PinholeCamera cam(525, 525, 640/2.0, 480/2, cv::Size(640, 480)) ;
 
-    EPointList3f coords, clrs ;
+    PointList3f coords, clrs ;
     depthToPointCloud(depth, cam, coords) ;
 
     uint w = clr.cols, h = clr.rows ;

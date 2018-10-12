@@ -126,9 +126,9 @@ void RendererImpl::initBuffersForMesh(MeshData &data, Mesh &mesh)
     glGenVertexArrays(1, &data.vao_);
     glBindVertexArray(data.vao_);
 
-    const EPointList3f &vertices = mesh.vertices().data() ;
-    const EPointList3f &normals = mesh.normals().data() ;
-    const EPointList3f &colors = mesh.colors().data() ;
+    const PointList3f &vertices = mesh.vertices().data() ;
+    const PointList3f &normals = mesh.normals().data() ;
+    const PointList3f &colors = mesh.colors().data() ;
 
     data.elem_count_ = mesh.vertices().data().size() ;
     data.indices_ = mesh.vertices().indices().size() ;

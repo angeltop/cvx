@@ -2,6 +2,7 @@
 #define __LINE_FIT_HPP__
 
 #include <cvx/util/geometry/line.hpp>
+#include <cvx/util/math/rng.hpp>
 
 namespace cvx { namespace util {
 
@@ -23,7 +24,7 @@ Line<T, D> fitLine(const PointList<T, D> &pts) {
         return Line<T, D>(p, d);
     }
 
-    typename PointList<T, D>::matrix_t mat = pts.mat() ;
+    auto mat = pts.asEigenMap() ;
 
     Eigen::Matrix<T, 1, D> m = mat.colwise().mean();
     Eigen::Matrix<T, Eigen::Dynamic, D> centered = mat.rowwise() - m;
@@ -52,6 +53,7 @@ Line<T, D> fitLineRobust(const PointList<T, D> &pts,
                                const T c_angle_thresh = 0.01,   // converge threshold, change of line angle
                                const T C = 1.345                // Huber constant (smaller value reduces the influence)
 ) {
+    RNG rng ;
     typedef Point<T, D> point_t  ;
 
     uint N = pts.size() ;
@@ -80,7 +82,8 @@ Line<T, D> fitLineRobust(const PointList<T, D> &pts,
         uint n_samples = std::min(n_ransac_samples, N) ;
 
         std::vector<uint> samples ;
-        sample_with_replacement(n_samples, (uint)N, samples) ;
+        rng.sample(n_samples, N, samples) ;
+
 
         T wsum = 0 ;
         for( int i=0 ; i<n_samples ; i++ ) {

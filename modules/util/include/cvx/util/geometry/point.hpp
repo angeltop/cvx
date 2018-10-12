@@ -8,45 +8,7 @@
 namespace cvx { namespace util {
 
 template <class T, int D>
-class Point: public Eigen::Matrix<T, 1, D> {
-public:
-    typedef Eigen::Matrix<T, 1, D> base_type ;
-
-    Point() { this->setZero() ; }
-
-    template <class Q>
-    Point(Q x, Q y): base_type((T)x, (T)y) {}
-
-    template <class Q>
-    Point(Q x, Q y, Q z): base_type((T)x, (T)y, (T)z) {}
-
-    template <class Q>
-    Point(const cv::Point_<Q> &p): base_type((T)p.x, (T)p.y) {}
-
-    template <class Q>
-    Point(const cv::Point3_<Q> &p): base_type((T)p.x, (T)p.y, (T)p.z) {}
-
-    template <class Q>
-    operator cv::Point_<Q>() const { return cv::Point_<Q>(this->x(), this->y()) ; }
-
-    template <class Q>
-    operator cv::Point3_<Q>() const { return cv::Point_<Q>(this->x(), this->y(), this->z()) ; }
-
-    template <class Q>
-    operator Eigen::Matrix<Q, 1, D> () const { return Eigen::Matrix<Q, 1, D>(*this) ; }
-
-    template<typename OtherDerived>
-    Point(const Eigen::MatrixBase<OtherDerived>& other)
-        : base_type(other)
-    { }
-
-    template<typename OtherDerived>
-    Point & operator= (const Eigen::MatrixBase <OtherDerived>& other) {
-        this->base_type::operator=(other);
-        return *this;
-    }
-
-};
+using Point = Eigen::Matrix<T, D, 1> ;
 
 template<class T>
 inline Point<T, 2> max(const Point<T, 2> &a, const Point<T, 2> &b) {

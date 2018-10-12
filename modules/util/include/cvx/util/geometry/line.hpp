@@ -3,7 +3,7 @@
 
 #include <cvx/util/geometry/point.hpp>
 #include <cvx/util/geometry/point_list.hpp>
-#include <cvx/util/math/random.hpp>
+#include <cvx/util/math/rng.hpp>
 
 #include <Eigen/Eigenvalues>
 
@@ -14,7 +14,7 @@ class Line
 {
 public:
 
-    typedef Point<T, D> point_t ;
+    using point_t = Eigen::Matrix<T, D, 1> ;
 
     // Line passing from a point p with direction dir
 

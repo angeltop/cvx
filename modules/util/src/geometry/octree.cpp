@@ -11,7 +11,7 @@ class OctreeVisitor
 {
 public:
 
-    OctreeVisitor(const EPointList3f &cloud, EPointList3f &centers): cloud_(cloud), centers_(centers) {}
+    OctreeVisitor(const PointList3f &cloud, PointList3f &centers): cloud_(cloud), centers_(centers) {}
 
     bool visit(const Vector3f &, const Vector3f &, const vector<uint> &data) {
 
@@ -42,12 +42,12 @@ public:
         return true ;
     }
 
-    const EPointList3f &cloud_ ;
-    EPointList3f &centers_ ;
+    const PointList3f &cloud_ ;
+    PointList3f &centers_ ;
 
 };
 
-void sampleCloudCenters(const EPointList3f &cloud, float cell_size, EPointList3f &res, const Vector3f &pmin, const Vector3f &pmax) {
+void sampleCloudCenters(const PointList3f &cloud, float cell_size, PointList3f &res, const Vector3f &pmin, const Vector3f &pmax) {
 
     OctreeIndexed tree(pmin, pmax, Vector3f(cell_size, cell_size, cell_size)) ;
 
