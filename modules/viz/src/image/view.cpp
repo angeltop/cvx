@@ -499,6 +499,17 @@ void QImageView::last()
 
 }
 
+void QImageView::addTool(QAction *action, QImageTool *tool)
+{
+    connect(action, &QAction::triggered, this, &QImageView::setTool);
+    action->setCheckable(true) ;
+
+    registerTool(action, tool) ;
+    toolGroupAct->addAction(action) ;
+    imageToolBar->addAction(action) ;
+
+}
+
 
 
 

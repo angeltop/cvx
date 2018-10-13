@@ -187,6 +187,10 @@ public:
     void drawLabels(bool draw = true) ;
     void drawClosed(bool draw = true) ;
     void setEditOnly(bool edit = true) ;
+    void setLabelGenerator(std::function<QString(int i)> gen) ;
+    void setMaxPoints(int max_pts = -1) {
+        maxPts = max_pts ;
+    }
 
     // override
     virtual void polygonChanged() {} ;
@@ -218,6 +222,8 @@ private:
     bool editMode ;
     bool editOnly ;
     int rbflags ;
+
+    int maxPts = -1;
 
 } ;
 

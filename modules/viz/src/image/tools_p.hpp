@@ -111,8 +111,10 @@ class QPolyRBand : public QGraphicsItem
 	void setPolygon(const QPolygonF &poly) ;
 
 	void setMode(unsigned nFlags) ;
+    void setLabelGenerator(std::function<QString(int i)>) ;
 
   ~QPolyRBand() {};
+
 
   QRectF boundingRect() const;
   QPainterPath shape() const;
@@ -139,7 +141,7 @@ class QPolyRBand : public QGraphicsItem
 	bool fillInterior ;
   bool drawText ;
 
-	
+    std::function<QString(int i)> labelGenerator;
 
   void updatePoly() ;
 };

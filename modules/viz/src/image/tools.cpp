@@ -542,6 +542,12 @@ void QPolyRBand::setMode(unsigned nFlags)
 
 }
 
+void QPolyRBand::setLabelGenerator(std::function<QString (int)> gen)
+{
+    labelGenerator = gen ;
+
+}
+
 /*
 void QPolyRBand::animate()
 {
@@ -628,16 +634,15 @@ void QPolyRBand::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
     {
         for( int i=0 ; i<poly.size() ; i++ )
         {
-            char s[10] ;
-            sprintf(s, "%d", i) ;
+            QString text = ( labelGenerator ) ? labelGenerator(i) : QString::number(i) ;
 
             QPointF pp = painter->transform().map(poly[i]) ;
             painter->save() ;
             painter->resetTransform() ;
             painter->setPen(Qt::black) ;
-            painter->drawText(pp + QPointF(6, 10), QString(s)) ;
+            painter->drawText(pp + QPointF(6, 10), text) ;
             painter->setPen(Qt::yellow) ;
-            painter->drawText(pp + QPointF(5, 10), QString(s)) ;
+            painter->drawText(pp + QPointF(5, 10), text) ;
             painter->restore() ;
         }
     }
@@ -696,8 +701,8 @@ QPolygonTool::QPolygonTool(QObject *p): QImageTool(p)
     editMode = false ;
     editOnly = false ;
     index = -1 ;
-    p_rz = NULL ;
-    rb = NULL ;
+    p_rz = nullptr ;
+    rb = new QPolyRBand((QGraphicsItem *)nullptr) ;
     rbflags = 0 ;
 
 }
@@ -710,10 +715,10 @@ QPolygonTool::~QPolygonTool()
 void QPolygonTool::Register(QImageWidget *v)
 {
     view = v ;
-    rb = new QPolyRBand((QGraphicsItem *)nullptr) ;
+
     view->scene()->addItem(rb) ;
-    rb->setMode(rbflags) ;
-    rb->hide() ;
+ //   rb->setMode(rbflags) ;
+   // rb->hide() ;
 }
 
 void QPolygonTool::show(bool sh)
@@ -762,7 +767,7 @@ void QPolygonTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
             nPts ++ ;
             polygonChanged() ;
         }
-        else
+        else if ( maxPts == -1 || nPts < maxPts )
         {
             QPointF startPoint = ( nPts == 0 ) ? lastPoint : rb->poly[nPts-1] ;
             rb->appendPoint(point) ; nPts ++ ;
@@ -972,6 +977,11 @@ void QPolygonTool::drawClosed(bool draw)
 void QPolygonTool::setEditOnly(bool edit) 
 {
     editOnly = edit ;
+}
+
+void QPolygonTool::setLabelGenerator(std::function<QString (int)> gen)
+{
+    rb->setLabelGenerator(gen) ;
 }
 
 QPolygonF QPolygonTool::getPolygon() const 

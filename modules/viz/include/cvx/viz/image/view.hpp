@@ -61,6 +61,8 @@ class QImageTool ;
         void first() ;
         void last() ;
 
+        void addTool(QAction *action, QImageTool *tool) ;
+
     public slots:
 
         void fitToWindow() ;
@@ -76,7 +78,7 @@ class QImageTool ;
         // connect this to the mainwindow status bar to display messages
         void statusMessage(const QString &msg) ;
 
-    private slots:
+    protected slots:
 
         void updateZoomCombo(int idx) ;
 
@@ -90,9 +92,7 @@ class QImageTool ;
     protected:
 
         void registerTool(QAction *act, QImageTool *tool) ;
-
-
-    private:
+        QActionGroup *toolGroupAct ;
 
         bool saveFile(const QString &fileNameSave ) ;
 
@@ -119,7 +119,6 @@ class QImageTool ;
         QAction *panToolAct, *rectToolAct, *polyToolAct, *polyToolClosedAct ;
         QAction *polyToolOpenAct, *polyToolLinesAct,  *polyToolPointsAct, *polyToolNumbersAct ;
         QAction *sampleToolAct, *zoomConAct ;
-        QActionGroup *toolGroupAct ;
 
         QMap<QAction *, QImageTool *>  tools ;
 

@@ -647,6 +647,7 @@ namespace cvx { namespace viz {
         }
 
         cc = qMin(cc-1, (int)(sizeof(zoomFactors)/sizeof(float) - 1) ) ;
+        cc = qMax(cc, 0) ;
         resetTransform() ;
 
         centerOn(rect.center()) ;
