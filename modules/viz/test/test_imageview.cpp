@@ -9,6 +9,26 @@
 using namespace cvx::viz ;
 using namespace std ;
 
+class CustomTool: public QPolygonTool {
+public:
+    CustomTool(QImageView *parent): QPolygonTool(parent) {
+        setMaxPoints(3) ;
+        drawClosed() ;
+        QPen pen(QBrush(Qt::green), 4);
+        pen.setCosmetic(true) ;
+        setPen(pen) ;
+        setBrush(QBrush(QColor(255, 0, 0, 100))) ;
+
+    }
+
+    QString makeLabel(int i) const override {
+        if ( i==0) return QString("A") ;
+        else if ( i==1 ) return QString("B") ;
+        else return QString("C") ;
+    }
+
+};
+
 class View: public QImageView {
 public:
     View(): QImageView(nullptr) {
@@ -18,14 +38,7 @@ public:
         QAction *polyToolAct = new QAction(QIcon(":/images/polygon-tool.png"), "Polygon Tool", this);
         polyToolAct->setStatusTip("Select points");
 
-        QPolygonTool *tool = new QPolygonTool(this) ;
-        tool->setMaxPoints(3) ;
-        tool->drawClosed() ;
-        tool->setLabelGenerator([](int i){
-            if ( i==0) return QString("A") ;
-            else if ( i==1 ) return QString("B") ;
-            else return QString("C") ;
-        });
+        CustomTool *tool = new CustomTool(this) ;
 
         addTool(polyToolAct, tool) ;
     }

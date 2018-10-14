@@ -152,7 +152,7 @@ void QImageView::createToolBar()
 
 void QImageView::registerTool(QAction *act, QImageTool *tool)
 {
-    tool->Register(pWidget) ;
+    tool->registerWithView(pWidget) ;
     tools[act] = tool ;
 }
 

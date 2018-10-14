@@ -21,225 +21,232 @@ class QImageWidget ;
 
 class QGrabHandle : public QGraphicsItem
 {
-  public:
-  
-  QGrabHandle(QGraphicsItem *parent);
+public:
 
-  QRectF boundingRect() const;
-  QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QGrabHandle(QGraphicsItem *parent);
 
-  void setPos(const QPointF &p) ;
-  void setHighlighted(bool h = true) ;
-  void setSmall(bool sm=true) ;
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-  QPointF pos ;
+    void setPos(const QPointF &p) ;
+    void setHighlighted(bool h = true) ;
+    void setSmall(bool sm=true) ;
 
-  protected:
-   
-  QRectF sceneRect() const;
+    QPointF pos ;
 
-  private:
-  
-  bool highlighted ;
-  bool isSmall ;
+protected:
+
+    QRectF sceneRect() const;
+
+private:
+
+    bool highlighted ;
+    bool isSmall ;
 } ;
 
 class QRectRBand : public QGraphicsItemGroup
 {
-  public:
-  
-  QRectRBand(QGraphicsItem *parent, QGraphicsScene *scene);
-  ~QRectRBand();
+public:
 
-  QRectF boundingRect() const;
-  QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QRectRBand(QGraphicsItem *parent, QGraphicsScene *scene);
+    ~QRectRBand();
 
-  void setRect(const QRectF &r) ;
-  QRect getRect() const { return rect.toRect() ; }
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
 
-  // -1: means outside, 0-7 means handle, 8 means inside
-  int whereIsPoint(const QPointF &p) ;
+    void setRect(const QRectF &r) ;
+    QRect getRect() const { return rect.toRect() ; }
 
-  QGrabHandle *getHandle(int i) ;
+    // -1: means outside, 0-7 means handle, 8 means inside
+    int whereIsPoint(const QPointF &p) ;
 
-  private:
+    QGrabHandle *getHandle(int i) ;
 
-  friend class QRectTool ;
-  void hideAll() ;
-  void showAll() ;
-   
-  QRectF rect, brect ;
-  QGrabHandle *handle[8] ;
+private:
+
+    friend class QRectTool ;
+    void hideAll() ;
+    void showAll() ;
+
+    QRectF rect, brect ;
+    QGrabHandle *handle[8] ;
 };
 
 class QImageSamplingPopup : public QLabel
 {
-   Q_OBJECT
+    Q_OBJECT
 
-   public:
-   
-   QImageSamplingPopup(QImageWidget* parent);
+public:
 
-   void popup( const QPoint &pos);
+    QImageSamplingPopup(QImageWidget* parent);
 
-   protected:
+    void popup( const QPoint &pos);
 
-   virtual void mouseMoveEvent( QMouseEvent * );
-   virtual void mouseReleaseEvent( QMouseEvent * );
-   virtual void closeEvent( QCloseEvent * );
+protected:
 
-   private:
-   
-   QImageWidget* popupParent;
-  
+    virtual void mouseMoveEvent( QMouseEvent * ) override ;
+    virtual void mouseReleaseEvent( QMouseEvent * ) override ;
+    virtual void closeEvent( QCloseEvent * ) override ;
+
+private:
+
+    QImageWidget* popupParent;
+
 };
 
 
 class QPolyRBand : public QGraphicsItem
 {
-  public:
-  
-	enum Flags { ClosedFlag = 0x0001, NoLinesFlag = 0x0002, NoTextFlag = 0x0004, PaintInteriorFlag = 0x0008 } ;
-  
+public:
+
+    enum Flags { ClosedFlag = 0x0001, NoLinesFlag = 0x0002, NoTextFlag = 0x0004, PaintInteriorFlag = 0x0008 } ;
+
     QPolyRBand(QGraphicsItem *parent, unsigned nFlags = 0) ;
 
-  QPolyRBand(QImageWidget *v, unsigned nFlags = 0) ;
+    QPolyRBand(QImageWidget *v, unsigned nFlags = 0) ;
     
-  QPolygonF getPolygon() const ;
-	void setPolygon(const QPolygonF &poly) ;
+    QPolygonF getPolygon() const ;
+    void setPolygon(const QPolygonF &poly) ;
 
-	void setMode(unsigned nFlags) ;
-    void setLabelGenerator(std::function<QString(int i)>) ;
+    void setPen(const QPen &pen) ;
+    void setBrush(const QBrush &brush) ;
 
-  ~QPolyRBand() {};
+    void setLabelPen(const QPen &pen) ;
+    void setLabelBrush(const QBrush &brush) ;
+    void setLabelFont(const QFont &font) ;
+
+    void setClosed(bool closed) { isClosed = closed ; update(); }
+    void showLabels(bool show_labels) { drawText = show_labels ;  update(); }
+
+    ~QPolyRBand() {}
+
+    QRectF boundingRect() const;
+    QPainterPath shape() const;
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+
+    QGrabHandle *getHandle(int i) ;
+    void appendPoint(const QPointF &p, const QString &label) ;
+    void removePoints(int start, int nPts = 1) ;
+
+    int whereIsPoint(const QPointF &pt) ;
+
+private:
+
+    friend class QPolygonTool ;
+
+    QPen pen_, label_pen_ ;
+    QBrush brush_, label_brush_ ;
+    QFont label_font_ ;
 
 
-  QRectF boundingRect() const;
-  QPainterPath shape() const;
-  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+    QRectF brect ;
+    QPolygonF poly ;
+    QVector<QString> labels_ ;
+    QVector<QGrabHandle *> handles ;
 
-	QGrabHandle *getHandle(int i) ;
-	void appendPoint(const QPointF &p) ;
-	void removePoints(int start, int nPts = 1) ;
-	
-	int whereIsPoint(const QPointF &pt) ;
+    bool isClosed = false ;
+    bool multiLines = false ;
+    bool drawText = true ;
 
-  private:
-   
-  friend class QPolygonTool ;
-
-  QPen pen ;
-  QRectF brect ;
-  QPolygonF poly ;
-  QVector<QGrabHandle *> handles ;
-
-	bool isClosed ;
-  bool drawLines ;
-  bool multiLines ;
-	bool fillInterior ;
-  bool drawText ;
-
-    std::function<QString(int i)> labelGenerator;
-
-  void updatePoly() ;
+    void updatePoly() ;
 };
 
 
 class QZoomInTool: public QImageTool
 {
-	Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     QZoomInTool(QObject *p) ;
-	virtual ~QZoomInTool() {} ;
-		
-  protected:
+    virtual ~QZoomInTool() {} ;
 
-	friend class ImageWidget ;
+protected:
 
-	virtual void Register(QImageWidget *v) ;
-	virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseReleased(QGraphicsSceneMouseEvent *) {}
-	virtual void mouseMoved(QGraphicsSceneMouseEvent *) {}
+    friend class ImageWidget ;
 
-  private:
+    virtual void registerWithView(QImageWidget *v) ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *) {}
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *) {}
 
-  QImageWidget *view ;
-  
+private:
+
+    QImageWidget *view ;
+
 } ;
 
 
 class QZoomOutTool: public QImageTool
 {
-	Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     QZoomOutTool(QObject *p) ;
-	virtual ~QZoomOutTool() {} ;
-	
-  protected:
+    virtual ~QZoomOutTool() {} ;
 
-	virtual void Register(QImageWidget *v) ;
-	virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseReleased(QGraphicsSceneMouseEvent *) {}
-	virtual void mouseMoved(QGraphicsSceneMouseEvent *) {}
+protected:
 
-  private:
+    virtual void registerWithView(QImageWidget *v) ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *) {}
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *) {}
 
-  QImageWidget *view ;
-  
+private:
+
+    QImageWidget *view ;
+
 } ;
 
 
 class QZoomRectTool: public QImageTool
 {
-	Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     QZoomRectTool(QObject *p) ;
-	virtual ~QZoomRectTool()  ;
-	
-  protected:
+    virtual ~QZoomRectTool()  ;
 
-	friend class ImageWidget ;
+protected:
 
-	virtual void Register(QImageWidget *v) ;
-	virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseReleased(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseMoved(QGraphicsSceneMouseEvent *) ;
+    friend class ImageWidget ;
 
-  private:
+    virtual void registerWithView(QImageWidget *v) ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *) ;
 
-  QImageWidget *view ;
-  QRubberBand *p_rz ;
-  QPoint porigin ;
-  QPointF porigins ;
+private:
+
+    QImageWidget *view ;
+    QRubberBand *p_rz ;
+    QPoint porigin ;
+    QPointF porigins ;
 } ;
 
 
 class QPanTool: public QImageTool
 {
-	Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     QPanTool(QObject *p) ;
-	virtual ~QPanTool()  ;
-	
-  protected:
+    virtual ~QPanTool()  ;
 
-	friend class QImageWidget ;
+protected:
 
-	virtual void Register(QImageWidget *v) ;
-	virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseReleased(QGraphicsSceneMouseEvent *) ;
-	virtual void mouseMoved(QGraphicsSceneMouseEvent *) ;
+    friend class QImageWidget ;
 
-  private:
+    virtual void registerWithView(QImageWidget *v) ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *) ;
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *) ;
 
-  QImageWidget *view ;
-	
+private:
+
+    QImageWidget *view ;
+
 } ;
 
 

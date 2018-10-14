@@ -10,61 +10,6 @@ namespace cvx { namespace viz {
 
 class QImageTool ;
 
-class  QImageToolCreator
-{
-public:
-
-    virtual QImageTool *create() const = 0 ;
-} ;
-
-class QImageToolFactory
-{
-public:
-
-    QImageToolFactory() {};
-
-    QImageTool *createImageTool(const char *toolName) {
-        QImageToolCreator *cr = clsMap.value(toolName, nullptr) ;
-        if ( cr ) return cr->create() ;
-        else return nullptr ;
-    }
-
-    QAction *findToolAction(const char *toolName) {
-        QAction *ac = actionMap.value(toolName, nullptr) ;
-        return ac ;
-    }
-
-    QByteArray toolName(QAction *act) {
-        QByteArray k = actionMap.key(act, "") ;
-        return k ;
-    }
-
-    void registerTool(const char *toolName, QImageToolCreator *cr, QAction *act) {
-        clsMap[toolName] = cr ;
-        if ( act ) actionMap[toolName] = act ;
-    }
-
-private:
-
-    QMap<QByteArray, QImageToolCreator *> clsMap ;
-    QMap<QByteArray, QAction *> actionMap ;
-
-} ;
-
-
-#define REGISTER_IMAGE_TOOL(classKey, className, act)\
-    class QImageToolCreator_##className: public QImageToolCreator \
-{\
-    public:\
-    QImageToolCreator_##className() { } \
-    QImageTool *create() const { return new className ; }\
-};\
-    QImageToolCreator_##className *imageToolInstance_##className = \
-    new QImageToolCreator_##className ;\
-    toolFactory.registerTool(classKey, imageToolInstance_##className, act) ;
-
-
-
 class QImageWidget ;
 
 // abstract class for handling all dragging operations on image canvas
@@ -74,17 +19,17 @@ class QImageTool: public QObject
 
 public:
 
-    QImageTool(QObject *p =NULL) ;
+    QImageTool(QObject *p = nullptr) ;
     virtual ~QImageTool();
 
-    virtual void show(bool sh=true) {} ;
+    virtual void show(bool sh = true) {}
 
     //protected:
 
     friend class QImageView ;
 
     // should be overriden to perform per view initialization
-    virtual void Register(QImageWidget *v) = 0 ;
+    virtual void registerWithView(QImageWidget *v) = 0 ;
 
     // handles mouse-pressed event
     virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) = 0 ;
@@ -111,7 +56,7 @@ public:
     QRectTool(QObject *p) ;
     virtual ~QRectTool() ;
 
-    void setRect(const QRectF &rect) ;
+    void setRect(const QRectF &rect_) ;
     QRectF getRect() const ;
 
 protected:
@@ -121,26 +66,26 @@ protected:
 
     virtual void show(bool sh) ;
 
-    virtual void Register(QImageWidget *v) ;
+    virtual void registerWithView(QImageWidget *v) ;
 
     virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
 
-    QRectRBand *rb ;
+    QRectRBand *rb_ ;
 
 private:
 
-    QPointF lastPoint, p_initial, p_final;
-    QImageWidget *view ;
+    QPointF last_point_, p_initial_, p_final_;
+    QImageWidget *view_ ;
 
-    bool startTracking ;
-    bool editMode ;
-    QRectF rect ;
+    bool start_tracking_ ;
+    bool edit_mode_ ;
+    QRectF rect_ ;
     
     enum EditMotionType { UPPER_LEFT, UPPER_RIGHT, BOTTOM_LEFT,
                           BOTTOM_RIGHT, TOP_SIDE, BOTTOM_SIDE, LEFT_SIDE, RIGHT_SIDE, MOVE_RECT,
-                          NONE } editMotion ;
+                          NONE } edit_motion_ ;
 } ;
 
 class QImageSamplingPopup ;
@@ -159,14 +104,14 @@ protected:
 
     friend class QImageView ;
 
-    virtual void Register(QImageWidget *v) ;
+    virtual void registerWithView(QImageWidget *v) ;
     virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
 
 private:
 
-    QImageSamplingPopup *popup ;
+    QImageSamplingPopup *popup_ ;
 
 } ;
 
@@ -183,17 +128,27 @@ public:
     QPolygonF getPolygon() const ;
     void setPolygon(const QPolygonF &poly) ;
 
-    void drawLines(bool draw = true) ;
+    void setPen(const QPen &pen) ;
+    void setBrush(const QBrush &brush) ;
+
+    void setLabelPen(const QPen &pen) ;
+    void setLabelBrush(const QBrush &brush) ;
+    void setLabelFont(const QFont &font) ;
+
     void drawLabels(bool draw = true) ;
     void drawClosed(bool draw = true) ;
     void setEditOnly(bool edit = true) ;
-    void setLabelGenerator(std::function<QString(int i)> gen) ;
+
     void setMaxPoints(int max_pts = -1) {
-        maxPts = max_pts ;
+        max_pts_ = max_pts ;
     }
 
     // override
-    virtual void polygonChanged() {} ;
+    virtual void polygonChanged() {}
+
+    virtual QString makeLabel(int i) const {
+        return QString::number(i) ;
+    }
 
 protected:
 
@@ -201,30 +156,29 @@ protected:
 
     virtual void show(bool sh) ;
 
-    virtual void Register(QImageWidget *v) ;
+    virtual void registerWithView(QImageWidget *v) ;
     virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
     virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
 
-    QImageWidget *view ;
+    QImageWidget *view_ ;
 
 private:
 
-    QPolyRBand *rb ;
+    QPolyRBand *rb_ ;
 
-    QPointF startMove ;
-    QRubberBand *p_rz ;
-    QPoint porigin ;
-    QVector<int> selected ;
+    QPointF start_move_ ;
+    QRubberBand *p_rz_ ;
+    QPoint porigin_ ;
+    QVector<int> selected_ ;
 
-    bool startTracking ;
-    int  index ;
-    bool editMode ;
-    bool editOnly ;
-    int rbflags ;
+    bool start_tracking_ ;
+    int  index_ ;
+    bool edit_mode_ ;
+    bool edit_only_ ;
+    int rb_flags_ ;
 
-    int maxPts = -1;
-
+    int max_pts_ = -1;
 } ;
 
 }}

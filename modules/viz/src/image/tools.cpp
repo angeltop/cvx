@@ -208,31 +208,31 @@ void QRectRBand::showAll()
 
 void QRectTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    if ( !rb ) return ;
+    if ( !rb_ ) return ;
 
-    rb->show() ;
+    rb_->show() ;
     QPointF point = mouseEvent->scenePos() ;
 
-    startTracking = true ;
+    start_tracking_ = true ;
 
-    if ( !editMode ) {
-        rect = QRectF(point, point) ;
-        rb->setRect(rect) ;
+    if ( !edit_mode_ ) {
+        rect_ = QRectF(point, point) ;
+        rb_->setRect(rect_) ;
     }
-    else if ( editMotion == NONE )
+    else if ( edit_motion_ == NONE )
     {
-        editMode = false ;
-        rect = QRectF(point, point) ;
-        rb->setRect(rect) ;
+        edit_mode_ = false ;
+        rect_ = QRectF(point, point) ;
+        rb_->setRect(rect_) ;
     }
-    else lastPoint = point ;
+    else last_point_ = point ;
 
 }
 
 void QRectTool::mouseReleased(QGraphicsSceneMouseEvent *event)
 {
-    if ( !rb ) return ;
-    if (!editMode) editMode = true ;
+    if ( !rb_ ) return ;
+    if (!edit_mode_) edit_mode_ = true ;
 
 
 }
@@ -240,108 +240,108 @@ void QRectTool::mouseReleased(QGraphicsSceneMouseEvent *event)
 
 void QRectTool::mouseMoved(QGraphicsSceneMouseEvent *event)
 {
-    if ( !rb  ) return ;
+    if ( !rb_  ) return ;
 
 
-    QGraphicsView *vw = view->scene()->views().front() ;
+    QGraphicsView *vw = view_->scene()->views().front() ;
     
     QPointF point = event->scenePos() ;
 
     //QGraphicsPixmapItem *pitem = (QGraphicsPixmapItem *)vw->items()[0] ;
 
-    qreal w = view->scene()->width() ;
-    qreal h = view->scene()->height() ;
+    qreal w = view_->scene()->width() ;
+    qreal h = view_->scene()->height() ;
 
     point.rx() = qMin(w-1, point.x()) ;
     point.ry() = qMin(h-1, point.y()) ;
     point.rx() = qMax((qreal)0, point.x()) ;
     point.ry() = qMax((qreal)0, point.y()) ;
 
-    if (editMode == false && ( event->buttons() & Qt::LeftButton ) )
+    if (edit_mode_ == false && ( event->buttons() & Qt::LeftButton ) )
     {
-        rect.setBottomRight(point) ;
-        rb->setRect(rect) ;
+        rect_.setBottomRight(point) ;
+        rb_->setRect(rect_) ;
 
         vw->ensureVisible(QRectF(point, point), 10, 10) ;
     }
-    else if ( editMode == true && ( event->buttons() & Qt::LeftButton )  )
+    else if ( edit_mode_ == true && ( event->buttons() & Qt::LeftButton )  )
     {
-        switch ( editMotion )
+        switch ( edit_motion_ )
         {
         case UPPER_LEFT:
-            rect.setTopLeft(point) ;
+            rect_.setTopLeft(point) ;
             break ;
         case UPPER_RIGHT:
-            rect.setTop(point.y()) ;
-            rect.setRight(point.x()) ;
+            rect_.setTop(point.y()) ;
+            rect_.setRight(point.x()) ;
             break ;
         case BOTTOM_LEFT:
-            rect.setBottom(point.y()) ;
-            rect.setLeft(point.x()) ;
+            rect_.setBottom(point.y()) ;
+            rect_.setLeft(point.x()) ;
             break ;
         case BOTTOM_RIGHT:
-            rect.setRight(point.x()) ;
-            rect.setBottom(point.y()) ;
+            rect_.setRight(point.x()) ;
+            rect_.setBottom(point.y()) ;
             break ;
         case LEFT_SIDE:
-            rect.setLeft(point.x()) ;
+            rect_.setLeft(point.x()) ;
             break ;
         case RIGHT_SIDE:
-            rect.setRight(point.x()) ;
+            rect_.setRight(point.x()) ;
             break ;
         case TOP_SIDE:
-            rect.setTop(point.y()) ;
+            rect_.setTop(point.y()) ;
             break ;
         case BOTTOM_SIDE:
-            rect.setBottom(point.y()) ;
+            rect_.setBottom(point.y()) ;
             break ;
         case MOVE_RECT:
-            rect.translate(point - lastPoint) ;
+            rect_.translate(point - last_point_) ;
             break ;
         }
 
-        if ( editMotion != NONE ) rb->setRect(rect) ;
-        lastPoint = point ;
+        if ( edit_motion_ != NONE ) rb_->setRect(rect_) ;
+        last_point_ = point ;
         vw->ensureVisible(QRectF(point, point), 10, 10) ;
 
     }
     else
     {
-        int idx  = rb->whereIsPoint(point) ;
+        int idx  = rb_->whereIsPoint(point) ;
 
         for( int i=0 ; i<8 ; i++ )
         {
-            rb->getHandle(i)->setHighlighted(idx == i) ;
+            rb_->getHandle(i)->setHighlighted(idx == i) ;
         }
 
         switch (idx)
         {
         case 0:
-            editMotion = UPPER_LEFT ; break ;
+            edit_motion_ = UPPER_LEFT ; break ;
         case 1:
-            editMotion = TOP_SIDE ; break ;
+            edit_motion_ = TOP_SIDE ; break ;
         case 2:
-            editMotion = UPPER_RIGHT ; break ;
+            edit_motion_ = UPPER_RIGHT ; break ;
         case 3:
-            editMotion = RIGHT_SIDE ; break ;
+            edit_motion_ = RIGHT_SIDE ; break ;
         case 4:
-            editMotion = BOTTOM_RIGHT ; break ;
+            edit_motion_ = BOTTOM_RIGHT ; break ;
         case 5:
-            editMotion = BOTTOM_SIDE ; break ;
+            edit_motion_ = BOTTOM_SIDE ; break ;
         case 6:
-            editMotion = BOTTOM_LEFT ; break ;
+            edit_motion_ = BOTTOM_LEFT ; break ;
         case 7:
-            editMotion = LEFT_SIDE ; break ;
+            edit_motion_ = LEFT_SIDE ; break ;
         case 8:
-            editMotion = MOVE_RECT ; break ;
+            edit_motion_ = MOVE_RECT ; break ;
         default:
-            editMotion = NONE ; break ;
+            edit_motion_ = NONE ; break ;
         }
     }
 
     char s[80] ;
 
-    QRect r = rect.normalized().toRect() ;
+    QRect r = rect_.normalized().toRect() ;
     sprintf(s, "(%d, %d) -> (%d, %d) [%dx%d]", r.left(), r.top(),
             r.right(), r.bottom(), r.width(), r.height()) ;
     emit showMessage(s) ;
@@ -352,43 +352,43 @@ void QRectTool::mouseMoved(QGraphicsSceneMouseEvent *event)
 
 QRectTool::QRectTool(QObject *p): QImageTool(p)
 {
-    rb = NULL ;
-    startTracking = false ;
-    editMode = false ;
-    editMotion = NONE ;
+    rb_ = NULL ;
+    start_tracking_ = false ;
+    edit_mode_ = false ;
+    edit_motion_ = NONE ;
 }
 
 QRectTool::~QRectTool()
 {
-    delete rb ;
+    delete rb_ ;
 }
 
-void QRectTool::Register(QImageWidget *v)
+void QRectTool::registerWithView(QImageWidget *v)
 {
-    view = v ;
-    rb = new QRectRBand(0, view->scene()) ;
-    rb->hide() ;
+    view_ = v ;
+    rb_ = new QRectRBand(0, view_->scene()) ;
+    rb_->hide() ;
 
 }
 
 void QRectTool::show(bool sh)
 {
-    if ( rb )
+    if ( rb_ )
     {
-        if ( sh ) rb->show() ;
-        else rb->hide() ;
+        if ( sh ) rb_->show() ;
+        else rb_->hide() ;
     }
 }
 
 QRectF QRectTool::getRect() const 
 {
-    if ( rb ) return rb->getRect() ;
+    if ( rb_ ) return rb_->getRect() ;
     else return QRectF() ;
 }
 
 void QRectTool::setRect(const QRectF &rect) 
 {
-    if ( rb ) rb->setRect(rect) ;
+    if ( rb_ ) rb_->setRect(rect) ;
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -482,7 +482,7 @@ void QImageSamplingPopup::popup(const QPoint &gp) {
 
 QSamplingTool::QSamplingTool(QObject *p): QImageTool(p)
 {
-    popup = NULL ;
+    popup_ = nullptr ;
 }
 
 QSamplingTool::~QSamplingTool()
@@ -490,25 +490,21 @@ QSamplingTool::~QSamplingTool()
 
 }
 
-void QSamplingTool::Register(QImageWidget *iv)
+void QSamplingTool::registerWithView(QImageWidget *iv)
 {
-    popup = new QImageSamplingPopup(iv) ;
+    popup_ = new QImageSamplingPopup(iv) ;
 }
 
 void QSamplingTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    popup->popup(mouseEvent->screenPos()) ;
+    popup_->popup(mouseEvent->screenPos()) ;
 
 }
 
-void QSamplingTool::mouseMoved(QGraphicsSceneMouseEvent *mouseEvent)
-{
-
+void QSamplingTool::mouseMoved(QGraphicsSceneMouseEvent *) {
 }
 
-void QSamplingTool::mouseReleased(QGraphicsSceneMouseEvent *mouseEvent)
-{
-
+void QSamplingTool::mouseReleased(QGraphicsSceneMouseEvent *) {
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -519,46 +515,23 @@ QPolyRBand::QPolyRBand(QGraphicsItem *parent, unsigned nFlags):
 {
     setZValue(1);
 
-    isClosed = nFlags & ClosedFlag ;
-    drawLines = !( nFlags & NoLinesFlag ) ;
-    drawText = !( nFlags & NoTextFlag ) != 0 ;
-    fillInterior = isClosed && ( nFlags & PaintInteriorFlag ) ;
-
-    pen = QPen(Qt::CustomDashLine) ;
+    pen_ = QPen(Qt::CustomDashLine) ;
     QVector<qreal> dashPattern ;
     dashPattern << 3 << 3 ;
-    pen.setDashPattern(dashPattern) ;
-    pen.setColor(QColor(255, 0, 0, 255)) ;
-}
+    pen_.setDashPattern(dashPattern) ;
+    pen_.setColor(QColor(255, 0, 0, 255)) ;
+    pen_.setWidth(2) ;
+    pen_.setCosmetic(true) ;
 
-void QPolyRBand::setMode(unsigned nFlags)
-{
-    isClosed = nFlags & ClosedFlag ;
-    drawLines = !( nFlags & NoLinesFlag ) ;
-    drawText = !( nFlags & NoTextFlag ) != 0 ;
-    fillInterior = isClosed && ( nFlags & PaintInteriorFlag ) ;
+    brush_ = QBrush(QColor(0, 0, 125, 100), Qt::SolidPattern);
 
-    update() ;
-
-}
-
-void QPolyRBand::setLabelGenerator(std::function<QString (int)> gen)
-{
-    labelGenerator = gen ;
+    label_pen_ = QPen(Qt::white) ;
+    label_pen_.setCosmetic(true) ;
+    label_pen_.setWidth(2) ;
+    label_brush_ = QBrush(Qt::black) ;
+    label_font_ = QFont("arial", 16) ;
 
 }
-
-/*
-void QPolyRBand::animate()
-{
-  static int offset = 0 ;
-  offset = (offset + 1)%6 ;
-  pen.setDashOffset(offset);
-  update() ;
-}
-*/
-
-
 
 void QPolyRBand::setPolygon(const QPolygonF &ptlist)
 {
@@ -580,6 +553,32 @@ void QPolyRBand::setPolygon(const QPolygonF &ptlist)
     updatePoly() ;
 }
 
+void QPolyRBand::setPen(const QPen &pen) {
+    pen_ = pen ;
+    update() ;
+}
+
+void QPolyRBand::setBrush(const QBrush &brush) {
+    brush_ = brush ;
+    update() ;
+}
+
+void QPolyRBand::setLabelPen(const QPen &pen) {
+    label_pen_ = pen ;
+    update() ;
+}
+
+void QPolyRBand::setLabelBrush(const QBrush &brush) {
+    label_brush_ = brush ;
+    update() ;
+}
+
+void QPolyRBand::setLabelFont(const QFont &font) {
+    label_font_ = font ;
+    update() ;
+}
+
+
 void QPolyRBand::updatePoly()
 {
     prepareGeometryChange();
@@ -590,7 +589,7 @@ void QPolyRBand::updatePoly()
 
     qreal pw = 1.0;
 
-    brect = shape().controlPointRect().adjusted(-pw/2-20, -pw/2-20, pw+20, pw+20);
+    brect = shape().controlPointRect().adjusted(-pw/2-40, -pw/2-40, pw+40, pw+40);
 
     update() ;
 }
@@ -616,34 +615,34 @@ QPainterPath QPolyRBand::shape() const
 void QPolyRBand::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
 
-    painter->setBrush(QBrush(QColor(0, 0, 125, 100), Qt::SolidPattern)) ;
+    painter->setBrush(brush_) ;
     painter->setBackgroundMode(Qt::TransparentMode) ;
     
-    painter->setPen(pen);
+    painter->setPen(pen_);
 
-
-    if ( drawLines )
-    {
-        if ( isClosed )
-            painter->drawPolygon(poly) ;
-        else
-            painter->drawPolyline(poly);
-    }
+    if ( isClosed )
+       painter->drawPolygon(poly) ;
+    else
+       painter->drawPolyline(poly);
 
     if ( drawText )
     {
         for( int i=0 ; i<poly.size() ; i++ )
         {
-            QString text = ( labelGenerator ) ? labelGenerator(i) : QString::number(i) ;
+            QString text = labels_[i] ;
 
-            QPointF pp = painter->transform().map(poly[i]) ;
+            QPointF pp = painter->transform().map(poly[i])  + QPointF(6, 10) ;
+
             painter->save() ;
             painter->resetTransform() ;
-            painter->setPen(Qt::black) ;
-            painter->drawText(pp + QPointF(6, 10), text) ;
-            painter->setPen(Qt::yellow) ;
-            painter->drawText(pp + QPointF(5, 10), text) ;
+
+            QPainterPath tpath ;
+            tpath.addText(pp, label_font_, text) ;
+            painter->fillPath(tpath, label_brush_) ;
+            painter->strokePath(tpath, label_pen_) ;
+
             painter->restore() ;
+
         }
     }
 
@@ -653,8 +652,9 @@ QGrabHandle *QPolyRBand::getHandle(int i)  {
     return handles[i] ;
 }
 
-void QPolyRBand::appendPoint(const QPointF &p) {
+void QPolyRBand::appendPoint(const QPointF &p, const QString &label) {
     poly.push_back(p) ;
+    labels_.push_back(label) ;
     QGrabHandle *pHandle = new QGrabHandle( this) ;
 
     handles.push_back(pHandle) ;
@@ -664,11 +664,10 @@ void QPolyRBand::appendPoint(const QPointF &p) {
 void QPolyRBand::removePoints(int start, int nPts)
 {
     poly.remove(start, nPts) ;
+    labels_.remove(start, nPts) ;
 
     for(int i=start ; i<start + nPts ; i++ )
-    {
-        delete handles[i] ;
-    }
+           delete handles[i] ;
 
     handles.remove(start, nPts) ;
 
@@ -697,36 +696,34 @@ int QPolyRBand::whereIsPoint(const QPointF &pt)
 
 QPolygonTool::QPolygonTool(QObject *p): QImageTool(p)
 {
-    startTracking = false ;
-    editMode = false ;
-    editOnly = false ;
-    index = -1 ;
-    p_rz = nullptr ;
-    rb = new QPolyRBand((QGraphicsItem *)nullptr) ;
-    rbflags = 0 ;
+    start_tracking_ = false ;
+    edit_mode_ = false ;
+    edit_only_ = false ;
+    index_ = -1 ;
+    p_rz_ = nullptr ;
+    rb_ = new QPolyRBand((QGraphicsItem *)nullptr) ;
+    rb_flags_ = 0 ;
 
 }
 
 QPolygonTool::~QPolygonTool()
 {
-    delete rb ;
+    delete rb_ ;
 }
 
-void QPolygonTool::Register(QImageWidget *v)
+void QPolygonTool::registerWithView(QImageWidget *v)
 {
-    view = v ;
-
-    view->scene()->addItem(rb) ;
- //   rb->setMode(rbflags) ;
-   // rb->hide() ;
+    view_ = v ;
+    view_->scene()->addItem(rb_) ;
+ //   rb_->setMode(rb_flags_) ;
+   // rb_->hide() ;
 }
 
 void QPolygonTool::show(bool sh)
 {
-    if ( rb )
-    {
-        if ( sh ) rb->show() ;
-        else rb->hide() ;
+    if ( rb_ )  {
+        if ( sh ) rb_->show() ;
+        else rb_->hide() ;
     }
 }
 
@@ -734,85 +731,84 @@ void QPolygonTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
 {
     QPointF point = mouseEvent->scenePos() ;
 
-    startTracking = true ;
+    start_tracking_ = true ;
 
-    int nPts = rb->poly.size() ;
+    int nPts = rb_->poly.size() ;
 
-    if ( (mouseEvent->modifiers() & Qt::ShiftModifier) && !editOnly )
+    if ( (mouseEvent->modifiers() & Qt::ShiftModifier) && !edit_only_ )
     {
-        p_rz = new QRubberBand(QRubberBand::Rectangle, view->viewport()) ;
-        startMove = point ;
-        porigin = view->mapFromScene(point) ;
-        p_rz->setGeometry(QRect(porigin, QSize()));
-        p_rz->show();
+        p_rz_ = new QRubberBand(QRubberBand::Rectangle, view_->viewport()) ;
+        start_move_ = point ;
+        porigin_ = view_->mapFromScene(point) ;
+        p_rz_->setGeometry(QRect(porigin_, QSize()));
+        p_rz_->show();
 
-        for( int i=0 ; i<selected.size() ; i++ )
+        for( int i=0 ; i<selected_.size() ; i++ )
         {
-            index = selected[i] ;
-            rb->getHandle(index)->setHighlighted(false) ;
+            index_ = selected_[i] ;
+            rb_->getHandle(index_)->setHighlighted(false) ;
         }
-        selected.clear() ;
+        selected_.clear() ;
     }
-    else if ( (mouseEvent->modifiers() & Qt::AltModifier) && !editOnly )
+    else if ( (mouseEvent->modifiers() & Qt::AltModifier) && !edit_only_ )
     {
-        startMove = point ;
+        start_move_ = point ;
     }
-    else if ( index == -1 && !editOnly )
+    else if ( index_ == -1 && !edit_only_ )
     {
         QPointF lastPoint = point ;
 
         if ( nPts == 0 )
         {
-            rb->appendPoint(lastPoint) ;
-            nPts ++ ;
+            rb_->appendPoint(lastPoint, makeLabel(nPts++)) ;
             polygonChanged() ;
         }
-        else if ( maxPts == -1 || nPts < maxPts )
+        else if ( max_pts_ == -1 || nPts < max_pts_ )
         {
-            QPointF startPoint = ( nPts == 0 ) ? lastPoint : rb->poly[nPts-1] ;
-            rb->appendPoint(point) ; nPts ++ ;
+            QPointF startPoint = ( nPts == 0 ) ? lastPoint : rb_->poly[nPts-1] ;
+            rb_->appendPoint(point, makeLabel(nPts++)) ;
             polygonChanged() ;
         }
 
         char s[80] ;
 
-        sprintf(s, "new point: (%d, %d), total %d", (int)point.x(), (int)point.y(), rb->poly.size()) ;
+        sprintf(s, "new point: (%d, %d), total %d", (int)point.x(), (int)point.y(), rb_->poly.size()) ;
 
         emit showMessage(s) ;
     }
-    else if ( (mouseEvent->modifiers() & Qt::ControlModifier) && !editOnly )
+    else if ( (mouseEvent->modifiers() & Qt::ControlModifier) && !edit_only_ )
     {
-        for(int i=0 ; i<selected.size() ; i++ )
+        for(int i=0 ; i<selected_.size() ; i++ )
         {
-            if ( selected[i] == index )
+            if ( selected_[i] == index_ )
             {
-                selected.remove(i) ;
+                selected_.remove(i) ;
                 break ;
             }
         }
 
-        if ( index == 0 && nPts == 1 )
+        if ( index_ == 0 && nPts == 1 )
         {
-            rb->removePoints(0) ;
+            rb_->removePoints(0) ;
             nPts -- ;
             polygonChanged() ;
         }
-        else if ( index == 0 && ( !rb->isClosed || nPts <= 2 ) )
+        else if ( index_ == 0 && ( !rb_->isClosed || nPts <= 2 ) )
         {
-            rb->removePoints(0) ;
+            rb_->removePoints(0) ;
             nPts -- ;
             polygonChanged() ;
 
         }
-        else if ( index == nPts-1 && ( !rb->isClosed || nPts<=2 ) )
+        else if ( index_ == nPts-1 && ( !rb_->isClosed || nPts<=2 ) )
         {
-            rb->removePoints(nPts-1) ;
+            rb_->removePoints(nPts-1) ;
             nPts -- ;
             polygonChanged() ;
         }
         else
         {
-            rb->removePoints(index) ;
+            rb_->removePoints(index_) ;
             nPts-- ;
             polygonChanged() ;
 
@@ -820,37 +816,37 @@ void QPolygonTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
 
         char s[80] ;
 
-        sprintf(s, "delete point %d, total %d", index, nPts) ;
+        sprintf(s, "delete point %d, total %d", index_, nPts) ;
 
         emit showMessage(s) ;
     }
     else
     {
-        editMode = true ;
+        edit_mode_ = true ;
     }
 
 }
 
 void QPolygonTool::mouseReleased(QGraphicsSceneMouseEvent *mouseEvent)
 {
-    index = -1 ;
+    index_ = -1 ;
 
-    editMode = false ;
+    edit_mode_ = false ;
 
-    if ( p_rz )
+    if ( p_rz_ )
     {
-        p_rz->hide();
-        delete p_rz ;
-        p_rz = NULL ;
+        p_rz_->hide();
+        delete p_rz_ ;
+        p_rz_ = nullptr ;
 
-        QRectF rect = QRectF(mouseEvent->scenePos(), startMove).normalized() ;
+        QRectF rect = QRectF(mouseEvent->scenePos(), start_move_).normalized() ;
 
-        for( int i=0 ; i<rb->poly.size() ; i++ )
+        for( int i=0 ; i<rb_->poly.size() ; i++ )
         {
-            if ( rect.contains(rb->poly[i]) )
+            if ( rect.contains(rb_->poly[i]) )
             {
-                selected.append(i) ;
-                rb->getHandle(i)->setHighlighted() ;
+                selected_.append(i) ;
+                rb_->getHandle(i)->setHighlighted() ;
             }
         }
     }
@@ -859,61 +855,61 @@ void QPolygonTool::mouseReleased(QGraphicsSceneMouseEvent *mouseEvent)
 void QPolygonTool::mouseMoved(QGraphicsSceneMouseEvent *mouseEvent)
 {
     QPointF point = mouseEvent->scenePos() ;
-    QGraphicsView *vw = (QGraphicsView *)view ;
+    QGraphicsView *vw = (QGraphicsView *)view_ ;
 
-    qreal w = view->scene()->width() ;
-    qreal h = view->scene()->height() ;
+    qreal w = view_->scene()->width() ;
+    qreal h = view_->scene()->height() ;
 
     point.rx() = qMin(w-1, point.x()) ;
     point.ry() = qMin(h-1, point.y()) ;
     point.rx() = qMax((qreal)0, point.x()) ;
     point.ry() = qMax((qreal)0, point.y()) ;
 
-    unsigned nPts = rb->poly.size() ;
+    unsigned nPts = rb_->poly.size() ;
 
-    if ( !editMode ) index = -1 ;
+    if ( !edit_mode_ ) index_ = -1 ;
 
     if ( (mouseEvent->modifiers() & Qt::ShiftModifier) && mouseEvent->buttons() & Qt::LeftButton )
     {
-        p_rz->setGeometry(QRect(porigin, vw->mapFromScene(point)).normalized());
+        p_rz_->setGeometry(QRect(porigin_, vw->mapFromScene(point)).normalized());
         vw->ensureVisible(QRectF(point, point), 10, 10) ;
     }
     else if ( (mouseEvent->modifiers() & Qt::AltModifier) && mouseEvent->buttons() & Qt::LeftButton )
     {
         QPointF resPoint = point ;
 
-        if ( selected.isEmpty() )
+        if ( selected_.isEmpty() )
         {
             for(int i=0 ; i<nPts ; i++ )
             {
-                rb->poly[i].rx() += resPoint.x() - startMove.x() ;
-                rb->poly[i].ry() += resPoint.y() - startMove.y() ;
+                rb_->poly[i].rx() += resPoint.x() - start_move_.x() ;
+                rb_->poly[i].ry() += resPoint.y() - start_move_.y() ;
             }
 
         }
         else
         {
-            for(int i=0 ; i<selected.size() ; i++ )
+            for(int i=0 ; i<selected_.size() ; i++ )
             {
-                int index = selected[i] ;
+                int index = selected_[i] ;
 
-                rb->poly[index].rx() += resPoint.x() - startMove.x() ;
-                rb->poly[index].ry() += resPoint.y() - startMove.y() ;
+                rb_->poly[index].rx() += resPoint.x() - start_move_.x() ;
+                rb_->poly[index].ry() += resPoint.y() - start_move_.y() ;
             }
         }
 
 
-        rb->updatePoly() ;
+        rb_->updatePoly() ;
         polygonChanged() ;
 
         vw->ensureVisible(QRectF(point, point), 10, 10) ;
 
-        startMove = point ;
+        start_move_ = point ;
     }
-    else if (editMode == false && ( mouseEvent->buttons() & Qt::LeftButton ) )
+    else if (edit_mode_ == false && ( mouseEvent->buttons() & Qt::LeftButton ) )
     {
-        rb->poly[nPts-1] = point ;
-        rb->updatePoly() ;
+        rb_->poly[nPts-1] = point ;
+        rb_->updatePoly() ;
         polygonChanged() ;
         char s[80] ;
 
@@ -924,10 +920,10 @@ void QPolygonTool::mouseMoved(QGraphicsSceneMouseEvent *mouseEvent)
         vw->ensureVisible(QRectF(point, point), 10, 10) ;
 
     }
-    else if ( editMode && ( mouseEvent->buttons() & Qt::LeftButton ))
+    else if ( edit_mode_ && ( mouseEvent->buttons() & Qt::LeftButton ))
     {
-        rb->poly[index] = point ;
-        rb->updatePoly() ;
+        rb_->poly[index_] = point ;
+        rb_->updatePoly() ;
         polygonChanged() ;
 
         char s[80] ;
@@ -941,9 +937,9 @@ void QPolygonTool::mouseMoved(QGraphicsSceneMouseEvent *mouseEvent)
     }
     else
     {
-        index = rb->whereIsPoint(point) ;
+        index_ = rb_->whereIsPoint(point) ;
 
-        if ( index >= 0 )
+        if ( index_ >= 0 )
         {
             //      SetCursor(::LoadCursor(NULL, MAKEINTRESOURCE(IDC_SIZEALL))) ;
         }
@@ -952,56 +948,60 @@ void QPolygonTool::mouseMoved(QGraphicsSceneMouseEvent *mouseEvent)
 
 }
 
-
-void QPolygonTool::drawLines(bool draw)
-{
-    if ( !draw ) rbflags |= QPolyRBand::NoLinesFlag ;
-    else rbflags &= ~QPolyRBand::NoLinesFlag ;
-    if ( rb ) rb->setMode(rbflags) ;
+void QPolygonTool::drawLabels(bool draw) {
+    rb_->showLabels(draw) ;
 }
 
-void QPolygonTool::drawLabels(bool draw)
-{
-    if ( !draw ) rbflags |= QPolyRBand::NoTextFlag ;
-    else rbflags &= ~QPolyRBand::NoTextFlag ;
-    if ( rb ) rb->setMode(rbflags) ;
+void QPolygonTool::drawClosed(bool draw) {
+    rb_->setClosed(draw) ;
 }
 
-void QPolygonTool::drawClosed(bool draw)
-{
-    if ( draw ) rbflags |= QPolyRBand::ClosedFlag ;
-    else rbflags &= ~QPolyRBand::ClosedFlag ;
-    if ( rb ) rb->setMode(rbflags) ;
+void QPolygonTool::setEditOnly(bool edit){
+    edit_only_ = edit ;
 }
 
-void QPolygonTool::setEditOnly(bool edit) 
-{
-    editOnly = edit ;
-}
-
-void QPolygonTool::setLabelGenerator(std::function<QString (int)> gen)
-{
-    rb->setLabelGenerator(gen) ;
-}
 
 QPolygonF QPolygonTool::getPolygon() const 
 {
-    if ( rb ) return rb->getPolygon() ;
+    if ( rb_ ) return rb_->getPolygon() ;
     else return QPolygonF() ;
 }
 
 void QPolygonTool::setPolygon(const QPolygonF &poly) 
 {
-    if ( rb ) rb->setPolygon(poly) ;
+    if ( rb_ ) rb_->setPolygon(poly) ;
 }
+
+void QPolygonTool::setPen(const QPen &pen)
+{
+    rb_->setPen(pen) ;
+}
+
+void QPolygonTool::setBrush(const QBrush &brush)
+{
+    rb_->setBrush(brush) ;
+}
+
+void QPolygonTool::setLabelPen(const QPen &pen) {
+    rb_->setLabelPen(pen) ;
+}
+
+void QPolygonTool::setLabelBrush(const QBrush &brush) {
+    rb_->setLabelBrush(brush) ;
+}
+
+void QPolygonTool::setLabelFont(const QFont &font) {
+    rb_->setLabelFont(font) ;
+}
+
 ////////////////////////////////////////////////////////////////////////////
 
 QZoomInTool::QZoomInTool(QObject *p): QImageTool(p)
 {
-    view = NULL ;
+    view = nullptr ;
 }
 
-void QZoomInTool::Register(QImageWidget *v)
+void QZoomInTool::registerWithView(QImageWidget *v)
 {
     view = v ;
 }
@@ -1015,7 +1015,7 @@ QZoomOutTool::QZoomOutTool(QObject *p): QImageTool(p)
     view = NULL ;
 }
 
-void QZoomOutTool::Register(QImageWidget *v)
+void QZoomOutTool::registerWithView(QImageWidget *v)
 {
     view = v ;
 }
@@ -1029,7 +1029,7 @@ QZoomRectTool::~QZoomRectTool()
     delete p_rz ;
 }
 
-void QZoomRectTool::Register(QImageWidget *iv)
+void QZoomRectTool::registerWithView(QImageWidget *iv)
 {
     view = iv ;
 
@@ -1076,7 +1076,7 @@ QPanTool::QPanTool(QObject *p): QImageTool(p)
     view = NULL ;
 }
 
-void QPanTool::Register(QImageWidget *v)
+void QPanTool::registerWithView(QImageWidget *v)
 {
     view = v ;
 
