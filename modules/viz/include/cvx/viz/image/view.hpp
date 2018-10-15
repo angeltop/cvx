@@ -18,6 +18,9 @@ namespace cvx { namespace viz {
 
 class QImageWidget ;
 class QImageTool ;
+class QSamplingTool ;
+class QPolygonTool ;
+class QRectTool ;
 
     // This is a basic image viewer. It provides a toolbar that may be used for interaction with the image (toy may toggle it by pressing T).
     // It allows browsing the images in the current folder by using PgUp, PgDown, Home, End buttons.
@@ -42,11 +45,12 @@ class QImageTool ;
 
         void setFileName(const QString &name) {
             pathName = name ;
-            emit imageLoaded(name) ;
+            onImageLoaded() ;
         }
 
-        void setImage(const cv::Mat &im, const QString &name);
+        void setFilePaths(const QStringList &list) ;
 
+        void setImage(const cv::Mat &im, const QString &name);
         void setImage(const QImage &img);
 
         bool hasImage() const;
@@ -61,7 +65,17 @@ class QImageTool ;
         void first() ;
         void last() ;
 
+        // add custom tool
+
         void addTool(QAction *action, QImageTool *tool) ;
+
+        // add default tools
+
+        QSamplingTool *addSampleTool();
+        QRectTool *addRectTool();
+        QPolygonTool *addPolygonTool();
+
+        virtual void onImageLoaded() ;
 
     public slots:
 
@@ -106,13 +120,13 @@ class QImageTool ;
         void createActions() ;
         void createTools() ;
 
+
         QMainWindow *pContainer ;
         QToolBar *imageToolBar ;
         QImageWidget *pWidget ;
         QString pathName ;
-        QStringList dirEntries ;
+        QStringList entries_ ;
         int idx ;
-        QDirIterator *it ;
 
         QComboBox *zoomCombo ;
         QAction *zoomInAct, *zoomOutAct, *zoomRectAct, *zoomFitAct ;
@@ -121,7 +135,6 @@ class QImageTool ;
         QAction *sampleToolAct, *zoomConAct ;
 
         QMap<QAction *, QImageTool *>  tools ;
-
 
     } ;
 

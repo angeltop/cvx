@@ -10,7 +10,7 @@
 
 #include <cvx/viz/image/view.hpp>
 
-class MainWindow: public QMainWindow
+class MainWindow: public cvx::viz::QImageView
 {
     Q_OBJECT
 public:
@@ -31,9 +31,6 @@ protected slots:
     void saveAs() ;
     void copy() ;
     void paste() ;
-    void startCam() ;
-    void stopCam() ;
-    void showCameraFrame(const QImage &im);
 
     void setImageName(const QString &q) ;
 
@@ -52,54 +49,20 @@ private:
 
     friend class QPreviewFileOpenDialog ;
 
+    void onImageLoaded() override ;
+
 private:
 
     QAction *openAct, *saveAct, *saveAsAct, *copyAct, *pasteAct,
-            *optionsAct, *exitAct, *separatorAct,
-            *startCamAct, *stopCamAct ;
+            *exitAct, *separatorAct ;
 
     QAction *recentFileActs[10];
 
-    QMenu *fileMenu, *editMenu, *cameraMenu ;
+    QMenu *fileMenu, *editMenu ;
     QTabWidget *tabWidget ;
 
-    cvx::viz::QImageView *imageView, *cameraView ;
-
     QString curFile ;
-    QThread cameraThread ;
 
-    friend class CameraGrabber ;
-    class CameraGrabber *cameraGrabber ;
-
-};
-
-class CameraGrabber : public QObject
-{
-    Q_OBJECT
-
-public:
-
-    CameraGrabber() ;
-
-    bool isRunning() {
-        QMutexLocker lock(&mutex_) ;
-        return is_running_ ;
-    }
-
-public slots:
-
-    void grab() ;
-    void abort() ;
-
-signals:
-
-    void imageReady(const QImage &result);
-    void stopped() ;
-
-private:
-
-    bool abort_, is_running_ ;
-    QMutex mutex_;
 };
 
 class QPreviewFileOpenDialog: public QFileDialog

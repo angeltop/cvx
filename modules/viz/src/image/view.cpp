@@ -29,6 +29,53 @@ using namespace std ;
 
 namespace cvx { namespace viz {
 
+QSamplingTool *QImageView::addSampleTool() {
+    sampleToolAct = new QAction(QIcon(":/images/eye-drop.png"), tr("Sample Tool"), this);
+    sampleToolAct->setStatusTip(tr("View pixel values under cursor"));
+    connect(sampleToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
+    sampleToolAct->setCheckable(true) ;
+
+    toolGroupAct->addAction(sampleToolAct) ;
+    imageToolBar->addAction(sampleToolAct) ;
+
+    QSamplingTool *tool = new QSamplingTool(this) ;
+    registerTool(sampleToolAct, tool) ;
+    return tool ;
+}
+
+QRectTool *QImageView::addRectTool() {
+    rectToolAct = new QAction(QIcon(":/images/rect-tool.png"), tr("Rectangle Tool"), this);
+    rectToolAct->setStatusTip(tr("Select a rectangular region"));
+    connect(rectToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
+    rectToolAct->setCheckable(true) ;
+
+    toolGroupAct->addAction(rectToolAct) ;
+    imageToolBar->addAction(rectToolAct) ;
+
+    QRectTool *tool = new QRectTool(this) ;
+    registerTool(rectToolAct, tool) ;
+    return tool ;
+}
+
+QPolygonTool *QImageView::addPolygonTool() {
+    polyToolAct = new QAction(QIcon(":/images/polygon-tool.png"), tr("Polygon Tool"), this);
+    polyToolAct->setStatusTip(tr("Select points"));
+    connect(polyToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
+    polyToolAct->setCheckable(true) ;
+
+    toolGroupAct->addAction(polyToolAct) ;
+    imageToolBar->addAction(polyToolAct) ;
+
+    QPolygonTool *tool = new QPolygonTool(this) ;
+    registerTool(polyToolAct, tool) ;
+    return tool ;
+}
+
+void QImageView::onImageLoaded() {
+    emit imageLoaded(pathName) ;
+}
+
+
 void QImageView::createActions()
 {
     zoomInAct = new QAction(QIcon(":/images/zoom-in.png"), tr("Zoom In"), this);
@@ -57,32 +104,13 @@ void QImageView::createActions()
     connect(panToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
     panToolAct->setCheckable(true) ;
 
-    sampleToolAct = new QAction(QIcon(":/images/eye-drop.png"), tr("Sample Tool"), this);
-    sampleToolAct->setStatusTip(tr("View pixel values under cursor"));
-    connect(sampleToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
-    sampleToolAct->setCheckable(true) ;
-
-    rectToolAct = new QAction(QIcon(":/images/rect-tool.png"), tr("Rectangle Tool"), this);
-    rectToolAct->setStatusTip(tr("Select a rectangular region"));
-    connect(rectToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
-    rectToolAct->setCheckable(true) ;
-
-    polyToolAct = new QAction(QIcon(":/images/polygon-tool.png"), tr("Polygon Tool"), this);
-    polyToolAct->setStatusTip(tr("Select points"));
-    connect(polyToolAct, SIGNAL(triggered()), this, SLOT(setTool()));
-    polyToolAct->setCheckable(true) ;
-
     toolGroupAct = new QActionGroup(this) ;
 
- //   toolGroupAct->addAction(zoomConAct) ;
     toolGroupAct->addAction(zoomInAct) ;
     toolGroupAct->addAction(zoomOutAct) ;
     toolGroupAct->addAction(zoomRectAct) ;
     toolGroupAct->addAction(zoomFitAct) ;
     toolGroupAct->addAction(panToolAct) ;
-    toolGroupAct->addAction(sampleToolAct) ;
-    toolGroupAct->addAction(rectToolAct) ;
-    toolGroupAct->addAction(polyToolAct) ;
 
     QMenu *zoomMenu = new QMenu() ;
     zoomMenu->addAction(zoomInAct) ;
@@ -139,9 +167,6 @@ void QImageView::createToolBar()
     imageToolBar->addSeparator() ;
 
     imageToolBar->addAction(panToolAct) ;
-    imageToolBar->addAction(sampleToolAct) ;
-    imageToolBar->addAction(rectToolAct) ;
-    imageToolBar->addAction(polyToolAct) ;
 
     panToolAct->setChecked(true) ;
 
@@ -163,9 +188,7 @@ void QImageView::createTools()
     registerTool(zoomInAct, new QZoomInTool(this)) ;
     registerTool(zoomOutAct, new QZoomOutTool(this)) ;
     registerTool(zoomRectAct, new QZoomRectTool(this)) ;
-    registerTool(rectToolAct, new QRectTool(this)) ;
-    registerTool(polyToolAct, new QPolygonTool(this)) ;
-    registerTool(sampleToolAct, new QSamplingTool(this)) ;
+
 }
 
 QImageView::QImageView(QWidget *parent): QMainWindow(parent)
@@ -175,8 +198,6 @@ QImageView::QImageView(QWidget *parent): QMainWindow(parent)
     pWidget->setMinimumSize(200, 200) ;
 
     setCentralWidget(pWidget);
-
-
 
     createActions() ;
     createTools() ;
@@ -189,11 +210,15 @@ QImageView::QImageView(QWidget *parent): QMainWindow(parent)
     connect(pWidget, SIGNAL(zoomChanged(int)), this, SLOT(updateZoomCombo(int))) ;
 
     idx = -1 ;
-    it = NULL ;
 }
 
 cv::Mat QImageView::image() const {
     return pWidget->image() ;
+}
+
+void QImageView::setFilePaths(const QStringList &list)
+{
+    entries_ = list ;
 }
 
 void QImageView::setImage(const cv::Mat &im, const QString &name)
@@ -201,6 +226,7 @@ void QImageView::setImage(const cv::Mat &im, const QString &name)
     pWidget->setImage(im) ;
     setFileName(name) ;
 }
+
 
 void QImageView::setImage(const QImage &img) {
     pWidget->setImage(img) ;
@@ -224,7 +250,7 @@ void QImageView::fitToRect(const QRect &rect)
 
 void QImageView::setTool()
 {
-    QImageTool *tool = tools.value(qobject_cast<QAction *>(sender()), 0) ;
+    QImageTool *tool = tools.value(qobject_cast<QAction *>(sender()), nullptr) ;
 
     if ( tool ) pWidget->setTool(tool) ;
 }
@@ -297,204 +323,85 @@ bool QImageView::eventFilter(QObject *o, QEvent *e)
         else if ( kpe->key() == Qt::Key_T )
         {
             imageToolBar->setVisible(!imageToolBar->isVisible());
-//            fitToContents() ;
+            //            fitToContents() ;
             return true ;
         }
         else return false ;
     }
 
 
-   return QMainWindow::eventFilter(o, e) ;
+    return QMainWindow::eventFilter(o, e) ;
 }
 
 void QImageView::previous()
 {
-    QFileInfo fi(pathName) ;
-
-    if ( !it )
-    {
-        QStringList nameFilters ;
-        nameFilters << "*.tif" << "*.png" << "*.jpg" << "*.tga" << "*.pbm" << "*.pnm" << "*.pgm" ;
-        nameFilters << "*.bmp" << "*.gif" ;
-
-        it = new QDirIterator(fi.path(), nameFilters, QDir::Files) ;
-
-        while ( it->hasNext() )
-        {
-            it->next() ;
-
-            dirEntries.append(it->fileName()) ;
-            idx ++ ;
-
-            if ( it->fileInfo() == fi ) {
-                break ;
-            }
-
-        }
-    }
-
     if ( idx <= 0 ) return ;
-    else {
 
-        QString path ;
+    QString path ;
 
-        while ( idx > 0 )
-        {
-            idx -- ;
-            path = fi.path() + "/" + dirEntries[idx] ;
-            if ( QFileInfo(path).exists() ) {
-                load(path) ;
-                break ;
-            }
-            dirEntries.removeAt(idx) ;
+    while ( idx > 0 ) {
+        idx -- ;
+        path =  entries_[idx] ;
+        if ( QFileInfo(path).exists() ) {
+            load(path) ;
+            break ;
         }
+        else
+            entries_.removeAt(idx) ;
     }
+
 }
 
 void QImageView::next()
 {
-    QFileInfo fi(pathName) ;
-
-    if ( !it )
-    {
-        QStringList nameFilters ;
-        nameFilters << "*.tif" << "*.png" << "*.jpg" << "*.tga" << "*.pbm" << "*.pnm" << "*.pgm" ;
-        nameFilters << "*.bmp" << "*.gif" ;
-
-        it = new QDirIterator(fi.path(), nameFilters, QDir::Files) ;
-
-        while ( it->hasNext() )
-        {
-            it->next() ;
-
-            //	qDebug() << it->fileName() ;
-
-            dirEntries.append(it->fileName()) ;
-            idx ++ ;
-
-            if ( it->fileInfo() == fi ) {
-                break ;
-            }
-
-
+    QString path ;
+    while ( idx < entries_.size()-1 ) {
+        idx ++ ;
+        path = entries_[idx] ;
+        if ( QFileInfo(path).exists() ) {
+            load(path) ;
+            break ;
         }
-    }
-
-    if ( idx == dirEntries.size() - 1 )
-    {
-        if ( !it->hasNext() ) return ;
         else
-        {
-            it->next() ;
-            dirEntries.append(it->fileName()) ;
-            ++idx ;
+            entries_.removeAt(idx) ;
+    }
 
-            load(it->filePath()) ;
-//            fitToContents() ;
-        }
-    }
-    else
-    {
-        QString path ;
-        while ( idx < dirEntries.size()-1 )
-        {
-            idx ++ ;
-            path = fi.path() + "/" + dirEntries[idx] ;
-            if ( QFileInfo(path).exists() ) {
-                load(path) ;
-//                fitToContents() ;
-                break ;
-            }
-            dirEntries.removeAt(idx) ;
-        }
-    }
 }
 
 void QImageView::first()
 {
-    QFileInfo fi(pathName) ;
-
-    if ( !it )
-    {
-        QStringList nameFilters ;
-        nameFilters << "*.tif" << "*.png" << "*.jpg" << "*.tga" << "*.pbm" << "*.pnm" << "*.pgm" ;
-        nameFilters << "*.bmp" << "*.gif" ;
-
-        it = new QDirIterator(fi.path(), nameFilters, QDir::Files) ;
-
-        while ( it->hasNext() )
-        {
-            it->next() ;
-
-            dirEntries.append(it->fileName()) ;
-            idx ++ ;
-            if ( it->fileInfo() == fi ) {
-                break ;
-            }
-        }
-    }
-
     idx = 0 ;
 
     QString path ;
 
-    while ( idx < dirEntries.size() )
-    {
-        path = fi.path() + "/" + dirEntries[idx] ;
+    while ( idx < entries_.size() )  {
+        path = entries_[idx] ;
         if ( QFileInfo(path).exists() ) {
             load(path) ;
-//            fitToContents() ;
             break ;
         }
 
-        dirEntries.removeAt(idx) ;
+        entries_.removeAt(idx) ;
     }
-
-
 }
 
 void QImageView::last()
 {
-    QFileInfo fi(pathName) ;
 
-    if ( !it )
-    {
-        QStringList nameFilters ;
-        nameFilters << "*.tif" << "*.png" << "*.jpg" << "*.tga" << "*.pbm" << "*.pnm" << "*.pgm" ;
-        nameFilters << "*.bmp" << "*.gif" ;
-
-        it = new QDirIterator(fi.path(), nameFilters, QDir::Files) ;
-
-        while ( it->hasNext() )
-        {
-            it->next() ;
-
-            dirEntries.append(it->fileName()) ;
-            idx ++ ;
-        }
-    }
-
-    while ( it->hasNext() )
-    {
-        it->next() ;
-
-        dirEntries.append(it->fileName()) ;
-    }
-
-    idx = dirEntries.size() - 1 ;
+    idx = entries_.size() - 1 ;
 
     QString path ;
 
-    while ( idx >= 0 )
-    {
-        path = fi.path() + "/" + dirEntries[idx] ;
+    while ( idx >= 0 ) {
+        path = entries_[idx] ;
         if ( QFileInfo(path).exists() ) {
             load(path) ;
-//            fitToContents() ;
             break ;
         }
-        dirEntries.removeAt(idx) ;
-        idx = dirEntries.size() - 1 ;
+        else {
+            entries_.removeAt(idx) ;
+            idx = entries_.size() - 1 ;
+        }
     }
 
 }
@@ -536,7 +443,7 @@ bool QImageView::load(const QString &fname)
 
     pWidget->setImage(img) ;
 
-    emit imageLoaded(fname) ;
+    onImageLoaded() ;
 
     return true ;
 }
@@ -619,5 +526,5 @@ bool QImageView::copy(QMimeData *data)
 }
 
 }
-}
+              }
 

@@ -22,11 +22,11 @@ public:
     QImageTool(QObject *p = nullptr) ;
     virtual ~QImageTool();
 
-    virtual void show(bool sh = true) {}
+    // called when the tool button is clicked
+    virtual void activate() {}
 
-    //protected:
-
-    friend class QImageView ;
+    // called when another tool is selected
+    virtual void deactivate() {}
 
     // should be overriden to perform per view initialization
     virtual void registerWithView(QImageWidget *v) = 0 ;
@@ -63,14 +63,14 @@ protected:
 
     friend class QImageView ;
 
+    virtual void activate() override ;
+    virtual void deactivate() override ;
 
-    virtual void show(bool sh) ;
+    virtual void registerWithView(QImageWidget *v) override ;
 
-    virtual void registerWithView(QImageWidget *v) ;
-
-    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) override ;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) override ;
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) override ;
 
     QRectRBand *rb_ ;
 
@@ -104,10 +104,10 @@ protected:
 
     friend class QImageView ;
 
-    virtual void registerWithView(QImageWidget *v) ;
-    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
+    virtual void registerWithView(QImageWidget *v) override ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) override;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) override;
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) override;
 
 private:
 
@@ -143,9 +143,11 @@ public:
         max_pts_ = max_pts ;
     }
 
-    // override
+    // called when the polygon has changed
+
     virtual void polygonChanged() {}
 
+    // called when a new point is added to obtain the associated label
     virtual QString makeLabel(int i) const {
         return QString::number(i) ;
     }
@@ -154,12 +156,13 @@ protected:
 
     friend class QImageView ;
 
-    virtual void show(bool sh) ;
+    virtual void activate() override ;
+    virtual void deactivate() override ;
 
-    virtual void registerWithView(QImageWidget *v) ;
-    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) ;
-    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) ;
+    virtual void registerWithView(QImageWidget *v) override ;
+    virtual void mousePressed(QGraphicsSceneMouseEvent *pevent) override;
+    virtual void mouseReleased(QGraphicsSceneMouseEvent *pevent) override;
+    virtual void mouseMoved(QGraphicsSceneMouseEvent *pevent) override;
 
     QImageWidget *view_ ;
 

@@ -366,19 +366,19 @@ QRectTool::~QRectTool()
 void QRectTool::registerWithView(QImageWidget *v)
 {
     view_ = v ;
-    rb_ = new QRectRBand(0, view_->scene()) ;
+    rb_ = new QRectRBand(nullptr, view_->scene()) ;
     rb_->hide() ;
 
 }
 
-void QRectTool::show(bool sh)
-{
-    if ( rb_ )
-    {
-        if ( sh ) rb_->show() ;
-        else rb_->hide() ;
-    }
+void QRectTool::activate() {
+    rb_->show() ;
 }
+
+void QRectTool::deactivate() {
+    rb_->hide() ;
+}
+
 
 QRectF QRectTool::getRect() const 
 {
@@ -715,17 +715,17 @@ void QPolygonTool::registerWithView(QImageWidget *v)
 {
     view_ = v ;
     view_->scene()->addItem(rb_) ;
- //   rb_->setMode(rb_flags_) ;
-   // rb_->hide() ;
+    rb_->hide() ;
 }
 
-void QPolygonTool::show(bool sh)
-{
-    if ( rb_ )  {
-        if ( sh ) rb_->show() ;
-        else rb_->hide() ;
-    }
+void QPolygonTool::activate() {
+    rb_->show() ;
 }
+
+void QPolygonTool::deactivate() {
+    rb_->hide() ;
+}
+
 
 void QPolygonTool::mousePressed(QGraphicsSceneMouseEvent *mouseEvent)
 {

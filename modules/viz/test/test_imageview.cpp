@@ -33,7 +33,9 @@ class View: public QImageView {
 public:
     View(): QImageView(nullptr) {
         resize(1024, 768) ;
-        connect(this, &QImageView::imageLoaded, this, &QImageView::fitToWindow) ;
+
+        addSampleTool() ;
+        addRectTool() ;
 
         QAction *polyToolAct = new QAction(QIcon(":/images/polygon-tool.png"), "Polygon Tool", this);
         polyToolAct->setStatusTip("Select points");
@@ -42,17 +44,30 @@ public:
 
         addTool(polyToolAct, tool) ;
     }
+
+    void onImageLoaded() {
+        fitToWindow() ;
+
+        setWindowTitle(pathName) ;
+    }
+
 };
 
 int main(int argc, char **argv)
 {
     QApplication app(argc, argv);
 
-    string  imageFileName = "/home/malasiot/Downloads/cube.png" ;
+    QDir directory("/home/malasiot/Downloads/");
+    QStringList images = directory.entryList(QStringList() << "*.jpg" << "*.png",QDir::Files);
+    QStringList imagePaths ;
+
+    for ( const QString &rp: images )
+        imagePaths.append(directory.path() + '/' + rp) ;
 
     View view ;
     view.show() ;
-    view.load(QString::fromStdString(imageFileName)) ;
+    view.setFilePaths(imagePaths) ;
+    view.first() ;
 
     return app.exec();
 }

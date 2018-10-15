@@ -62,17 +62,6 @@ void MainWindow::createActions()
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(paste()));
     pasteAct->setEnabled(false);
 
-    startCamAct = new QAction(tr("Start Camera"), this);
-    startCamAct->setStatusTip(tr("Start camera playback"));
-    connect(startCamAct, SIGNAL(triggered()), this, SLOT(startCam()));
-    startCamAct->setEnabled(true);
-
-    stopCamAct = new QAction(tr("Stop Camera"), this);
-    stopCamAct->setStatusTip(tr("Stop camera playback"));
-    connect(stopCamAct, SIGNAL(triggered()), this, SLOT(stopCam()));
-    stopCamAct->setEnabled(true);
-
-
 }
 
 void MainWindow::createMenus()
@@ -103,28 +92,17 @@ void MainWindow::createMenus()
 
     connect(editMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus())) ;
 
-    cameraMenu = menuBar()->addMenu(tr("&Camera"));
-
-    cameraMenu->addAction(startCamAct);
-    cameraMenu->addAction(stopCamAct);
-
-    connect(cameraMenu, SIGNAL(aboutToShow()), this, SLOT(updateMenus())) ;
-
-
 }
 
 void MainWindow::updateMenus()
 {
-    bool hasView =  imageView->hasImage() ;
+    bool hasView =  hasImage() ;
 
     saveAct->setEnabled(hasView) ;
     saveAsAct->setEnabled(hasView) ;
 
     separatorAct->setVisible(hasView);
     copyAct->setEnabled(hasView);
-
-    startCamAct->setEnabled(!cameraGrabber->isRunning()) ;
-    stopCamAct->setEnabled(cameraGrabber->isRunning()) ;
 }
 
 
@@ -172,19 +150,9 @@ void MainWindow::updateRecentFileActions()
 }
 
 
-MainWindow::MainWindow()
+MainWindow::MainWindow(): QImageView(nullptr)
 {
-    tabWidget = new QTabWidget(this) ;
-
-    imageView = new QImageView(this) ;
-    cameraView = new QImageView(this) ;
-
-    tabWidget->addTab(imageView, "Image") ;
-    tabWidget->addTab(cameraView, "Camera") ;
-
-    connect(imageView, SIGNAL(imageLoaded(QString)), this, SLOT(setImageName(QString))) ;
-
-    setCentralWidget(tabWidget);
+    connect(this, SIGNAL(imageLoaded(QString)), this, SLOT(setImageName(QString))) ;
 
     connect(QApplication::clipboard(), SIGNAL(dataChanged()), this, SLOT(clipboardChanged( ))) ;
 
@@ -196,12 +164,7 @@ MainWindow::MainWindow()
 
     readGuiSettings();
 
-    cameraGrabber = new CameraGrabber() ;
-
-    cameraGrabber->moveToThread(&cameraThread);
-    connect(&cameraThread, SIGNAL(started()), cameraGrabber, SLOT(grab()));
-    connect(cameraGrabber, SIGNAL(imageReady(QImage)), this, SLOT(showCameraFrame(QImage)));
-    connect(cameraGrabber, SIGNAL(stopped()), &cameraThread, SLOT(quit()), Qt::DirectConnection);
+    addSampleTool();
 }
 
 
@@ -226,37 +189,33 @@ void MainWindow::open()
 
 void MainWindow::openFile(const QString &fileName)
 {
-    if ( imageView->load(fileName) )
-    {
-        imageView->fitToWindow();
+    if ( load(fileName) ) {
+        fitToWindow();
         setCurrentFile(fileName) ;
     }
 }
 
-void MainWindow::save()
-{
-    imageView->save() ;
+void MainWindow::save() {
+    QImageView::save() ;
 }
 
 void MainWindow::saveAs()
 {
-    imageView->saveAs() ;
+    QImageView::saveAs() ;
 }
 
 
 void MainWindow::copy()
 {
-
     QClipboard *clipboard = QApplication::clipboard() ;
 
     clipboard->clear() ;
 
     QMimeData *data = new QMimeData ;
 
-    imageView->copy(data) ;
+    QImageView::copy(data) ;
 
     clipboard->setMimeData(data) ;
-
 }
 
 void MainWindow::paste()
@@ -270,10 +229,11 @@ void MainWindow::paste()
     if ( data->hasImage() )
     {
 
-        QImage img = clipboard->image() ;
+        QPixmap px = qvariant_cast<QPixmap>(data->imageData()) ;
+        QImage img = px.toImage().convertToFormat(QImage::Format_ARGB32) ;
 
-        imageView->setImage(QImageWidget::QImageToImage(img), QString("Image%1.tif").arg(imageCount++) ) ;
-        imageView->fitToWindow() ;
+        setImage(QImageWidget::QImageToImage(img), QString("Image%1.tif").arg(imageCount++) ) ;
+        fitToWindow() ;
     }
 
     clipboard->clear() ;
@@ -281,8 +241,7 @@ void MainWindow::paste()
 
 void MainWindow::setImageName(const QString &q)
 {
-    tabWidget->setTabText(0, QFileInfo(q).fileName());
-    tabWidget->setTabToolTip(0, q);
+    setWindowTitle(QFileInfo(q).fileName());
 }
 
 void MainWindow::printConsoleMessage(const QString &msg)
@@ -328,11 +287,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     writeGuiSettings();
 
-    stopCam() ;
-
     QClipboard *clipboard = QApplication::clipboard() ;
     clipboard->clear() ;
     QCoreApplication::quit() ;
+}
+
+void MainWindow::onImageLoaded()
+{
+    setCurrentFile(pathName) ;
+    fitToWindow() ;
+    setImageName(pathName) ;
 }
 
 void MainWindow::setCurrentFile(const QString &fileName)
@@ -352,65 +316,6 @@ void MainWindow::setCurrentFile(const QString &fileName)
     updateRecentFileActions() ;
 }
 
-
-void MainWindow::startCam()
-{
-
-    cameraThread.start();
-}
-
-void MainWindow::showCameraFrame(const QImage &im)
-{
-    cameraView->setImage(im) ;
-}
-
-
-void MainWindow::stopCam()
-{
-    if ( cameraGrabber->isRunning() )
-        cameraGrabber->abort() ;
-}
-
-////////////////////////////////////////////////////////////////////
-
-CameraGrabber::CameraGrabber():  abort_(false), is_running_(false)
-{
-
-}
-
-void CameraGrabber::grab()
-{
-    cv::VideoCapture cap(0) ;
-
-    while (cap.isOpened() )
-    {
-        mutex_.lock();
-        bool abort = abort_;
-        is_running_ = true ;
-        mutex_.unlock();
-
-        if ( abort ) break ;
-
-        cv::Mat frame;
-        cap >> frame; // get a new frame from camera
-
-        emit imageReady(QImageWidget::imageToQImage(frame)) ;
-    }
-
-    mutex_.lock();
-    is_running_ = false;
-    abort_ = false ;
-    mutex_.unlock();
-
-    emit stopped() ;
-}
-
-void CameraGrabber::abort()
-{
-    mutex_.lock();
-    abort_ = true ;
-    mutex_.unlock();
-}
 
 ////////////////////////////////////////////////////////////////////
 

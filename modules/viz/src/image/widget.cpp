@@ -50,11 +50,11 @@ namespace cvx { namespace viz {
 
     QImageTool *QImageWidget::setTool(QImageTool *tool)
     {
-        if ( tool )
-        {
-
+        if ( tool ) {
+            if ( currentTool )
+                currentTool->deactivate() ;
             currentTool = tool ;
-            tool->show() ;
+            tool->activate() ;
         }
         return tool ;
     }
@@ -316,7 +316,7 @@ namespace cvx { namespace viz {
         }
         else if ( img.type() == CV_8UC4 )
         {
-            QImage image(img.cols, img.rows, QImage::Format_RGB32) ;
+            QImage image(img.cols, img.rows, QImage::Format_ARGB32) ;
 
             for( int i=0 ; i<img.rows ; i++ )
             {
@@ -416,7 +416,7 @@ namespace cvx { namespace viz {
 
         if ( im.format() == QImage::Format_Indexed8 && im.allGray() )
         {
-            cv::Mat_<uchar> res(w, h) ;
+            cv::Mat_<uchar> res(h, w) ;
 
             const uchar *src = srcData ;
 
@@ -429,7 +429,7 @@ namespace cvx { namespace viz {
         {
             QVector<QRgb> table = im.colorTable() ;
 
-            cv::Mat_<cv::Vec3b> res(w, h) ;
+            cv::Mat_<cv::Vec3b> res(h, w) ;
 
             int i, j ;
 
@@ -452,9 +452,9 @@ namespace cvx { namespace viz {
 
             return res ;
         }
-        else if ( im.format() == QImage::Format_RGB32 || im.format() == QImage::Format_ARGB32 )
+        else if ( im.format() == QImage::Format_RGB32 )
         {
-            cv::Mat_<cv::Vec3b> res(w, h) ;
+            cv::Mat_<cv::Vec3b> res(h, w) ;
 
             int i, j ;
 
@@ -475,6 +475,35 @@ namespace cvx { namespace viz {
                 }
             }
             return res ;
+        }
+        else if ( im.format() == QImage::Format_ARGB32 ) {
+            cv::Mat res(h, w, CV_8UC4) ;
+
+            int i, j ;
+
+            const QRgb *src = (const QRgb *)srcData ;
+            uchar *dst = (uchar *)res.data ;
+
+            for(i=0 ; i<h ; i++, src += w, dst += res.step[0] )
+            {
+                const QRgb *sp = src ;
+                uchar *dp = dst ;
+
+                for(j=0 ; j<w ; j++ )
+                {
+                    QRgb val = *sp++ ;
+
+                    *dp++ = qBlue(val) ;
+                    *dp++ = qGreen(val) ;
+                    *dp++ = qRed(val) ;
+                    *dp++ = qAlpha(val) ;
+                }
+            }
+
+            cv::imwrite("/tmp/oo.png", res) ;
+            return res ;
+
+
         }
 
         return cv::Mat() ;

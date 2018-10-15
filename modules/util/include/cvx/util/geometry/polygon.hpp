@@ -20,8 +20,6 @@ public:
     Polygon(T *data, int n, bool row_major = true):
         PointList<T, 2>(data, n, row_major) {}
 
-    Polygon(const cv::Mat &src): PointList<T, 2>(src) {}
-
     size_t numPoints() const { return base_t::mat_.rows() ; }
 
     T area() const {
