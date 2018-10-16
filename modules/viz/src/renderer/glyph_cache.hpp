@@ -2,8 +2,9 @@
 #define __CVX_VIZ_GLYPH_CACHE_HPP__
 
 #include "font_manager.hpp"
+#include "GL/gl3w.h"
+
 #include <hb-ft.h>
-#include <GL/glew.h>
 #include <array>
 
 namespace cvx { namespace viz { namespace detail {

@@ -6,6 +6,8 @@
 #include <cstring>
 #include <fstream>
 
+#include "GL/gl3w.h"
+
 using namespace std ;
 using namespace Eigen ;
 using namespace cvx::util ;
@@ -15,7 +17,28 @@ OpenGLShader::OpenGLShader(Type t, const std::string &code, const string &rname)
 }
 
 void OpenGLShader::compileString(const std::string &code, const string &resource_name) {
-    if ( ( handle_ = glCreateShader(GLenum(type_)) ) == 0 )
+    GLenum shader_type ;
+    switch ( type_ ) {
+    case Vertex:
+        shader_type = GL_VERTEX_SHADER ;
+        break ;
+    case Fragment:
+        shader_type = GL_FRAGMENT_SHADER ;
+        break ;
+    case Geometry:
+        shader_type = GL_GEOMETRY_SHADER ;
+        break ;
+    case Compute:
+        shader_type = GL_COMPUTE_SHADER ;
+        break ;
+    case TessControl:
+        shader_type = GL_TESS_CONTROL_SHADER ;
+        break ;
+    case TessEvaluation:
+        shader_type = GL_TESS_EVALUATION_SHADER ;
+    }
+
+    if ( ( handle_ = glCreateShader(GLenum(shader_type)) ) == 0 )
         throw OpenGLShaderError("cannot create shader") ;
 
     const GLchar* p[1];

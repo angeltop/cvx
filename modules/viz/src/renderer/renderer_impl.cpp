@@ -58,7 +58,7 @@ void RendererImpl::addTextureImage(const string &id, const cv::Mat &im)
     inmemory_textures_.emplace(id, im) ;
 }
 
-void GLAPIENTRY
+void
 errorCallback( GLenum source,
                  GLenum type,
                  GLuint id,
@@ -78,12 +78,8 @@ bool RendererImpl::init() {
 
     // setup glew
 
-    glewExperimental = GL_TRUE ;
+    if ( gl3wInit() != 0 ) return false ;
 
-    GLenum err ;
-    if ( ( err = glewInit() ) != GLEW_OK ) {
-        return false ; // this may indicate that context has not been initialized
-    }
 /*
     // During init, enable debug output
     glEnable              ( GL_DEBUG_OUTPUT );
@@ -375,8 +371,8 @@ void RendererImpl::initTextures()
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
                 // Set texture clamping method
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
                 glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
                 glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );

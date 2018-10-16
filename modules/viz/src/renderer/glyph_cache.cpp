@@ -129,7 +129,7 @@ void GlyphCache::cache(hb_codepoint_t cp, GlyphQuad &quad) {
 
     // paste bitmap rendered by FT to texture memory
 
-    glTexSubImage2D(GL_TEXTURE_2D, 0,  x_, y_, bitmap.width, bitmap.rows, GL_LUMINANCE, GL_UNSIGNED_BYTE, bitmap.buffer);
+    glTexSubImage2D(GL_TEXTURE_2D, 0,  x_, y_, bitmap.width, bitmap.rows, GL_RED, GL_UNSIGNED_BYTE, bitmap.buffer);
 
     // compute glyph position on the atlas
 

@@ -2,6 +2,7 @@
 #include <cvx/viz/scene/camera.hpp>
 #include <cvx/viz/scene/light.hpp>
 #include <cvx/viz/scene/node.hpp>
+#include <cvx/viz/scene/marker.hpp>
 
 #include <cvx/viz/gui/glfw_window.hpp>
 #include <cvx/viz/gui/trackball.hpp>
@@ -107,6 +108,10 @@ int main(int argc, char *argv[]) {
     // scene->load("/home/malasiot/Downloads/greek_column.obj") ;
      scene->load("/home/malasiot/Downloads/cube.obj") ;
 
+     std::shared_ptr<SphereMarkerParameters> params(new SphereMarkerParameters(0.1, Vector3f(1, 0, 0))) ;
+     SphereMarkerInstance *sphere = new SphereMarkerInstance(Vector3f{ 0, 0, 0}, params ) ;
+
+    scene->addMarkerInstance(MarkerInstancePtr(sphere)) ;
 
     DirectionalLight *dl = new DirectionalLight(Vector3f(0.5, 0.5, 1)) ;
     dl->diffuse_color_ = Vector3f(1, 1, 1) ;

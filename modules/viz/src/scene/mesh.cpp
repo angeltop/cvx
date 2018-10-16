@@ -54,7 +54,7 @@ MeshPtr Mesh::createSolidCube(const Vector3f &hs) {
 
 // adapted from freeglut
 
-static void makeCircleTable(vector<float> &sint, vector<float> &cost, int n) {
+static void makeCircleTable(vector<float> &sint, vector<float> &cost, int n, bool half_circle = false) {
 
     /* Table size, the sign of n flips the circle direction */
 
@@ -62,7 +62,7 @@ static void makeCircleTable(vector<float> &sint, vector<float> &cost, int n) {
 
     /* Determine the angle between samples */
 
-    const float angle = 2*M_PI/(float)( ( n == 0 ) ? 1 : n );
+    const float angle = (half_circle ? 1 : 2)*M_PI/(float)( ( n == 0 ) ? 1 : n );
 
     sint.resize(size+1) ; cost.resize(size+1) ;
 
@@ -445,6 +445,118 @@ MeshPtr Mesh::createWireCylinder(float radius, float height, size_t slices, size
 }
 
 MeshPtr Mesh::createSolidSphere(float radius, size_t slices, size_t stacks) {
+
+    MeshPtr m(new Mesh(Triangles)) ;
+    int i, j, idx = 0;
+    float x,y,z;
+    int n_vertices ;
+
+    /* Pre-computed circle */
+    vector<float> sint1, cost1, sint2, cost2;
+
+    /* number of unique vertices */
+    if (slices==0 || stacks<2 )  {
+        return nullptr ;
+    }
+
+    n_vertices = slices*(stacks-1) + 2 ;
+
+    if ( n_vertices > 65535 )
+        return nullptr ;
+
+    makeCircleTable(sint1, cost1, -slices, false) ;
+    makeCircleTable(sint2, cost2, stacks, true) ;
+
+
+    m->vertices().data().resize(n_vertices) ;
+    m->normals().data().resize(n_vertices) ;
+
+    /* top */
+
+    auto &&vertices = m->vertices().data() ;
+    auto &&normals = m->normals().data() ;
+    auto &&indices = m->vertices().indices() ;
+
+    vertices[0] = { 0.f, 0.f, radius } ;
+    normals[0] = { 0.f, 0.f, 1.0f } ;
+
+    idx = 1;
+
+    /* each stack */
+    for( i=1; i<stacks; i++ )
+    {
+        for(j=0; j<slices; j++, idx++)
+        {
+            x = cost1[j]*sint2[i];
+            y = sint1[j]*sint2[i];
+            z = cost2[i];
+
+            vertices[idx] = { x*radius, y*radius, z*radius } ;
+            normals[idx] = { x, y, z } ;
+        }
+    }
+
+    vertices[idx] = { 0.0f, 0.0f, -radius } ;
+    normals[idx] = { 0.0f, 0.0f, -1.0f } ;
+
+    indices.resize((slices+1)*3*(stacks)) ;
+
+    /* top stack */
+    idx = 0 ;
+    for (j=0, idx=0;  j<slices;  j++, idx+=3)
+    {
+        indices[idx] = j+1 ;
+        indices[idx+1] = 0 ;
+        indices[idx+2] = j ;
+    }
+
+   #if 0
+    GLushort  *stripIdx;
+          /* Create index vector */
+          GLushort offset;
+
+          /* Allocate buffers for indices, bail out if memory allocation fails */
+          stripIdx = malloc((slices+1)*2*(stacks)*sizeof(GLushort));
+          if (!(stripIdx))
+          {
+              free(stripIdx);
+              fgError("Failed to allocate memory in fghSphere");
+          }
+
+          /* top stack */
+          for (j=0, idx=0;  j<slices;  j++, idx+=2)
+          {
+              stripIdx[idx  ] = j+1;              /* 0 is top vertex, 1 is first for first stack */
+              stripIdx[idx+1] = 0;
+          }
+          stripIdx[idx  ] = 1;                    /* repeat first slice's idx for closing off shape */
+          stripIdx[idx+1] = 0;
+          idx+=2;
+
+          /* middle stacks: */
+          /* Strip indices are relative to first index belonging to strip, NOT relative to first vertex/normal pair in array */
+          for (i=0; i<stacks-2; i++, idx+=2)
+          {
+              offset = 1+i*slices;                    /* triangle_strip indices start at 1 (0 is top vertex), and we advance one stack down as we go along */
+              for (j=0; j<slices; j++, idx+=2)
+              {
+                  stripIdx[idx  ] = offset+j+slices;
+                  stripIdx[idx+1] = offset+j;
+              }
+              stripIdx[idx  ] = offset+slices;        /* repeat first slice's idx for closing off shape */
+              stripIdx[idx+1] = offset;
+          }
+
+          /* bottom stack */
+          offset = 1+(stacks-2)*slices;               /* triangle_strip indices start at 1 (0 is top vertex), and we advance one stack down as we go along */
+          for (j=0; j<slices; j++, idx+=2)
+          {
+              stripIdx[idx  ] = nVert-1;              /* zero based index, last element in array (bottom vertex)... */
+              stripIdx[idx+1] = offset+j;
+          }
+          stripIdx[idx  ] = nVert-1;                  /* repeat first slice's idx for closing off shape */
+  stripIdx[idx+1] = offset;
+    #endif
     return MeshPtr() ;
 }
 

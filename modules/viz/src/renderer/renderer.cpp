@@ -2,9 +2,6 @@
 
 #include "renderer_impl.hpp"
 
-#define GL_GLEXT_PROTOTYPES
-#include <GL/glew.h>
-
 #include <iostream>
 #include <cstring>
 

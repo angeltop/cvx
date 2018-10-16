@@ -4,12 +4,10 @@
 #include "font_manager.hpp"
 #include "glyph_cache.hpp"
 
-#include <GL/glew.h>
+#include "GL/gl3w.h"
 #include <Eigen/Core>
 
 namespace cvx { namespace viz { namespace detail {
-
-
 
 class TextItem {
 public:

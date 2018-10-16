@@ -11,6 +11,7 @@
 
 #include <cvx/viz/scene/scene_fwd.hpp>
 #include <cvx/viz/scene/drawable.hpp>
+#include <cvx/viz/scene/marker.hpp>
 
 namespace cvx { namespace viz {
 
@@ -105,6 +106,9 @@ public:
         return n ;
     }
 
+    void addMarkerInstance(MarkerInstancePtr inst) {
+        markers_.push_back(inst) ;
+    }
 
     bool hit(const Ray &ray, Hit &hit) ;
 
@@ -121,6 +125,7 @@ private:
     std::vector<NodePtr> children_ ;      // child nodes
     std::vector<DrawablePtr> drawables_ ; // meshes associated with this node
     std::vector<LightPtr> lights_ ;
+    std::vector<MarkerInstancePtr> markers_ ;
 
     Node *parent_ = nullptr;
 

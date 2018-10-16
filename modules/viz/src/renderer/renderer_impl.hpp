@@ -7,7 +7,7 @@
 #include <cvx/viz/renderer/ogl_shaders.hpp>
 #include <cvx/viz/renderer/renderer.hpp>
 
-#include <GL/glew.h>
+#include "GL/gl3w.h"
 
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>

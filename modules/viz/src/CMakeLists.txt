@@ -43,7 +43,7 @@ set(LIB_SOURCES
     renderer/text_item.cpp
     renderer/text_item.hpp
     renderer/text.cpp
-
+    renderer/gl3w.c
 
     scene/scene.cpp
     scene/assimp_loader.cpp
@@ -55,6 +55,7 @@ set(LIB_SOURCES
     scene/intersect.hpp
     scene/octree.hpp
     scene/octree.cpp
+    scene/marker.cpp
 
     gui/trackball.cpp
     gui/glfw_window.cpp
@@ -79,6 +80,7 @@ set(LIB_SOURCES
     ${LIBRARY_INCLUDE_DIR}/scene/camera.hpp
     ${LIBRARY_INCLUDE_DIR}/scene/light.hpp
     ${LIBRARY_INCLUDE_DIR}/scene/material.hpp
+    ${LIBRARY_INCLUDE_DIR}/scene/marker.hpp
 
     ${LIBRARY_INCLUDE_DIR}/gui/trackball.hpp
     ${LIBRARY_INCLUDE_DIR}/gui/glfw_window.hpp

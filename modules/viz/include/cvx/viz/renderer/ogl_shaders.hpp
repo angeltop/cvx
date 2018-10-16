@@ -1,8 +1,6 @@
 #ifndef __CVX_VIZ_OPENGL_SHADERS_HPP__
 #define __CVX_VIZ_OPENGL_SHADERS_HPP__
 
-#include <GL/glew.h>
-
 #include <string>
 #include <stdexcept>
 #include <memory>
@@ -16,9 +14,7 @@ class OpenGLShader {
 public:
     typedef std::shared_ptr<OpenGLShader> Ptr ;
 
-    enum Type { Vertex = GL_VERTEX_SHADER,  Fragment = GL_FRAGMENT_SHADER, Geometry = GL_GEOMETRY_SHADER,
-                Compute = GL_COMPUTE_SHADER, TessControl = GL_TESS_CONTROL_SHADER, TessEvaluation = GL_TESS_EVALUATION_SHADER
-    } ;
+    enum Type { Vertex,  Fragment, Geometry, Compute, TessControl, TessEvaluation  } ;
 
     OpenGLShader(Type t): type_(t) {}
 
@@ -31,10 +27,10 @@ public:
     OpenGLShader(Type t, const std::string &code, const std::string &resource_name = std::string()) ;
     ~OpenGLShader() ;
 
-    GLuint handle() const { return handle_; }
+    unsigned int handle() const { return handle_; }
 
 private:
-    GLuint handle_ ;
+    unsigned int handle_ ;
     Type type_ ;
 };
 
@@ -70,14 +66,14 @@ public:
 
     ~OpenGLShaderProgram() ;
 
-    GLuint handle() const { return handle_ ; }
+    unsigned int handle() const { return handle_ ; }
 
 
 private:
 
     void throwError(const char *error_str, const char *error_desc) ;
 
-    GLuint handle_ ;
+    unsigned int handle_ ;
     std::vector<OpenGLShader::Ptr> shaders_ ;
 };
 
