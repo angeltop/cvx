@@ -1,9 +1,10 @@
-#include <cvx/viz/renderer/renderer.hpp>
+﻿#include <cvx/viz/renderer/renderer.hpp>
 #include <cvx/viz/scene/camera.hpp>
 #include <cvx/viz/scene/light.hpp>
 #include <cvx/viz/scene/material.hpp>
 #include <cvx/viz/scene/geometry.hpp>
 #include <cvx/viz/scene/node.hpp>
+#include <cvx/viz/scene/mesh.hpp>
 
 #include <cvx/viz/gui/offscreen.hpp>
 #include <cvx/util/math/rng.hpp>
@@ -262,13 +263,15 @@ int main(int argc, char *argv[]) {
     // load scene
 
     ScenePtr scene(new Scene) ;
-
+/*
     for( uint i=0 ; i<200 ; i++ ) {
         scene->addChild(randomBox(format("box%d", i),
                                   Vector3f(0.04, g_rng.uniform(0.1, 0.15), 0.04),
                                   Vector4f(0.5, g_rng.uniform(0.0, 1.0), g_rng.uniform(0.0, 1.0), 1.0))) ;
     }
-
+*/
+    MeshPtr sphere = Mesh::createSolidSphere(0.1, 16, 16) ;
+    scene->addSimpleShapeNode(sphere, custom_material) ;
         // add a light source
 
     DirectionalLight *dl = new DirectionalLight(Vector3f(0.5, 0.5, 1)) ;
@@ -296,10 +299,11 @@ int main(int argc, char *argv[]) {
     pcam->setBgColor({1, 1, 1, 1}) ;
 
 
+    OffscreenRenderingWindow win(width, height) ;
 
     // initialize renderer
 
-    OffscreenRenderer rdr(width, height, scene) ;
+    Renderer rdr(scene) ;
 
     rdr.init() ;
 

@@ -1,7 +1,7 @@
 #include <cvx/viz/gui/offscreen.hpp>
 
+#include "../renderer/GL/gl3w.h"
 
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 namespace cvx { namespace viz {
@@ -47,13 +47,8 @@ bool OffscreenRenderingWindow::init() {
 
     glfwMakeContextCurrent(handle_) ;
 
-    // this is needed for non core profiles or instead use gl3w
-    glewExperimental = GL_TRUE ;
-
-    GLenum err ;
-    if ( ( err = glewInit() ) != GLEW_OK ) {
+    if ( gl3wInit() != 0 )
         return false ;
-    }
 
     create_buffers() ;
 

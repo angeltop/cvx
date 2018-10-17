@@ -5,21 +5,21 @@ include_directories(
     ${EIGEN3_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
 )
-
+message(${GLFW3_LIBRARY})
 add_executable(test_renderer test_renderer.cpp)
-target_link_libraries(test_renderer cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+target_link_libraries(test_renderer cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY})
 
 add_executable(test_robot test_robot.cpp)
-target_link_libraries(test_robot cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+target_link_libraries(test_robot cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} )
 
-add_executable(test_offscreen test_offscreen.cpp)
-target_link_libraries(test_offscreen cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+#add_executable(test_offscreen test_offscreen.cpp)
+#target_link_libraries(test_offscreen cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY}})
 
 add_executable(test_shapes test_shapes.cpp)
-target_link_libraries(test_shapes cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+target_link_libraries(test_shapes cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY})
 
 add_executable(test_point_cloud test_point_cloud.cpp)
-target_link_libraries(test_point_cloud cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} ${GLEW_LIBRARIES})
+target_link_libraries(test_point_cloud cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} )
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -33,7 +33,7 @@ find_package(Qt5Widgets 5.5 CONFIG REQUIRED)
 
 add_executable(test_qt test_qt.cpp qt_glwidget.cpp qt_glwidget.hpp)
 # Use the Widgets module from Qt 5
-target_link_libraries(test_qt cvx_viz Qt5::Widgets ${GLEW_LIBRARIES})
+target_link_libraries(test_qt cvx_viz Qt5::Widgets)
 
 add_executable(test_imageview test_imageview.cpp)
 # Use the Widgets module from Qt 5

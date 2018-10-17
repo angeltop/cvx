@@ -1,13 +1,11 @@
 #ifndef __GLFW_RENDER_WINDOW_HPP__
 #define __GLFW_RENDER_WINDOW_HPP__
 
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include <string>
 
 namespace cvx { namespace viz {
-
 
 class glfwRenderWindow
 {
