@@ -87,9 +87,6 @@ bool RendererImpl::init() {
 
     makeVertexBuffers() ;
 
-    // load textures
-
-    initTextures() ;
 
     default_material_.reset(new PhongMaterialInstance) ;
 
