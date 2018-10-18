@@ -10,18 +10,18 @@ namespace cvx { namespace viz {
 class Drawable{
 public:
 
-    Drawable(const GeometryPtr &geom, const MaterialPtr &material):
+    Drawable(const GeometryPtr &geom, const MaterialInstancePtr &material):
         geometry_(geom), material_(material) {}
 
     GeometryPtr geometry() const { return geometry_ ; }
-    MaterialPtr material() const { return material_ ; }
+    MaterialInstancePtr material() const { return material_ ; }
 
-    void setMaterial(MaterialPtr mat) { material_ = mat ; }
+    void setMaterial(MaterialInstancePtr mat) { material_ = mat ; }
 
 private:
 
     GeometryPtr geometry_ ;
-    MaterialPtr material_ ;
+    MaterialInstancePtr material_ ;
 };
 
 } // namespace viz

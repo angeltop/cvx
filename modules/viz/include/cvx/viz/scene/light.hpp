@@ -56,6 +56,8 @@ struct SpotLight: public Light {
     float falloff_angle_ = M_PI, falloff_exponent_ = 0 ;
 };
 
+using LightPtr = std::shared_ptr<Light> ;
+
 } // namespace viz
 } // namespace cvx
 #endif

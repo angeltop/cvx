@@ -5,8 +5,8 @@
 
 namespace cvx { namespace viz {
 
-struct Material ;
-typedef std::shared_ptr<Material> MaterialPtr ;
+struct MaterialInstance ;
+typedef std::shared_ptr<MaterialInstance> MaterialInstancePtr ;
 
 struct Mesh ;
 typedef std::shared_ptr<Mesh> MeshPtr ;

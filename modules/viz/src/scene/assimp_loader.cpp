@@ -31,12 +31,12 @@ class AssimpImporter {
 public:
     AssimpImporter(Scene &sc, bool make_pickable): scene_(sc), make_pickable_(make_pickable) {}
 
-    MaterialPtr importMaterial(const struct aiMaterial *mtl, const string &model_path) ;
+    MaterialInstancePtr importMaterial(const struct aiMaterial *mtl, const string &model_path) ;
 
     Scene &scene_ ;
 
     map<const aiMesh *, MeshPtr> meshes_ ;
-    map<const aiMaterial *, MaterialPtr> materials_ ;
+    map<const aiMaterial *, MaterialInstancePtr> materials_ ;
     map<string, LightPtr> lights_ ;
     map<string, CameraPtr> cameras_ ;
     bool make_pickable_ ;
@@ -92,14 +92,15 @@ static void getMaterialTexture(const struct aiMaterial *mtl, optional<Texture2D>
 
     if ( AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, 0, &tex_path, &tmap, 0, 0, 0, &mode) ) {
         string file_name(tex_path.data, tex_path.length) ;
-        Texture2D sampler ;
-        sampler.image_url_ = "file://" + (mpath.parentPath() / file_name).toString() ;
+
+        string url = "file://" + (mpath.parentPath() / file_name).toString() ;
+        Texture2D sampler(url) ;
         texture = sampler ;
     }
 }
 
 
-MaterialPtr AssimpImporter::importMaterial(const struct aiMaterial *mtl, const string &model_path) {
+MaterialInstancePtr AssimpImporter::importMaterial(const struct aiMaterial *mtl, const string &model_path) {
 
     int shading_model ;
     mtl->Get((const char *)AI_MATKEY_SHADING_MODEL, shading_model);
@@ -112,19 +113,19 @@ MaterialPtr AssimpImporter::importMaterial(const struct aiMaterial *mtl, const s
     getPhongMaterial(mtl, ambient, diffuse, specular, shininess) ;
 
     if ( diffuse_map ) {
-        DiffuseMapMaterial *mat = new DiffuseMapMaterial() ;
-        if ( ambient ) mat->setAmbient(ambient.value()) ;
-        mat->setDiffuse(diffuse_map.value()) ;
-        if ( specular ) mat->setSpecular(specular.value()) ;
-        if ( shininess ) mat->setShininess(shininess.value()) ;
-        return MaterialPtr(mat) ;
+        DiffuseMapMaterialInstance *mat = new DiffuseMapMaterialInstance(diffuse_map.value()) ;
+        if ( ambient ) mat->params().setAmbient(ambient.value()) ;
+        mat->params().setDiffuse(diffuse_map.value()) ;
+        if ( specular ) mat->params().setSpecular(specular.value()) ;
+        if ( shininess ) mat->params().setShininess(shininess.value()) ;
+        return MaterialInstancePtr(mat) ;
     } else {
-        PhongMaterial *mat = new PhongMaterial() ;
-        if ( ambient ) mat->setAmbient(ambient.value()) ;
-        if ( diffuse ) mat->setDiffuse(diffuse.value()) ;
-        if ( specular ) mat->setSpecular(specular.value()) ;
-        if ( shininess ) mat->setShininess(shininess.value()) ;
-        return MaterialPtr(mat) ;
+        PhongMaterialInstance *mat = new PhongMaterialInstance() ;
+        if ( ambient ) mat->params().setAmbient(ambient.value()) ;
+        if ( diffuse ) mat->params().setDiffuse(diffuse.value()) ;
+        if ( specular ) mat->params().setSpecular(specular.value()) ;
+        if ( shininess ) mat->params().setShininess(shininess.value()) ;
+        return MaterialInstancePtr(mat) ;
     }
 
 }
@@ -132,7 +133,7 @@ MaterialPtr AssimpImporter::importMaterial(const struct aiMaterial *mtl, const s
 bool AssimpImporter::importMaterials(const string &mpath, const aiScene *sc) {
     for( uint m=0 ; m<sc->mNumMaterials ; m++ ) {
         const aiMaterial *material = sc->mMaterials[m] ;
-        MaterialPtr smat = importMaterial(material, mpath) ;
+        MaterialInstancePtr smat = importMaterial(material, mpath) ;
         materials_[material] = smat ;
     }
 
@@ -307,9 +308,9 @@ bool AssimpImporter::importNodes(NodePtr &pnode, const struct aiScene *sc, const
 
         const aiMaterial* material = sc->mMaterials[mesh->mMaterialIndex];
 
-        map<const aiMaterial *, MaterialPtr>::const_iterator cit = materials_.find(material) ;
+        map<const aiMaterial *, MaterialInstancePtr>::const_iterator cit = materials_.find(material) ;
 
-        MaterialPtr mat ;
+        MaterialInstancePtr mat ;
 
         if ( cit != materials_.end() )
             mat = cit->second ;

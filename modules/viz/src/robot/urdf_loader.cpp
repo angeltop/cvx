@@ -70,7 +70,7 @@ void URDFLoader::parseLink(const xml_node &node) {
             NodePtr visual(new Node), geom ;
             visual->setName("visual") ;
 
-            MaterialPtr mat ;
+            MaterialInstancePtr mat ;
 
             if ( xml_node material_node = visual_node.child("material") ) {
                 string matid = material_node.attribute("name").as_string() ;
@@ -110,7 +110,7 @@ void URDFLoader::parseLink(const xml_node &node) {
             Vector3f scale{1, 1, 1} ;
 
             if ( xml_node geom_node = collision_node.child("geometry") )
-                geom = parseGeometry(geom_node, MaterialPtr(), scale) ;
+                geom = parseGeometry(geom_node, MaterialInstancePtr(), scale) ;
             else
                 throw URDFLoadException("<geometry> element is missing from <collision>") ;
 
@@ -339,7 +339,7 @@ bool URDFLoader::resolveUri(const std::string &uri, std::string &path) {
 
 }
 
-NodePtr URDFLoader::parseGeometry(const xml_node &node, const MaterialPtr &mat, Vector3f &sc) {
+NodePtr URDFLoader::parseGeometry(const xml_node &node, const MaterialInstancePtr &mat, Vector3f &sc) {
 
     if ( xml_node mesh_node = node.child("mesh") ) {
         NodePtr geom(new Node) ;
@@ -423,12 +423,12 @@ void URDFLoader::parseMaterial(const xml_node &node)
         string rgba = clr_node.attribute("rgba").as_string() ;
         if ( !rgba.empty() ) {
             Vector4f clr = parse_vec4(rgba) ;
-            PhongMaterial *mat = new PhongMaterial ;
-            mat->setShininess(0);
-            mat->setSpecular(Vector4f(0, 0, 0, 1)) ;
-            mat->setDiffuse(clr) ;
+            PhongMaterialInstance *mat = new PhongMaterialInstance ;
+            mat->params().setShininess(0);
+            mat->params().setSpecular(Vector4f(0, 0, 0, 1)) ;
+            mat->params().setDiffuse(clr) ;
 
-            materials_.emplace(name, MaterialPtr(mat)) ;
+            materials_.emplace(name, MaterialInstancePtr(mat)) ;
             return ;
         }
     }
@@ -438,15 +438,14 @@ void URDFLoader::parseMaterial(const xml_node &node)
 
         if ( resolveUri(uri, path) ) {
 
-            Texture2D s ;
-            s.image_url_ = path ;
+            Texture2D s(path) ;
 
-            DiffuseMapMaterial *mat = new DiffuseMapMaterial ;
-            mat->setShininess(0);
-            mat->setSpecular(Vector4f(0, 0, 0, 1)) ;
-            mat->setDiffuse(s) ;
+            DiffuseMapMaterialInstance *mat = new DiffuseMapMaterialInstance(s) ;
+            mat->params().setShininess(0);
+            mat->params().setSpecular(Vector4f(0, 0, 0, 1)) ;
+            mat->params().setDiffuse(s) ;
 
-            materials_.emplace(name, MaterialPtr(mat)) ;
+            materials_.emplace(name, MaterialInstancePtr(mat)) ;
             return ;
         }
     }

@@ -51,22 +51,18 @@ public:
     void render(const NodePtr &node, const Eigen::Matrix4f &mat) ;
     void render(const DrawablePtr &geom, const Eigen::Matrix4f &mat) ;
     void setModelTransform(const Eigen::Matrix4f &tf);
-    void setMaterial(const MaterialPtr &material) ;
+
     void setProgram(const std::string &) ;
     void drawMeshData(MeshData &data, GeometryPtr geom);
 
-    void setLights() ;
-    void setLights(const NodePtr &node, const Eigen::Isometry3f &parent_tf) ;
+    void setLights(const MaterialInstancePtr &mat) ;
+    void setLights(const NodePtr &node, const Eigen::Isometry3f &parent_tf, const MaterialInstancePtr &mat) ;
 
     void initTextures() ;
     void renderText(const std::string &text, float x, float y, const Font &face, const Eigen::Vector3f &clr) ;
     void initFontData() ;
     void makeVertexBuffers();
-    void addTextureImage(const std::string &id, const cv::Mat &im) ;
 
-    void addShader(const std::string &shader_id, const std::string &src_code) {
-        user_shaders_.emplace(shader_id, src_code) ;
-    }
 
     cv::Mat getColor(bool alpha);
     cv::Mat getColor(cv::Mat &bg, float alpha);
@@ -78,14 +74,14 @@ private:
 
     std::map<GeometryPtr, MeshData> buffers_ ;
     std::map<std::string, GLuint> textures_ ;
-    std::map<std::string, cv::Mat> inmemory_textures_ ;
+
     std::map<std::string, std::string> user_shaders_ ;
     ScenePtr scene_ ;
     Eigen::Matrix4f perspective_, proj_ ;
     GLuint query_ ;
     Eigen::Vector4f bg_clr_= { 0, 0, 0, 1 } ;
     float znear_, zfar_ ;
-    MaterialPtr default_material_ ;
+    MaterialInstancePtr default_material_ ;
     OpenGLShaderProgram::Ptr prog_ ;
     uint light_index_ = 0 ;
 

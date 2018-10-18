@@ -42,9 +42,6 @@ cv::Mat Renderer::getDepth() {
     return impl_->getDepth() ;
 }
 
-void Renderer::addTextureImage(const string &id, const cv::Mat &im) {
-    impl_->addTextureImage(id, im) ;
-}
 
 void Renderer::text(const string &text, float x, float y, const Font &f, const Vector3f &clr)
 {

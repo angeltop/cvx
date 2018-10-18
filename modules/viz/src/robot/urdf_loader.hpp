@@ -4,6 +4,7 @@
 #include <map>
 #include <pugixml/pugixml.hpp>
 #include <cvx/viz/robot/robot_scene.hpp>
+#include <cvx/viz/scene/material.hpp>
 
 namespace cvx { namespace viz {
 
@@ -29,7 +30,7 @@ public:
     RobotScenePtr exportScene() ;
 
     Eigen::Isometry3f parseOrigin(const pugi::xml_node &node) ;
-    NodePtr parseGeometry(const pugi::xml_node &node, const MaterialPtr &mat, Eigen::Vector3f &sc) ;
+    NodePtr parseGeometry(const pugi::xml_node &node, const MaterialInstancePtr &mat, Eigen::Vector3f &sc) ;
     void parseMaterial(const pugi::xml_node &node) ;
     bool resolveUri(const std::string &uri, std::string &path);
 
@@ -38,7 +39,7 @@ public:
     std::map<std::string, NodePtr> links_ ;
     std::map<std::string, std::string> package_map_ ;
     std::vector<MeshPtr> meshes_ ;
-    std::map<std::string, MaterialPtr> materials_ ;
+    std::map<std::string, MaterialInstancePtr> materials_ ;
     NodePtr root_node_ ;
     bool load_collision_geometry_ ;
 };

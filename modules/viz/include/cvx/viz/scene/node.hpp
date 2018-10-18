@@ -98,7 +98,7 @@ public:
         return n ;
     }
 
-    NodePtr addSimpleShapeNode(const GeometryPtr &geom, const MaterialPtr &mat) {
+    NodePtr addSimpleShapeNode(const GeometryPtr &geom, const MaterialInstancePtr &mat) {
         NodePtr n(new Node) ;
         DrawablePtr dr(new Drawable(geom, mat)) ;
         n->addDrawable(dr) ;

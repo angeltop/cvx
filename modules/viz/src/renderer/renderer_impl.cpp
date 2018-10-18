@@ -53,10 +53,6 @@ void RendererImpl::makeVertexBuffers() {
     }
 }
 
-void RendererImpl::addTextureImage(const string &id, const cv::Mat &im)
-{
-    inmemory_textures_.emplace(id, im) ;
-}
 
 void
 errorCallback( GLenum source,
@@ -95,7 +91,7 @@ bool RendererImpl::init() {
 
     initTextures() ;
 
-    default_material_.reset(new PhongMaterial) ;
+    default_material_.reset(new PhongMaterialInstance) ;
 
 
 
@@ -240,21 +236,15 @@ RendererImpl::~RendererImpl() {
 
 void RendererImpl::setModelTransform(const Matrix4f &tf)
 {
-    Matrix4f mvp =  perspective_ * proj_ * tf;
-    Matrix4f mv =   proj_ * tf;
-    Matrix3f wp = mv.block<3, 3>(0, 0).transpose().inverse() ;
 
-    prog_->setUniform("mvp", mvp) ;
-    prog_->setUniform("mv", mv) ;
-    prog_->setUniform("mvn", wp) ;
 }
 
-void RendererImpl::setMaterial(const MaterialPtr &material)
+#if 0
+void RendererImpl::setMaterial(const MaterialInstancePtr &material)
 {
-    material->apply() ;
 
-    vector<Texture2D> textures ;
-    material->getTextureData(textures);
+ //   vector<Texture2D> textures ;
+ //   material->getTextureData(textures);
 
     uint s = 0 ;
     for( const Texture2D &t: textures ) {
@@ -263,75 +253,44 @@ void RendererImpl::setMaterial(const MaterialPtr &material)
     }
 
 }
+#endif
 
 #define MAX_LIGHTS 10
 
-void RendererImpl::setLights(const NodePtr &node, const Isometry3f &parent_tf)
+void RendererImpl::setLights(const NodePtr &node, const Isometry3f &parent_tf, const MaterialInstancePtr &mat)
 {
     Isometry3f tf = parent_tf * node->matrix() ;
 
     for( uint i=0 ; i< node->lights().size() ; i++  ) {
-
         if ( light_index_ >= MAX_LIGHTS ) return ;
-
-        string vname = format("g_light_source[%d]", light_index_++) ;
-
         const LightPtr &light = node->lights()[i] ;
 
-        if ( const auto &alight = std::dynamic_pointer_cast<AmbientLight>(light) ) {
-
-            prog_->setUniform(vname + ".light_type", 0) ;
-            prog_->setUniform(vname + ".color", alight->color_) ;
-        }
-        else if ( const auto &dlight = std::dynamic_pointer_cast<DirectionalLight>(light) ) {
-            prog_->setUniform(vname + ".light_type", 1) ;
-            prog_->setUniform(vname + ".color", dlight->diffuse_color_) ;
-            prog_->setUniform(vname + ".direction", tf * dlight->direction_) ;
-        }
-        else if ( const auto &slight = std::dynamic_pointer_cast<SpotLight>(light) ) {
-
-            prog_->setUniform(vname + ".light_type", 2) ;
-            prog_->setUniform(vname + ".color", slight->diffuse_color_) ;
-            prog_->setUniform(vname + ".direction", tf * slight->direction_) ;
-            prog_->setUniform(vname + ".position", tf * slight->position_) ;
-            prog_->setUniform(vname + ".constant_attenuation", slight->constant_attenuation_) ;
-            prog_->setUniform(vname + ".linear_attenuation", slight->linear_attenuation_) ;
-            prog_->setUniform(vname + ".quadratic_attenuation", slight->quadratic_attenuation_) ;
-            prog_->setUniform(vname + ".spot_exponent", slight->falloff_exponent_) ;
-            prog_->setUniform(vname + ".spot_cos_cutoff", (float)cos(M_PI*slight->falloff_angle_/180.0)) ;
-        }
-        else if ( const auto &plight = std::dynamic_pointer_cast<PointLight>(light)) {
-            prog_->setUniform(vname + ".light_type", 3) ;
-            prog_->setUniform(vname + ".color", plight->diffuse_color_) ;
-            prog_->setUniform(vname + ".position", tf * plight->position_) ;
-            prog_->setUniform(vname + ".constant_attenuation", plight->constant_attenuation_) ;
-            prog_->setUniform(vname + ".linear_attenuation", plight->linear_attenuation_) ;
-            prog_->setUniform(vname + ".quadratic_attenuation", plight->quadratic_attenuation_) ;
-        }
+        mat->applyLight(light_index_, light, tf) ;
+        light_index_ ++ ;
     }
 
     for( uint i=0 ; i<node->numChildren() ; i++ )
-        setLights(node->getChild(i), tf) ;
+        setLights(node->getChild(i), tf, mat) ;
 }
 
-void RendererImpl::setLights() {
+void RendererImpl::setLights(const MaterialInstancePtr &material) {
     light_index_ = 0 ;
 
     Isometry3f mat ;
     mat.setIdentity() ;
 
-    setLights(scene_, mat) ;
+    setLights(scene_, mat, material) ;
 }
 
 void RendererImpl::initTextures()
 {
     // collect all materials
-
+#if 0
     set<MaterialPtr> materials ;
 
     scene_->visit([&](Node &n) {
         for( const auto &dr: n.drawables() ) {
-            MaterialPtr m = dr->material() ;
+            MaterialInstancePtr m = dr->material() ;
             if ( m ) materials.insert(m) ;
         }
     }) ;
@@ -397,6 +356,7 @@ void RendererImpl::initTextures()
         }
 
     }
+#endif
 }
 
 
@@ -440,25 +400,15 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 
     MeshData &data = buffers_[geom->geometry()] ;
 
-    // prog_ = shaders_.get(mode) ;
-
-    MaterialPtr material = geom->material() ;
+    MaterialInstancePtr material = geom->material() ;
     if ( !material ) material = default_material_ ;
 
     OpenGLShaderProgram::Ptr old_prog = prog_ ;
 
-    prog_ = material->prog() ;
-
-    assert( prog_ ) ;
-
-    //    if ( prog_ != old_prog )
-    prog_->use() ;
-
-    setModelTransform(mat) ;
-
-    setMaterial(material) ;
-
-    setLights() ;
+    material->use() ;
+    material->applyParameters() ;
+    material->applyTransform(perspective_, proj_, mat) ;
+    setLights(material) ;
 
 #if 0
 

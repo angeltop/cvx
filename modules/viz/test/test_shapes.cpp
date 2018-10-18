@@ -216,10 +216,11 @@ void main (void)
 
 )" ;
 
+
+
 class PerlinNoiseMaterial: public Material {
 public:
-    OpenGLShaderProgram::Ptr prog() const override {
-        static OpenGLShaderProgram::Ptr prog_ ;
+    OpenGLShaderProgram::Ptr prog()  override {
 
         if ( prog_ ) return prog_ ;
 
@@ -235,12 +236,31 @@ public:
         return prog_ ;
 
     }
-    void apply() override {}
+
+    static MaterialPtr instance() {
+        static MaterialPtr s_material(new PerlinNoiseMaterial) ;
+        return s_material ;
+    }
+
+    OpenGLShaderProgram::Ptr prog_ ;
 
 
 } ;
 
-static MaterialPtr custom_material(new PerlinNoiseMaterial) ;
+class PerlinNoiseMaterialParemeters: MaterialParameters {
+
+};
+
+class PerlinNoiseMaterialInstance: public MaterialInstance {
+public:
+    PerlinNoiseMaterialInstance(): MaterialInstance(PerlinNoiseMaterial::instance(), nullptr)  {}
+
+    void applyTransform(const Eigen::Matrix4f &cam, const Eigen::Matrix4f &view, const Eigen::Matrix4f &model) override {
+        applyDefaultPerspective(cam, view, model) ;
+    }
+};
+
+MaterialInstancePtr custom_material(new PerlinNoiseMaterialInstance) ;
 
 NodePtr randomBox(const string &name, const Vector3f &hs, const Vector4f &clr) {
 

@@ -78,7 +78,7 @@ Isometry3f getRandTransform(double d)
     return t;
 }
 
-NodePtr randomBox(const string &name, MaterialPtr material, const Vector3f &hs) {
+NodePtr randomBox(const string &name, MaterialInstancePtr material, const Vector3f &hs) {
 
     NodePtr box_node(new Node) ;
     box_node->setName(name) ;
