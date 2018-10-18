@@ -7,6 +7,7 @@
 #include <cvx/viz/gui/glfw_window.hpp>
 #include <cvx/viz/gui/trackball.hpp>
 
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 using namespace cvx::viz ;
@@ -27,7 +28,7 @@ public:
     }
 
     void onInit() {
-        rdr_.init() ;
+
     }
 
     void onResize(int width, int height) {

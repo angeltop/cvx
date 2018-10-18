@@ -325,8 +325,6 @@ int main(int argc, char *argv[]) {
 
     Renderer rdr(scene) ;
 
-    rdr.init() ;
-
     rdr.render(cam) ;
 
     // obtain the color buffer

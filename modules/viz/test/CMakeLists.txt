@@ -4,6 +4,7 @@ include_directories(
     ${CVX_INCLUDE_DIRS}
     ${EIGEN3_INCLUDE_DIR}
     ${OpenCV_INCLUDE_DIRS}
+    ../src/3rdparty
 )
 message(${GLFW3_LIBRARY})
 add_executable(test_renderer test_renderer.cpp)

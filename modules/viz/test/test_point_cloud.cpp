@@ -14,6 +14,8 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+#include <GLFW/glfw3.h>
+
 using namespace cvx::viz ;
 using namespace cvx::util ;
 
@@ -35,7 +37,7 @@ public:
     }
 
     void onInit() {
-        rdr_.init() ;
+
     }
 
     void onResize(int width, int height) {

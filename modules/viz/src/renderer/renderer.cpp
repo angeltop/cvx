@@ -15,9 +15,6 @@ using namespace Eigen ;
 
 namespace cvx { namespace viz {
 
-bool Renderer::init() {
-    return impl_->init() ;
-}
 
 void Renderer::render(const CameraPtr &cam) {
     impl_->render(cam) ;

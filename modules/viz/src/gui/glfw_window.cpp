@@ -1,6 +1,10 @@
 ﻿#include <cvx/viz/gui/glfw_window.hpp>
 #include <thread>
 #include <iostream>
+
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
+
 using namespace std ;
 
 namespace cvx { namespace viz {
@@ -36,6 +40,8 @@ bool glfwRenderWindow::run(size_t width, size_t height, const string &wname) {
     glfwSetMouseButtonCallback(handle_, buttonCallback);
     glfwSetScrollCallback(handle_, scrollCallback);
     glfwSetFramebufferSizeCallback(handle_, sizeCallback);
+
+    if ( gl3wInit() != 0 ) return false ;
 
     onInit() ;
 

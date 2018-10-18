@@ -21,9 +21,6 @@ public:
     Renderer(const ScenePtr &scene) ;
     ~Renderer() ;
 
-    // initialize renderer
-    bool init() ;
-
     // render scene
     void render(const CameraPtr &cam) ;
 

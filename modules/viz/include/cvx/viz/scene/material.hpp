@@ -16,14 +16,14 @@ using MaterialPtr = std::shared_ptr<Material> ;
 class Texture2D {
 public:
 
-    Texture2D(const std::string &url): image_url_(url) {} ;
+    Texture2D(const std::string &url): image_url_(url) {}
     Texture2D(const cv::Mat &im): im_(im) {}
 
     void read() ;
     void upload() ;
 
 private:
-    std::string image_url_ ;       // url should be file://<absolute path> or mem://<id>
+    std::string image_url_ ;       // url should be file://<absolute path>
     std::string wrap_s_, wrap_t_ ;
     cv::Mat im_ ;
 

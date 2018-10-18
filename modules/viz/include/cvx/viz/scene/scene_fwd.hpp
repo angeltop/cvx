@@ -8,7 +8,7 @@ namespace cvx { namespace viz {
 struct MaterialInstance ;
 typedef std::shared_ptr<MaterialInstance> MaterialInstancePtr ;
 
-struct Mesh ;
+class Mesh ;
 typedef std::shared_ptr<Mesh> MeshPtr ;
 
 class Geometry ;

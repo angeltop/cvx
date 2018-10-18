@@ -8,6 +8,8 @@
 #include <cvx/viz/gui/glfw_window.hpp>
 #include <cvx/viz/gui/trackball.hpp>
 
+#include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <thread>
 using namespace cvx::viz ;
@@ -34,7 +36,7 @@ public:
     }
 
     void onInit() override {
-        rdr_.init() ;
+
 
     }
 

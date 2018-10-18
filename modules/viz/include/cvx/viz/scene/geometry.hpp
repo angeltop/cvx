@@ -15,12 +15,29 @@ namespace cvx { namespace viz {
 
 class Ray ;
 
+namespace impl {
+class MeshData ;
+}
+
 class Geometry {
 public:
     Geometry() = default ;
-    virtual ~Geometry() {}
+    virtual ~Geometry() = default ;
 
     virtual bool intersect(const Ray &ray, float &t) const { return false  ; }
+
+    // creates and returns the vertex buffers needed for this type of geometry
+
+    impl::MeshData *getMeshData() {
+        if ( !data_ ) makeMeshData() ;
+        return data_.get() ;
+    }
+
+protected:
+
+    virtual void makeMeshData() {}
+
+    std::shared_ptr<impl::MeshData> data_ = nullptr ;
 };
 
 
@@ -33,6 +50,8 @@ public:
     Eigen::Vector3f halfExtents() const { return half_extents_ ; }
 
     bool intersect(const Ray &ray, float &t) const override ;
+
+    void makeMeshData() override ;
 private:
 
     Eigen::Vector3f half_extents_ ;

@@ -41,6 +41,8 @@ set(LIB_SOURCES
     renderer/glyph_cache.hpp
     renderer/text_item.cpp
     renderer/text_item.hpp
+    renderer/mesh_data.cpp
+    renderer/mesh_data.hpp
     renderer/text.cpp
     renderer/gl3w.c
 

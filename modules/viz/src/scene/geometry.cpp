@@ -1,4 +1,4 @@
-#include <cvx/viz/scene/geometry.hpp>
+﻿#include <cvx/viz/scene/geometry.hpp>
 #include <iostream>
 
 #include "intersect.hpp"

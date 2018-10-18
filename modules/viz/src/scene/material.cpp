@@ -3,7 +3,7 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include "../renderer/GL/gl3w.h"
+#include <GL/gl3w.h>
 
 using namespace std ;
 using namespace Eigen ;

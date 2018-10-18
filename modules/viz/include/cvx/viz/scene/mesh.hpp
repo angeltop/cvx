@@ -10,6 +10,7 @@
 #include <memory>
 #include <map>
 
+
 #include <Eigen/Core>
 
 namespace cvx { namespace viz {
@@ -44,7 +45,7 @@ protected:
     index_container_t indices_ ;
 };
 
-class Mesh: public Geometry {
+class Mesh: public Geometry, public std::enable_shared_from_this<Mesh> {
 public:
 
     enum PrimitiveType { Triangles, Lines, Points } ;
@@ -103,6 +104,8 @@ public:
 
     // create a new mesh without indices
     static MeshPtr flatten(const MeshPtr &src) ;
+
+    void makeMeshData() override ;
 
 private:
     vb3_t vertices_, normals_, colors_ ;

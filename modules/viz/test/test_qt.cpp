@@ -10,6 +10,8 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 
+#include <GL/gl3w.h>
+
 #include "qt_glwidget.hpp"
 
 #include <cvx/util/misc/strings.hpp>
@@ -183,8 +185,7 @@ private:
 void ExampleWindow::initializeGL()
 {
 
-
-   rdr_.init() ;
+    gl3wInit() ;
 
 
 }
@@ -233,8 +234,8 @@ int main(int argc, char **argv)
 
     ScenePtr scene(new Scene) ;
 
-     scene->load("/home/malasiot/Downloads/greek_column.obj", nullptr, true) ;
-    // scene->load("/home/malasiot/Downloads/cube.obj") ;
+    // scene->load("/home/malasiot/Downloads/greek_column.obj", nullptr, true) ;
+     scene->load("/home/malasiot/Downloads/cube.obj") ;
   //  scene->load("/home/malasiot/Downloads/bunny.obj") ;
 /*
     for( uint i=0 ; i<10 ; i++ ) {

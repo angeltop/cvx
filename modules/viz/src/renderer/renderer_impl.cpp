@@ -27,32 +27,6 @@ using namespace cvx::util ;
 
 namespace cvx { namespace viz { namespace impl {
 
-void RendererImpl::makeVertexBuffers() {
-
-    set<GeometryPtr> geometries ;
-
-    scene_->visit([&](Node &n) {
-        for( const auto &dr: n.drawables() ) {
-            GeometryPtr g = dr->geometry() ;
-            if ( g ) geometries.insert(g) ;
-        }
-    }) ;
-
-    for( const GeometryPtr &geom: geometries)  {
-        MeshData data ;
-        if ( MeshPtr mesh = std::dynamic_pointer_cast<Mesh>(geom) ) {
-            MeshPtr fmesh = Mesh::flatten(mesh) ;
-            initBuffersForMesh(data, *fmesh);
-            buffers_[geom] = data ;
-        } else if ( auto box_geom = std::dynamic_pointer_cast<BoxGeometry>(geom) ) {
-            MeshPtr mesh = Mesh::createSolidCube(box_geom->halfExtents()) ;
-            MeshPtr fmesh = Mesh::flatten(mesh) ;
-            initBuffersForMesh(data, *fmesh);
-            buffers_[geom] = data ;
-        }
-    }
-}
-
 
 void
 errorCallback( GLenum source,
@@ -67,7 +41,7 @@ errorCallback( GLenum source,
            ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
             type, severity, message );
 }
-
+/*
 bool RendererImpl::init() {
 
 
@@ -76,103 +50,28 @@ bool RendererImpl::init() {
 
     if ( gl3wInit() != 0 ) return false ;
 
-/*
+
     // During init, enable debug output
     glEnable              ( GL_DEBUG_OUTPUT );
     glDebugMessageCallback( errorCallback, this );
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
     glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, nullptr, true);
-*/
+
     // create vertex buffers
 
-    makeVertexBuffers() ;
-
-
-    default_material_.reset(new PhongMaterialInstance) ;
 
 
 
     return true ;
 }
 
-void RendererImpl::clear(MeshData &data) {
-    glDeleteVertexArrays(1, &data.vao_) ;
-}
-
+*/
 #define POSITION_LOCATION    0
 #define NORMALS_LOCATION    1
 #define COLORS_LOCATION    2
 #define BONE_ID_LOCATION    3
 #define BONE_WEIGHT_LOCATION    4
 #define UV_LOCATION 5
-
-RendererImpl::MeshData::MeshData() {}
-
-void RendererImpl::initBuffersForMesh(MeshData &data, Mesh &mesh)
-{
-    // Create the VAO
-
-    glGenVertexArrays(1, &data.vao_);
-    glBindVertexArray(data.vao_);
-
-    const PointList3f &vertices = mesh.vertices().data() ;
-    const PointList3f &normals = mesh.normals().data() ;
-    const PointList3f &colors = mesh.colors().data() ;
-
-    data.elem_count_ = mesh.vertices().data().size() ;
-    data.indices_ = mesh.vertices().indices().size() ;
-
-    glGenBuffers(1, &data.buffers_[POS_VB]);
-    glBindBuffer(GL_ARRAY_BUFFER, data.buffers_[POS_VB]);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat) * 3, &vertices[0], GL_STATIC_DRAW);
-    glEnableVertexAttribArray(POSITION_LOCATION);
-    glVertexAttribPointer(POSITION_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-
-    if ( !normals.empty() ) {
-        glGenBuffers(1, &data.buffers_[NORMAL_VB]);
-        glBindBuffer(GL_ARRAY_BUFFER, data.buffers_[NORMAL_VB]);
-        glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(GLfloat) * 3, (GLfloat *)normals.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(NORMALS_LOCATION);
-        glVertexAttribPointer(NORMALS_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    }
-
-    if ( !colors.empty() ) {
-        glGenBuffers(1, &data.buffers_[COLOR_VB]);
-        glBindBuffer(GL_ARRAY_BUFFER, data.buffers_[COLOR_VB]);
-        glBufferData(GL_ARRAY_BUFFER, colors.size() * sizeof(GLfloat) * 3, (GLfloat *)colors.data(), GL_STATIC_DRAW);
-        glEnableVertexAttribArray(COLORS_LOCATION);
-        glVertexAttribPointer(COLORS_LOCATION, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    }
-
-    for( uint t = 0 ; t<MAX_TEXTURES ; t++ ) {
-        if ( !mesh.texCoords(t).data().empty() ) {
-            glGenBuffers(1, &data.buffers_[TEXCOORD_VB + t]);
-            glBindBuffer(GL_ARRAY_BUFFER, data.buffers_[TEXCOORD_VB + t]);
-            glBufferData(GL_ARRAY_BUFFER, mesh.texCoords(t).data().size() * sizeof(GLfloat) * 2, (GLfloat *)mesh.texCoords(t).data().data(), GL_STATIC_DRAW);
-            glEnableVertexAttribArray(UV_LOCATION + t);
-            glVertexAttribPointer(UV_LOCATION + t, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-        }
-    }
-
-#if 0
-    glGenBuffers(1, &data.buffers_[TF_VB]);
-    glBindBuffer(GL_ARRAY_BUFFER, data.buffers_[TF_VB]);
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat) * 3, 0, GL_STATIC_READ);
-#endif
-
-    if ( mesh.vertices().hasIndices() ) {
-        glGenBuffers(1, &data.buffers_[INDEX_BUFFER]);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.buffers_[INDEX_BUFFER]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, mesh.vertices().indices().size() * sizeof(uint32_t),
-                     mesh.vertices().indices().data(), GL_STATIC_DRAW);
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-
 
 void RendererImpl::render(const CameraPtr &cam) {
 
@@ -269,9 +168,9 @@ void RendererImpl::drawMeshData(MeshData &data, GeometryPtr geom) {
         if ( mesh->ptype() == Mesh::Triangles ) {
             if ( mesh->vertices().hasIndices() ) {
                 // bind index buffer if you want to render indexed data
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.buffers_[INDEX_BUFFER]);
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.index_);
                 // indexed draw call
-                glDrawElements(GL_TRIANGLES, data.indices_, GL_UNSIGNED_INT, NULL);
+                glDrawElements(GL_TRIANGLES, data.indices_, GL_UNSIGNED_INT, nullptr);
             }
             else
                 glDrawArrays(GL_TRIANGLES, 0, data.elem_count_) ;
@@ -297,12 +196,10 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 {
     if ( !geom->geometry() ) return ;
 
-    MeshData &data = buffers_[geom->geometry()] ;
+    MeshData *data = geom->geometry()->getMeshData() ;
 
     MaterialInstancePtr material = geom->material() ;
     if ( !material ) material = default_material_ ;
-
-    OpenGLShaderProgram::Ptr old_prog = prog_ ;
 
     material->use() ;
     material->applyParameters() ;
@@ -311,13 +208,13 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 
 #if 0
 
-    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, data.buffers_[TF_VB]);
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, data.tf_);
 
     glEnable(GL_RASTERIZER_DISCARD);
 
     glBeginTransformFeedback(GL_TRIANGLES);
 
-    drawMeshData(data, geom->geometry()) ;
+    drawMeshData(*data, geom->geometry()) ;
 
     glEndTransformFeedback();
 
@@ -329,7 +226,7 @@ void RendererImpl::render(const DrawablePtr &geom, const Matrix4f &mat)
 
     glBindVertexArray(0) ;
 #else
-    drawMeshData(data, geom->geometry()) ;
+    drawMeshData(*data, geom->geometry()) ;
 
 #endif
     // glUseProgram(0) ;
