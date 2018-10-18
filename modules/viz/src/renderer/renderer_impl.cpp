@@ -234,26 +234,6 @@ RendererImpl::~RendererImpl() {
 
 }
 
-void RendererImpl::setModelTransform(const Matrix4f &tf)
-{
-
-}
-
-#if 0
-void RendererImpl::setMaterial(const MaterialInstancePtr &material)
-{
-
- //   vector<Texture2D> textures ;
- //   material->getTextureData(textures);
-
-    uint s = 0 ;
-    for( const Texture2D &t: textures ) {
-        glActiveTexture(GL_TEXTURE0 + s++) ;
-        glBindTexture(GL_TEXTURE_2D, textures_[t.image_url_] );
-    }
-
-}
-#endif
 
 #define MAX_LIGHTS 10
 
@@ -281,84 +261,6 @@ void RendererImpl::setLights(const MaterialInstancePtr &material) {
 
     setLights(scene_, mat, material) ;
 }
-
-void RendererImpl::initTextures()
-{
-    // collect all materials
-#if 0
-    set<MaterialPtr> materials ;
-
-    scene_->visit([&](Node &n) {
-        for( const auto &dr: n.drawables() ) {
-            MaterialInstancePtr m = dr->material() ;
-            if ( m ) materials.insert(m) ;
-        }
-    }) ;
-
-    for( const MaterialPtr &m: materials ) {
-
-        vector<Texture2D> textures ;
-        m->getTextureData(textures) ;
-
-        for( Texture2D &texture: textures ) {
-
-            if ( textures_.find(texture.image_url_) != textures_.end() ) continue ;
-
-            cv::Mat image ;
-            string ipath ;
-            if ( startsWith(texture.image_url_, "mem://" ) ) { // image is in memory indexed by id
-                ipath = texture.image_url_.substr(6) ;
-                auto it = inmemory_textures_.find(ipath) ;
-                if ( it != inmemory_textures_.end() )
-                    image = it->second ;
-            } else if ( startsWith(texture.image_url_, "file://" ) ) {
-                ipath = texture.image_url_.substr(7) ;
-                image = cv::imread(ipath) ;
-            }
-
-            if ( image.data ) {
-
-                cv::flip(image, image, 0) ;
-
-                GLuint texture_id ;
-
-                glActiveTexture(GL_TEXTURE0);
-                glGenTextures(1, &texture_id);
-                glBindTexture(GL_TEXTURE_2D, texture_id);
-
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                // Set texture clamping method
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-                glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-                glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
-                glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
-                glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
-
-                glTexImage2D(GL_TEXTURE_2D,     // Type of texture
-                             0,                 // Pyramid level (for mip-mapping) - 0 is the top level
-                             GL_RGB,            // Internal colour format to convert to
-                             image.cols,
-                             image.rows,
-                             0,                 // Border width in pixels (can either be 1 or 0)
-                             GL_BGR, // Input image format (i.e. GL_RGB, GL_RGBA, GL_BGR etc.)
-                             GL_UNSIGNED_BYTE,  // Image data type
-                             image.ptr());        // The actual image data itself
-
-                glGenerateMipmap(GL_TEXTURE_2D);
-
-                textures_[texture.image_url_] = texture_id ;
-            }
-
-        }
-
-    }
-#endif
-}
-
 
 
 void RendererImpl::drawMeshData(MeshData &data, GeometryPtr geom) {
