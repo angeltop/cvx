@@ -8,7 +8,7 @@ add_executable(camera_intrinsics camera_intrinsics.cpp)
 target_link_libraries(camera_intrinsics  cvx_calib ${OpenCV_LIBRARIES})
 
 add_executable(camera_ba camera_ba.cpp)
-target_link_libraries(camera_ba  cvx_calib ${OpenCV_LIBRARIES} ${CERES_LIBS} ${GLOG_LIBRARIES})
+target_link_libraries(camera_ba  cvx_calib ${OpenCV_LIBRARIES} ${CERES_LIBRARY} glog)
 
 # Install library
 install(TARGETS camera_intrinsics camera_ba
