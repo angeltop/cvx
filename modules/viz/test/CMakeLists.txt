@@ -6,21 +6,21 @@ include_directories(
     ${OpenCV_INCLUDE_DIRS}
     ../src/3rdparty
 )
-message(${GLFW3_LIBRARY})
+
 add_executable(test_renderer test_renderer.cpp)
-target_link_libraries(test_renderer cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY})
+target_link_libraries(test_renderer cvx_viz)
 
 add_executable(test_robot test_robot.cpp)
-target_link_libraries(test_robot cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} )
-
-#add_executable(test_offscreen test_offscreen.cpp)
-#target_link_libraries(test_offscreen cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY}})
+target_link_libraries(test_robot cvx_viz  )
 
 add_executable(test_shapes test_shapes.cpp)
-target_link_libraries(test_shapes cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY})
+target_link_libraries(test_shapes cvx_viz )
 
 add_executable(test_point_cloud test_point_cloud.cpp)
-target_link_libraries(test_point_cloud cvx_viz ${OPENGL_LIBRARIES} ${GLFW3_LIBRARY} )
+target_link_libraries(test_point_cloud cvx_viz )
+
+add_executable(test_offscreen test_offscreen.cpp)
+target_link_libraries(test_offscreen cvx_viz )
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)

@@ -106,7 +106,8 @@ target_link_libraries(cvx_viz cvx_util
     Qt5::Widgets
     ${ASSIMP_LIBRARIES}
     ${OPENGL_LIBRARIES}
-    ${GLFW3_LIBRARY}
+    glfw
+    ${GLFW_LIBRARIES}
     ${OpenCV_LIBRARIES}
     ${HARFBUZZ_LIBRARIES}
     ${FONTCONFIG_LIBRARIES}

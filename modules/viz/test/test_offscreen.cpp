@@ -1,9 +1,9 @@
+#include <cvx/viz/gui/offscreen.hpp>
 #include <cvx/viz/renderer/renderer.hpp>
 #include <cvx/viz/scene/camera.hpp>
 #include <cvx/viz/scene/light.hpp>
 #include <cvx/viz/scene/node.hpp>
 
-#include <cvx/viz/gui/offscreen.hpp>
 
 #include <iostream>
 
@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
     scene->addLight(LightPtr(dl)) ;
 
     // create a camera
-    uint width = 240, height = 480 ;
-    PerspectiveCamera *pcam = new PerspectiveCamera(width / (float) height, // aspect ratio
+    uint width = 480, height = 480 ;
+    PerspectiveCamera *pcam = new PerspectiveCamera(1, // aspect ratio
                                                     50*M_PI/180,   // fov
                                                     0.0001,        // zmin
                                                     10*r           // zmax
@@ -53,13 +53,7 @@ int main(int argc, char *argv[]) {
 
     // create the offscreen window
 
-    OffscreenRenderingWindow ow(width, height) ;
-
-    // initialize renderer
-
-    Renderer rdr(scene) ;
-    rdr.init() ;
-
+    OffscreenRenderer rdr(width, height, scene) ;
 
     // render scene (possibly multiple times)
     rdr.render(cam) ;
