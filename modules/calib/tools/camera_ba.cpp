@@ -151,13 +151,16 @@ void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &d
     Quaterniond q(pose.rotation()) ;
     Vector3d t = pose.translation() ;
 
+    const double offset_x =0.6925 ;
+    const double offset_y =0.29 ;
+
     double p[7] = { q.w(), q.x(), q.y(), q.z(), t.x(), t.y(), t.z()} ;
     double offset[3] = { 0, 0, 0 } ;
     std::vector<double> coords ;
     for( size_t i=0 ; i<data.coords_.size() ; i++ ) {
         const cv::Point3f &p = data.coords_[i] ;
-        coords.push_back(p.x) ;
-        coords.push_back(p.y) ;
+        coords.push_back(-p.x + offset_x) ;
+        coords.push_back(p.y + offset_y) ;
         coords.push_back(p.z) ;
     }
 
@@ -234,9 +237,9 @@ void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &d
 void loadPoses(const PinholeCamera &cam, const CameraCalibration::Data &cdata,  vector<Affine3d> &target_to_sensor,
                vector<Affine3d> &gripper_to_base )
 {
-    const string img_file_prefix = "cap" ;
+    const string img_file_prefix = "image_" ;
     const string img_file_suffix = "png" ;
-    const string pose_file_prefix = "pose" ;
+    const string pose_file_prefix = "pose_" ;
     const string pose_file_suffix = "txt" ;
 
     std::string file_name_regex =  img_file_prefix + "([[:digit:]]+[a]?)\\." + img_file_suffix ;
@@ -264,6 +267,7 @@ void loadPoses(const PinholeCamera &cam, const CameraCalibration::Data &cdata,  
 
         double err ;
        Eigen::Affine3d pose = estimatePosePlanar(image_pts, object_pts, cam, err) ;
+
 
         Path ipath(cdata.image_paths_[k]) ;
 
@@ -293,8 +297,9 @@ void loadPoses(const PinholeCamera &cam, const CameraCalibration::Data &cdata,  
                    strm >> tr(row, col) ;
                }
 
+    //    cout << base_to_sensor.inverse() * tr.matrix()  << endl ;
         gripper_to_base.push_back(Affine3d(tr.inverse())) ;
-     //   gripper_to_base.push_back(Affine3d(tr)) ;
+      //  gripper_to_base.push_back(Affine3d(tr)) ;
     }
 }
 
@@ -381,18 +386,20 @@ int main(int argc, char *argv[]) {
     if  ( !cam.read(camera_intrinsics) ) {
         cerr << "can't read intrinsics from: " << camera_intrinsics << endl ;
         exit(1) ;
+
     }
 
+    cout << cam.getDistortion() << endl;
 
   //  sensor_to_base.linear() << 0, 1, 0, 1, 0, 0, 0, 0, -1 ;
  //   sensor_to_base.linear() << 0, 1, 0, 1, 0, 0, 0, 0, -1 ;
 //    sensor_to_base.translation() << -1, 0, -0.9 ;
 
     Matrix4d init ;
-    init << 0.0, -1.0, 0.0, 0.0,
-            -1.0, 0.0, 0.0, -1.4,
-            0.0, 0.0, -1.0, 2.45,
-            0.0, 0.0, 0.0, 1.0 ;
+    init << 1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.5,
+           0.0, 0.0, 0.0, 1.0 ;
 
     Affine3d sensor_to_base(init) ;
    sensor_to_base = sensor_to_base.inverse() ;

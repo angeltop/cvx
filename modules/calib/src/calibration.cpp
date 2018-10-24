@@ -100,6 +100,7 @@ void CameraCalibration::detect(const vector<string> &images, const CalibrationPa
 
         cout << ipath << endl ;
         pattern.draw(im, ipts) ;
+
         cv::imwrite("/tmp/" + Path(ipath).name(), im) ;
 
         data.markers_.push_back(std::move(ipts)) ;

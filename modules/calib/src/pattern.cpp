@@ -281,7 +281,7 @@ vector<CalibrationPattern::Marker> AprilTagGridPattern::findPoints(const cv::Mat
         int row = res.id / board_size_.width ;
         int col = res.id % board_size_.width ;
 
-        if ( col >= board_size_.height) continue ;
+        if ( row >= board_size_.height) continue ;
 
         int index = 4*(row * board_size_.width + col) ;
 
