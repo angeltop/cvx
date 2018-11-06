@@ -7,6 +7,7 @@
 
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
+#include <ceres/loss_function.h>
 
 #include <regex>
 
@@ -95,7 +96,7 @@ struct OpenCVReprojectionError {
         x[2] += t[2];
 
 #if 0
-        T x[3], X[3];
+        T x[3], Xt[3];
 
         Matrix<T, 4, 1> R ;
         R[0] = obj_.x + offset[0] ;
@@ -138,8 +139,11 @@ struct OpenCVReprojectionError {
     }
 };
 
+const double offset_x =0.6925 ;
+const double offset_y =0.29 ;
+const double offset_z =0.00 ;
 
-void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &data, vector<Affine3d> gripper_to_base, Affine3d &pose, Vector3d &off) {
+void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &data, vector<Affine3d> gripper_to_base, Affine3d &pose, Vector3d &off, std::vector<double> &coords) {
 
     ceres::Problem::Options problem_options;
     ceres::Problem problem(problem_options);
@@ -151,18 +155,19 @@ void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &d
     Quaterniond q(pose.rotation()) ;
     Vector3d t = pose.translation() ;
 
-    const double offset_x =0.6925 ;
-    const double offset_y =0.29 ;
+
 
     double p[7] = { q.w(), q.x(), q.y(), q.z(), t.x(), t.y(), t.z()} ;
     double offset[3] = { 0, 0, 0 } ;
-    std::vector<double> coords ;
+
     for( size_t i=0 ; i<data.coords_.size() ; i++ ) {
         const cv::Point3f &p = data.coords_[i] ;
-        coords.push_back(-p.x + offset_x) ;
-        coords.push_back(p.y + offset_y) ;
+        coords.push_back(p.x) ;
+        coords.push_back(p.y) ;
         coords.push_back(p.z) ;
     }
+
+    ceres::LossFunction* loss_function = new ceres::HuberLoss(1.0) ;
 
 
     for( size_t i=0 ; i<n_views ; i++ ) {
@@ -178,7 +183,7 @@ void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &d
             ceres::ResidualBlockId block_id = problem.AddResidualBlock(new ceres::AutoDiffCostFunction<
                                                                        OpenCVReprojectionError, 2, 4, 3, 3>(
                                                                            new OpenCVReprojectionError(cam, x, gripper_to_base[i])),
-                                                                       NULL,
+                                                                       loss_function,
                                                                        p,
                                                                        p + 4,
                                                                        &coords[3*idx]
@@ -224,7 +229,7 @@ void bundleAdjustment(const PinholeCamera &cam, const CameraCalibration::Data &d
     tr << p[4], p[5], p[6];
 
     pose = Affine3d(Translation3d(tr) * qx.toRotationMatrix()) ;
-  //  pose = pose.inverse() ;
+   pose = pose.inverse() ;
     cout << pose.matrix() << endl ;
     off.x() = offset[0] ;
     off.y() = offset[1] ;
@@ -246,6 +251,7 @@ void loadPoses(const PinholeCamera &cam, const CameraCalibration::Data &cdata,  
 
     std::regex rx(file_name_regex) ;
 
+    ofstream ostrm("/tmp/coords.obj") ;
     for ( uint k=0 ; k<cdata.image_paths_.size() ; k++ ) {
 
        uint n_markers = cdata.markers_[k].size() ;
@@ -297,29 +303,43 @@ void loadPoses(const PinholeCamera &cam, const CameraCalibration::Data &cdata,  
                    strm >> tr(row, col) ;
                }
 
-    //    cout << base_to_sensor.inverse() * tr.matrix()  << endl ;
-        gripper_to_base.push_back(Affine3d(tr.inverse())) ;
-      //  gripper_to_base.push_back(Affine3d(tr)) ;
+        Matrix4d target_to_base ;
+        target_to_base << -1, 0, 0, offset_x,
+                           0, 1, 0, offset_y,
+                           0, 0, -1, offset_z,
+                            0, 0, 0, 1 ;
+
+        Matrix4d base_to_gripper = tr.inverse() ;
+
+   //     gripper_to_base.push_back(Affine3d(tr.inverse())) ;
+       gripper_to_base.push_back(Affine3d(base_to_gripper * target_to_base)) ;
     }
 }
 
 void drawResiduals(const PinholeCamera &cam, const CameraCalibration::Data &cdata, const vector<Affine3d> &gripper_to_base, const Affine3d &sensor_to_base,
-                   const std::vector<cv::Point3f> &coords) {
+                   const std::vector<double> &coords) {
 
     for( uint i=0 ; i<cdata.image_paths_.size() ; i++ )  {
 
          cout << cdata.image_paths_[i] << "--> " ;
 
-        for( uint j=0 ; j<4 ; j++ ) {
-          Vector3d m(coords[j].x, coords[j].y, coords[j].z) ;
+         const string path = "/home/malasiot/tmp/new_hand_eye_smartsurg/" ;
+         cv::Mat im = cv::imread(path + cdata.image_paths_[i]) ;
 
-            Vector3d p = sensor_to_base.inverse() * gripper_to_base[i] * m ;
+        for( uint j=0 ; j<coords.size() ; j+=3 ) {
+          Vector3d m(coords[j], coords[j+1], coords[j+2]) ;
+
+            Vector3d p = sensor_to_base * gripper_to_base[i] * m ;
 
             cv::Point2d pj = cam.project(cv::Point3d(p.x(), p.y(), p.z())) ;
+
+            cv::rectangle(im, cv::Point(pj.x-2, pj.y-2), cv::Point(pj.x+2, pj.y+2), cv::Scalar(128)) ;
+
 
             cout << "[" << j << "]" << pj << ' ' ;
         }
 
+        cv::imwrite("/tmp/pts.png", im) ;
         cout << endl ;
 
     }
@@ -370,7 +390,7 @@ int main(int argc, char *argv[]) {
     if ( compute_markers ) {
         auto files = Path::entries(data_folder, DirectoryFilters::Glob("*.png"), false) ;
 
-        AprilTagDetector adet(AprilTag36h11, 4) ; // we need decimation othwerwise detection does not work
+        AprilTagDetector adet(AprilTag36h11, 1) ; // we need decimation othwerwise detection does not work
 
         AprilTagGridPattern agrid(pattern_grid, pattern_width, pattern_gap, adet) ;
 
@@ -389,30 +409,38 @@ int main(int argc, char *argv[]) {
 
     }
 
+
     cout << cam.getDistortion() << endl;
 
   //  sensor_to_base.linear() << 0, 1, 0, 1, 0, 0, 0, 0, -1 ;
  //   sensor_to_base.linear() << 0, 1, 0, 1, 0, 0, 0, 0, -1 ;
 //    sensor_to_base.translation() << -1, 0, -0.9 ;
 
+
     Matrix4d init ;
-    init << 1.0, 0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0, 0.0,
-            0.0, 0.0, 1.0, 0.5,
-           0.0, 0.0, 0.0, 1.0 ;
+/*    init << 0.000796327, -0.867819, 0.49688, 0.0,
+    1.0, 0.000691068, -0.000395679, 0.0,
+    0.0, 0.49688, 0.867819, 0.55,
+    0.0, 0.0, 0.0, 1.0 ;
+  */
+    init << -0.0444344, -0.8852765,  0.4629375, -0.0399566,
+       0.9981031, -0.0591055, -0.0172262, -0.00864321,
+       0.0426121,  0.4612939,  0.8862236, 0.531534,
+    0, 0, 0, 1 ;
 
     Affine3d sensor_to_base(init) ;
    sensor_to_base = sensor_to_base.inverse() ;
 
     vector<Affine3d> gripper_to_base, target_to_sensor ;
     Vector3d offset ;
+    vector<double> coords ;
 
     loadPoses(cam, cdata, target_to_sensor, gripper_to_base) ;
-    bundleAdjustment(cam, cdata, gripper_to_base, sensor_to_base, offset) ;
+    bundleAdjustment(cam, cdata, gripper_to_base, sensor_to_base, offset, coords) ;
 
     ofstream strm(output_file) ;
     strm << sensor_to_base.matrix() << endl ;
 
-   drawResiduals(cam, cdata, gripper_to_base, sensor_to_base, cdata.coords_);
+   drawResiduals(cam, cdata, gripper_to_base, sensor_to_base, coords);
 
 }
