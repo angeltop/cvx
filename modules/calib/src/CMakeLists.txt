@@ -1,8 +1,8 @@
 find_package(OpenCV 3 REQUIRED COMPONENTS core highgui video imgproc)
 find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
-find_package(glog 0.3.5 REQUIRED)
-
+find_package(Glog REQUIRED)
+add_definitions(${Glog_DEFINITIONS})
 include_directories(
         ${CVX_INCLUDE_DIRS}
         3rdparty
@@ -41,7 +41,7 @@ add_library(cvx_calib ${LIBRARY_TYPE} ${LIB_SOURCES} ${LIB_HEADERS})
 TARGET_LINK_LIBRARIES(cvx_calib cvx_util apriltag ${OpenCV_LIBRARIES} ${CERES_LIBRARY} )
 
 add_executable(make_calib_pattern "make_pattern.cpp")
-target_link_libraries(make_calib_pattern cvx_calib cvx_util glog::glog)
+target_link_libraries(make_calib_pattern cvx_calib cvx_util ${GLOG_LIBRARIES})
 
 # Install library
 install(TARGETS cvx_calib make_calib_pattern
@@ -52,4 +52,4 @@ install(TARGETS cvx_calib make_calib_pattern
   COMPONENT dev)
 
 # Install headers
-install(DIRECTORY "${LIBRARY_INCLUDE_DIR}" DESTINATION "${INSTALL_INCLUDE_DIR}" )
+install(DIRECTORY "${LIBRARY_INCLUDE_DIR}" DESTINATION "${INSTALL_INCLUDE_DIR}/cvx" )

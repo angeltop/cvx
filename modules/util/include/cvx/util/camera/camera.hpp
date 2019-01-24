@@ -4,7 +4,74 @@
 #include <vector>
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
+#include <yaml-cpp/yaml.h>
 
+
+
+namespace YAML {
+template<>
+struct convert< cv::Mat > {
+                
+	/*
+	* Method that encodes cv::Mat in a YAML Node
+	* returns a YAML::Node
+	*/
+	static Node encode(const cv::Mat& mat) {
+		Node matrix;
+		matrix["rows"] = mat.rows;
+		matrix["cols"] = mat.cols;
+		Node data;
+		
+		if(mat.rows>1)
+		{
+			for(int i=0; i<mat.rows; i++)
+				for(int j=0; j<mat.cols; j++)
+					data.push_back(mat.at<double>(i,j));
+		
+		}
+		else
+			for(int i=0; i<mat.cols; i++)
+				data.push_back(mat.at<double>(i));
+		matrix["data"] = data;
+		return matrix;
+	}
+	/*
+	* Method that decodes a YAML Node in a cv::Mat
+	* returns true if it succeeds, otherwise false
+	*/
+	static bool decode(const Node& node, cv::Mat& mat) {
+		int rows = node["rows"].as<int>();
+		int cols = node["cols"].as<int>();
+		Node dataNode = node["data"];
+		
+		mat = cv::Mat_<double>::zeros(rows, cols);
+		int r=0, c=0;
+		for(int i=0; i<dataNode.size(); i++)
+		{
+			if(rows>1)
+			{	
+				r= i/rows;
+				c= i%rows;
+				mat.at<double>(r,c) = dataNode[i].as<double>();
+			}
+			else
+				mat.at<double>(i) = dataNode[i].as<double>();
+				
+		}
+		
+		std::cout<<"Matrix: "<<std::endl;
+		
+		for(int i=0; i<mat.rows; i++)
+		{
+			for(int j=0; j<mat.cols; j++)
+				std::cout<<mat.at<double>(i,j)<<" ";;
+			std::cout<<std::endl;
+		}
+		
+		return true;
+	}
+};
+}
 namespace cvx { namespace util {
 
 class PinholeCamera
@@ -70,18 +137,21 @@ public:
 
     bool read(const std::string &fname)
     {
-        cv::FileStorage fs ;
+		std::ifstream file;
+		file.open(fname.c_str());
 
-        if ( !fs.open(fname, cv::FileStorage::READ) ) return false ;
-
+		if (!file) std::cout << "error opening camera intrinsics file\n"<<fname << std::endl;
+		file.close();
+		YAML::Node list = YAML::LoadFile( fname);
         cv::Mat intrinsics, distortion;
 
-        fs["image_width"] >> sz_.width ;
-        fs["image_height"] >> sz_.height ;
+        sz_.width = list["image_width"].as<int>() ;
+        sz_.height = list["image_height"].as<int>();
 
-        fs["camera_matrix"] >> intrinsics;
-        fs["distortion_coefficients"] >> dist_;
+        intrinsics = list["camera_matrix"].as<cv::Mat>();
+        dist_ = list["distortion_coefficients"].as<cv::Mat>();
 
+		
         fx_ = intrinsics.at<double>(0, 0) ;
         fy_ = intrinsics.at<double>(1, 1) ;
         cx_ = intrinsics.at<double>(0, 2) ;
@@ -93,18 +163,20 @@ public:
 
     bool write(const std::string &fname)
     {
-        cv::FileStorage fs ;
-
-        if ( !fs.open(fname, cv::FileStorage::WRITE) ) return false ;
-
-        fs << "image_width" << sz_.width ;
-        fs << "image_height" << sz_.height ;
-
-        fs << "camera_matrix" << getMatrix() ;
-        fs << "distortion_coefficients" << dist_;
-
-        return true ;
-
+		std::ofstream file(fname.c_str());
+		if(!file.is_open())
+		{
+				std::cerr<<"Unable to save camera intrinsics\n"<<fname<<std::endl;
+				return false;
+		}
+		YAML::Node mainNode;
+		mainNode["image_width"] = sz_.width;
+		mainNode["image_height"] = sz_.height;
+		mainNode["camera_matrix"] = getMatrix();
+		mainNode["distortion_coefficients"] = dist_;
+		file<<mainNode;
+		file.close();
+		return true;
     }
 
 protected:

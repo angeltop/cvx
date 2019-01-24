@@ -4,7 +4,7 @@ find_package(ZLIB REQUIRED)
 
 find_package(F2C REQUIRED)
 find_package(LAPACK)
-
+find_package(yaml-cpp REQUIRED)
 include_directories(
    ${CMAKE_CURRENT_SOURCE_DIR}/../include/
    ${EIGEN3_INCLUDE_DIR}
@@ -78,6 +78,7 @@ set ( LIB_HEADERS
     misc/filesystem.hpp
     misc/optional.hpp
     misc/xml_pull_parser.hpp
+    misc/configuration.hpp
 
     geometry/point.hpp
     geometry/point_list.hpp
@@ -136,6 +137,7 @@ TARGET_LINK_LIBRARIES(cvx_util
     ${LAPACK_LIBRARIES}
     ${F2C_LIBRARIES}
     ${ZLIB_LIBRARIES}
+    yaml-cpp
 )
 
 # Install library

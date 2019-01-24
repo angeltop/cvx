@@ -6,7 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <iterator>
-#include <eigen3/Eigen/Core>
+#include <Eigen/Core>
 
 namespace cvx { namespace util {
 
