@@ -1,0 +1,15 @@
+base_frame: "base_link"
+tool_frame: "left_tool0"
+camera_frame: "endoscope/left_camera"
+base_to_tag_x: 0.6925
+base_to_tag_y: 0.29
+base_to_tag_z: 0.0
+
+initial_cam_estimation:
+  x: -0.0399566
+  y: -0.00864321
+  z: 0.531534
+  roll: 0.0194356  
+  pitch: 0.4813061
+  yaw: 1.6209468
+

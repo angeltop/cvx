@@ -17,3 +17,5 @@ find_package(cvx REQUIRED COMPONENTS util calibration ...)
 
 target_link_libraries(my_target cvx_util cvx_calibration ...)
 
+
+Running hand eye registration requires  a configuration like the one in the scripts folder
