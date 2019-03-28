@@ -34,11 +34,11 @@ namespace cvx { namespace util
 			Eigen::Quaterniond qqt(finalCameraEstimation.rotation());
 			strm<<"<?xml version=\"1.0\"?>"<<std::endl;
 			strm<<"<launch>"<<std::endl;
-			strm<<"<node name=\""<<toolFrame<<"_to_camera\" pkg=\"tf\" type=\"static_transform_publisher\" args=\"";
+			strm<<"<node name=\""<<toolFrame.substr(toolFrame.length()-4)<<"_to_camera\" pkg=\"tf\" type=\"static_transform_publisher\" args=\"";
 			strm<<finalCameraEstimation.translation()(0)<<" "<<finalCameraEstimation.translation()(1)<<" "<<finalCameraEstimation.translation()(2);
 			strm<<" "<<qqt.x()<<" "<< qqt.y()<<" "<< qqt.z()<<" "<< qqt.w();
 			strm<<" "<<toolFrame<<" "<<cameraFrame<<" 100\"/>"<<std::endl;
-			strm<<"<\\launch>"<<std::endl;
+			strm<<"</launch>"<<std::endl;
 			
 		}
 		bool readRobotConfiguration(const std::string &fname)
@@ -64,16 +64,23 @@ namespace cvx { namespace util
 			double posY = initialEstimation["y"].as<double>();
 			double posZ = initialEstimation["z"].as<double>();
 			
-			double roll = initialEstimation["roll"].as<double>();
-			double pitch = initialEstimation["pitch"].as<double>();
-			double yaw = initialEstimation["yaw"].as<double>();
-			
+//			double roll = initialEstimation["roll"].as<double>();
+//			double pitch = initialEstimation["pitch"].as<double>();
+//			double yaw = initialEstimation["yaw"].as<double>();
+
+                        double qx = initialEstimation["qx"].as<double>();
+                        double qy = initialEstimation["qy"].as<double>();
+                        double qz = initialEstimation["qz"].as<double>();
+                        double qw = initialEstimation["qw"].as<double>();
+                        Eigen::Quaterniond q(qw, qx, qy, qz);
+
+                        //q.normalized().toRotationMatrix();
 			Eigen::Matrix3d m;
 
-			m = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
-				* Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-				* Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
-
+//			m = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
+//				* Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
+//				* Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
+                        m = q.normalized().toRotationMatrix();
 			std::cout << "original rotation:" << std::endl;
 			std::cout << m << std::endl << std::endl;
 			initialCameraEstimation =  Eigen::Translation3d(Eigen::Vector3d(posX, posY, posZ)) * m;
